@@ -4,6 +4,8 @@
  * output equals input size
  * see run_test.py for simple examples
 
+pip install https://github.com/alikaperdue/CayleyKernel/releases/download/v0.1.0/cayleykernel-0.1.0-py3-none-manylinux_2_34_x86_64.whl
+
 ```python
 from CayleyKernel import multiply
 import cupy as cp

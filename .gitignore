@@ -1,1 +1,6 @@
 src/
+.ipynb_checkpoints/
+build/
+dist/
+wheelhouse/
+*.egg-info/
