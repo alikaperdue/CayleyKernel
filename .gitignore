@@ -4,3 +4,11 @@ build/
 dist/
 wheelhouse/
 *.egg-info/
+script.txt
+Release.ipynb
+*.bak
+src/*.bak
+*/__pycache__/
+CayleyKernel/__pycache__/
+__pycache__/
+
