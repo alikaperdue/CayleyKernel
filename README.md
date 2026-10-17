@@ -16,11 +16,13 @@ grid-stride loop.
   dependency-light CuPy/ctypes wrapper.
 * First public release of a high-dimensional Cayley-Dickson product
   running at O(1) thread-order complexity, in parallel, with NVIDIA CUDA
-  hardware acceleration.
+  hardware acceleration based on the paper by Maher Ben Abdessalem:
+
+https://figshare.com/articles/preprint/A_Proven_Sign_Law_for_Cayley-Dickson_Algebras_Ordinary_and_Split_Constructions/33705022?file=69441246
 
 ---
 
-## What it computes
+## Computation
 
 Given two algebra elements `x, y ∈ A` of dimension `2^n`, the Cayley-Dickson
 doubling product is defined recursively by
@@ -45,13 +47,7 @@ evaluates it on the GPU in one parallel pass:
 
 ## Installation
 
-### Option A — prebuilt wheel (GitHub Releases)
-
-```bash
-pip install https://github.com/alikaperdue/CayleyKernel/releases/download/v0.3.0/cuda_kernel-0.3.0-py3-none-linux_x86_64.whl
-```
-
-### Option B — build from source
+### build from source
 
 Requires an NVIDIA GPU, the CUDA toolkit (`nvcc` on PATH), and Python ≥ 3.8
 with `numpy`, `cupy`, and `build`.
