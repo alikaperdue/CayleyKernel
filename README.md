@@ -16,9 +16,7 @@ grid-stride loop.
   dependency-light CuPy/ctypes wrapper.
 * First public release of a high-dimensional Cayley-Dickson product
   running at O(1) thread-order complexity, in parallel, with NVIDIA CUDA
-  hardware acceleration based on the paper by Maher Ben Abdessalem:
-
-https://figshare.com/articles/preprint/A_Proven_Sign_Law_for_Cayley-Dickson_Algebras_Ordinary_and_Split_Constructions/33705022?file=69441246
+  hardware acceleration based on the paper by [`Maher Ben Abdessalem`](https://figshare.com/articles/preprint/A_Proven_Sign_Law_for_Cayley-Dickson_Algebras_Ordinary_and_Split_Constructions/33705022)
 
 ---
 
