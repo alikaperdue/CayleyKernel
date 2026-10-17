@@ -1,14 +1,14 @@
+script.txt
+cuda/script.txt
+run_tests.py
+CayleyKernel/cuda_kernel.so
+CayleyKernel/amd_kernel.so
 src/
 .ipynb_checkpoints/
 build/
 dist/
 wheelhouse/
 *.egg-info/
-script.txt
-Release.ipynb
-*.bak
-src/*.bak
-*/__pycache__/
-CayleyKernel/__pycache__/
 __pycache__/
+*/__pycache__/
 
