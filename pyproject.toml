@@ -3,24 +3,67 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cayleykernel"
-version = "0.1.0"
-description = "Python wrapper for CayleyKernel compiled binary"
+name = "cayley_kernel"
+version = "0.3.0"
+description = "O(1)-order GPU kernel for high-dimensional Cayley-Dickson doubling products (CUDA)."
 authors = [
     { name = "Alika Perdue", email = "alikaperdue@gmail.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+keywords = [
+    "cayley-dickson",
+    "octonions",
+    "sedenions",
+    "hypercomplex",
+    "cuda",
+    "gpu",
+    "cupy",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: CUDA",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries",
+]
 dependencies = [
-    'numpy',
-    'cupy',
-] # Add your python dependencies here if any
+    "numpy",
+    "cupy",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
+[project.urls]
+Homepage = "https://github.com/alikaperdue/CayleyKernel"
+Repository = "https://github.com/alikaperdue/CayleyKernel"
+Issues = "https://github.com/alikaperdue/CayleyKernel/issues"
 
 [tool.setuptools]
-# This forces setuptools to only look inside your Python package folder
 packages = ["CayleyKernel"]
 
 [tool.setuptools.package-data]
-# This ensures your compiled .so file inside the package is included
+# Wheels built via `make wheel` bundle the freshly compiled kernel binary.
+# The .so is never tracked in git; it is produced by `make kernel` first.
 CayleyKernel = ["*.so"]
 
+[tool.pytest.ini_options]
+markers = [
+    "slow: heavy identity/batch tests at 2^20 and above (opt-in: pytest -m slow)",
+    "benchmark: timing gates and scaling checks (opt-in: pytest -m benchmark)",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
