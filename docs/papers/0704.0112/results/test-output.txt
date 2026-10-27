@@ -1,0 +1,34 @@
+test_01_01_xor_signs_and_signed_labels_against_doubling (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_01_xor_signs_and_signed_labels_against_doubling) ... ok
+test_01_02_rules_zero_one_two_and_cyclic_positive_trips (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_02_rules_zero_one_two_and_cyclic_positive_trips) ... ok
+test_01_03_assessor_diagonals_and_unsigned_viziers (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_03_assessor_diagonals_and_unsigned_viziers) ... ok
+test_01_04_seven_sedenion_box_kites_and_edge_signs (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_04_seven_sedenion_box_kites_and_edge_signs) ... ok
+test_01_05_emanation_table_construction_and_actual_two_way_products (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_05_emanation_table_construction_and_actual_two_way_products) ... ok
+test_01_06_trip_count_two_step_and_number_hub (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_06_trip_count_two_step_and_number_hub) ... ok
+test_02_01_theorem_11_central_embedding_preserves_marks_and_blanks (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_02_01_theorem_11_central_embedding_preserves_marks_and_blanks) ... ok
+test_02_02_theorem_11_label_lines_become_dmz_contents (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_02_02_theorem_11_label_lines_become_dmz_contents) ... ok
+test_02_03_theorem_12_four_corners_zero_padding (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_02_03_theorem_12_four_corners_zero_padding) ... ok
+test_02_04_theorem_13_french_window_shutters_and_diagonals (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_02_04_theorem_13_french_window_shutters_and_diagonals) ... ok
+test_02_05_theorem_13_label_line_extensions_reverse_marks (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_02_05_theorem_13_label_line_extensions_reverse_marks) ... ok
+test_03_01_whorfian_formula_and_printed_sequence (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_01_whorfian_formula_and_printed_sequence) ... ok
+test_03_02_muntin_and_diagonal_contributions_units (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_02_muntin_and_diagonal_contributions_units) ... ok
+test_03_03_explicit_box_kites_partition_edges (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_03_explicit_box_kites_partition_edges) ... ok
+test_03_04_theorem_14_singleton_high_bit_and_tandem_shifts (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_04_theorem_14_singleton_high_bit_and_tandem_shifts) ... ok
+test_03_05_theorem_14_recursive_harmonics (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_05_theorem_14_recursive_harmonics) ... ok
+test_03_06_density_limit_and_finite_degree_histograms (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_06_density_limit_and_finite_degree_histograms) ... ok
+test_04_01_chingon_hide_fill_counts (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_01_chingon_hide_fill_counts) ... ok
+test_04_02_theorem_15_restricted_two_bit_off_switch (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_02_theorem_15_restricted_two_bit_off_switch) ... ok
+test_04_03_theorem_15_unrestricted_wording_counterexample (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_03_theorem_15_unrestricted_wording_counterexample) ... ok
+test_04_04_hidden_box_octonion_clones (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_04_hidden_box_octonion_clones) ... ok
+test_04_05_theorem_16_hat_trick_restoration (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_05_theorem_16_hat_trick_restoration) ... ok
+test_04_06_rule_priority_and_paper_examples_25_41_57_73 (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_06_rule_priority_and_paper_examples_25_41_57_73) ... ok
+test_05_01_proposition_inner_skybox_and_613_bit_preparation (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_01_proposition_inner_skybox_and_613_bit_preparation) ... ok
+test_05_02_cookbook_literal_preparation_exhaustive_finite_audit (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_02_cookbook_literal_preparation_exhaustive_finite_audit) ... ok
+test_05_03_proposed_trailing_bit_correction_exhaustive_finite_audit (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_03_proposed_trailing_bit_correction_exhaustive_finite_audit) ... ok
+test_05_04_recipe_613_seeded_large_bit_queries (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_04_recipe_613_seeded_large_bit_queries) ... ok
+test_05_05_literal_mutual_orthogonality_and_repeated_lines (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_05_literal_mutual_orthogonality_and_repeated_lines) ... ok
+test_05_06_triadic_relation_join_example (tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_06_triadic_relation_join_example) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 16.262s
+
+OK

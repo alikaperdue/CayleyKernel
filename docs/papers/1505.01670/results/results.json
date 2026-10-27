@@ -1,0 +1,942 @@
+{
+  "paper": "1505.01670v1",
+  "paper_sha256": "29c5f289cf0a9c952be9851dca28aa518d2f4e30a4dcf2bc957c354755982e73",
+  "recorded_at_utc": "2026-10-22T21:30:40.063919+00:00",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [GCC 12.3.0]",
+  "numpy": "2.4.1",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "git_head": "399309c1ff14dd229d88d4a6ea673b4279fb7502",
+  "source_sha256": {
+    "CayleyKernel/__init__.py": "16185a0ddc8fd18c179ae5ce3b50d56dbe5a962754b045d98c075d2286fe5af6",
+    "tests/papers/arxiv_1505_01670/__init__.py": "7768f8f2e88afe01e2fb7f23bd4c18ab519f9cded184b9578b5f9d9aa0096c92",
+    "tests/papers/arxiv_1505_01670/algebra.py": "dcee3f3268490c4b0d67458b8ebb205cf4448cb12830e7a2fbf166d0b069f28b",
+    "tests/papers/arxiv_1505_01670/run.py": "d5163f59fef4f2201fafa982e007356ca46a0e9e92630a414acbba5a69b2fd08",
+    "tests/papers/arxiv_1505_01670/test_sections.py": "0df9aa25b974a9b7f37e4e6caaaa07b0e9d7029bc850ebc03ceb211fa3d156a8"
+  },
+  "kernel_loaded": true,
+  "kernel_abi": 1,
+  "cupy_importable": false,
+  "elapsed_seconds": 2.399698270004592,
+  "tests_run": 36,
+  "passed": [
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_01_01_doubling_twist_signed_basis_and_embeddings",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_01_02_distributivity_unit_and_conjugation",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_01_03_commutativity_associativity_and_alternativity_boundary",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_01_04_lemma_1_1_quadratic_trace_and_norm",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_01_05_theorem_1_1_all_bracketings_and_recurrence",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_01_06_printed_sedenion_nonalternative_example",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_02_01_theorem_2_1_minimal_polynomial_and_divisibility",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_02_02_theorems_2_2_2_3_radius_from_minimal_roots",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_02_03_power_norm_no_nilpotents_and_continuity_samples",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_02_04_radius_is_not_left_multiplication_spectral_radius",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_03_01_lp_subnorm_definitions_and_nontriangle_example",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_03_02_gelfand_lp_and_continuous_angular_subnorm",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_03_03_discontinuous_equivalent_bump_and_gelfand",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_03_04_additive_periodic_restriction_and_complex_argument",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_03_05_theorem_3_2_complex_log_gelfand_and_real_homogeneity",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_03_06_theorem_3_3_quaternion_negative_homogeneity_counterexample",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_03_07_theorem_3_3_folded_power_root_counterexample",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_03_08_dense_angle_families_and_large_log_values",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_04_01_lp_stability_bounds_and_p_gt_2_instability",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_04_02_weighted_sup_stability_criterion",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_04_03_weighted_l1_stability_criterion",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_04_04_equivalent_discontinuous_bump_is_stable",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_04_05_corollary_4_2_missing_continuity_complex_witness",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_04_06_theorem_4_3_quaternion_stability_counterexample_family",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_04_07_strong_weighted_l1_criterion_and_boundary_typo",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_05_01_power_equation_constants_radius_and_unique_scaled_candidate",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_05_02_nilpotent_obstruction_matrix_reference_only",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_05_03_theorem_5_2_complex_power_and_quaternion_failure",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_05_04_lemma_5_1_exact_square_roots_generated_targets",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_05_05_lemma_5_1_numerical_square_roots_and_cancellation",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_05_06_nonnegativity_square_argument_and_real_exception",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_05_07_closure_operations_on_power_solutions",
+    "tests.papers.arxiv_1505_01670.test_sections.PaperVerification.test_05_08_composition_boundary_and_zero_divisor_embedding"
+  ],
+  "skipped": [
+    {
+      "test": "tests.papers.arxiv_1505_01670.test_sections.GPUVerification.test_01_01_multiply_basis_and_dense_doubling_oracle",
+      "reason": "CuPy unavailable; multiply() not executed"
+    },
+    {
+      "test": "tests.papers.arxiv_1505_01670.test_sections.GPUVerification.test_01_02_05_multiply_powers_norms_and_printed_zero_divisors",
+      "reason": "CuPy unavailable; multiply() not executed"
+    },
+    {
+      "test": "tests.papers.arxiv_1505_01670.test_sections.GPUVerification.test_05_multiply_square_roots",
+      "reason": "CuPy unavailable; multiply() not executed"
+    }
+  ],
+  "failures": [],
+  "errors": [],
+  "successful": true,
+  "observations": {
+    "binary_parenthesizations_per_exponent": {
+      "1": 1,
+      "2": 1,
+      "3": 2,
+      "4": 5,
+      "5": 14,
+      "6": 42,
+      "7": 132
+    },
+    "printed_zero_divisors_kernel_indices": {
+      "o1": [
+        3,
+        10
+      ],
+      "o2": [
+        [
+          6,
+          1
+        ],
+        [
+          15,
+          -1
+        ]
+      ]
+    },
+    "radius_root_max_absolute_error": 1.7763568394002505e-15,
+    "element_vs_left_operator_radius": {
+      "element": 1.4142135623730951,
+      "left_operator": 2.0,
+      "rank": 12
+    },
+    "gelfand_experiments": [
+      {
+        "dimension": 2,
+        "p": "0.5",
+        "radius": 2.23606797749979,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          2.606551850567225,
+          1.6690238602413994,
+          1.2283916962134633,
+          1.1336206800220623,
+          1.06065582084477,
+          1.0328458787104695,
+          1.0107042027026303,
+          1.0068772978677833,
+          1.004040903460061
+        ],
+        "last_universal_relative_bound": 0.004069667960554177
+      },
+      {
+        "dimension": 2,
+        "p": "1",
+        "radius": 2.23606797749979,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          1.3416407864998738,
+          1.1832159566199232,
+          1.0552501469158886,
+          1.0411572971302585,
+          1.0179155639424688,
+          1.0107727585448862,
+          1.00226954949134,
+          1.0019199642568388,
+          1.0013356500095034
+        ],
+        "last_universal_relative_bound": 0.0013547198921082058
+      },
+      {
+        "dimension": 2,
+        "p": "1.5",
+        "radius": 2.23606797749979,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          1.0944483081001082,
+          1.0568112770480858,
+          1.0142751080480026,
+          1.0130577631815836,
+          1.0053768461395676,
+          1.0035589800220326,
+          1.0004948799105702,
+          1.0005393112779326,
+          1.0004418780561135
+        ],
+        "last_universal_relative_bound": 0.0004513695322615726
+      },
+      {
+        "dimension": 2,
+        "p": "2",
+        "radius": 2.23606797749979,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "last_universal_relative_bound": 0.0
+      },
+      {
+        "dimension": 2,
+        "p": "4",
+        "radius": 2.23606797749979,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          0.9080865185231702,
+          0.9256967424544408,
+          0.9902925972575877,
+          0.9835961114234574,
+          0.9946034437888729,
+          0.9948229914567761,
+          0.99977214037164,
+          0.9995618577922161,
+          0.9993601355044885
+        ],
+        "last_universal_relative_bound": 0.0006771306930663567
+      },
+      {
+        "dimension": 2,
+        "p": "inf",
+        "radius": 2.23606797749979,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          0.8944271909999159,
+          0.8944271909999159,
+          0.989846400767953,
+          0.9789067535183896,
+          0.9938909608760811,
+          0.9916688848807589,
+          0.9997686121013122,
+          0.9995302164930461,
+          0.9989963618029213
+        ],
+        "last_universal_relative_bound": 0.0013547198921082058
+      },
+      {
+        "dimension": 8,
+        "p": "0.5",
+        "radius": 4.123105625617661,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          20.718946985112844,
+          4.524951806612399,
+          2.137836104167256,
+          1.45213752209885,
+          1.2086850599154453,
+          1.0867903844956945,
+          1.0482313118518074,
+          1.0240534849242267,
+          1.0116058394984597
+        ],
+        "last_universal_relative_bound": 0.01225875787623376
+      },
+      {
+        "dimension": 8,
+        "p": "1",
+        "radius": 4.123105625617661,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          2.6678918753996625,
+          1.6269784336399213,
+          1.2796787697596361,
+          1.1260192197151544,
+          1.0631944317870723,
+          1.0230168524076746,
+          1.0152778261093989,
+          1.007751156507014,
+          1.0036329842761862
+        ],
+        "last_universal_relative_bound": 0.004069667960554177
+      },
+      {
+        "dimension": 8,
+        "p": "1.5",
+        "radius": 4.123105625617661,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          1.3740911664147326,
+          1.169976728047549,
+          1.0833358403906992,
+          1.038456942397776,
+          1.0199748503122887,
+          1.0060773670491976,
+          1.0048938957405327,
+          1.002510721623532,
+          1.0011376783554464
+        ],
+        "last_universal_relative_bound": 0.0013547198921082053
+      },
+      {
+        "dimension": 8,
+        "p": "2",
+        "radius": 4.123105625617661,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "last_universal_relative_bound": 0.0
+      },
+      {
+        "dimension": 8,
+        "p": "4",
+        "radius": 4.123105625617661,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          0.6544018323575902,
+          0.8135839798597593,
+          0.8983166826309278,
+          0.9547153934998439,
+          0.9749219321417009,
+          0.9961048363496732,
+          0.9936517684319636,
+          0.9966539754673203,
+          0.9986961731309754
+        ],
+        "last_universal_relative_bound": 0.0020327679075940164
+      },
+      {
+        "dimension": 8,
+        "p": "inf",
+        "radius": 4.123105625617661,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          0.48507125007266594,
+          0.7276068751089989,
+          0.8401680504168059,
+          0.9408080864281577,
+          0.9619498432973113,
+          0.9959569908855994,
+          0.990510255040982,
+          0.9946917634887801,
+          0.9984022605142986
+        ],
+        "last_universal_relative_bound": 0.004069667960554177
+      },
+      {
+        "dimension": 32,
+        "p": "0.5",
+        "radius": 8.366600265340756,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          136.53953579957806,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "last_universal_relative_bound": 0.020514637174948187
+      },
+      {
+        "dimension": 32,
+        "p": "1",
+        "radius": 8.366600265340756,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          5.0199601592044525,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "last_universal_relative_bound": 0.006791976999960722
+      },
+      {
+        "dimension": 32,
+        "p": "1.5",
+        "radius": 8.366600265340756,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          1.6990908202036659,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "last_universal_relative_bound": 0.002258885925657216
+      },
+      {
+        "dimension": 32,
+        "p": "2",
+        "radius": 8.366600265340756,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "last_universal_relative_bound": 0.0
+      },
+      {
+        "dimension": 32,
+        "p": "4",
+        "radius": 8.366600265340756,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          0.46945635154690996,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "last_universal_relative_bound": 0.0033902416308226793
+      },
+      {
+        "dimension": 32,
+        "p": "inf",
+        "radius": 8.366600265340756,
+        "exponents": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256
+        ],
+        "root_over_radius": [
+          0.2390457218668787,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "last_universal_relative_bound": 0.006791976999960722
+      }
+    ],
+    "raw_float_unit_power_drift": [
+      {
+        "dimension": 2,
+        "k": 64,
+        "squared_norm_error": 3.219646771412954e-15,
+        "max_coordinate_error": 1.5543122344752192e-15
+      },
+      {
+        "dimension": 2,
+        "k": 128,
+        "squared_norm_error": 7.771561172376096e-15,
+        "max_coordinate_error": 3.4416913763379853e-15
+      },
+      {
+        "dimension": 2,
+        "k": 256,
+        "squared_norm_error": 1.532107773982716e-14,
+        "max_coordinate_error": 5.551115123125783e-15
+      },
+      {
+        "dimension": 8,
+        "k": 64,
+        "squared_norm_error": 2.4424906541753444e-15,
+        "max_coordinate_error": 8.881784197001252e-16
+      },
+      {
+        "dimension": 8,
+        "k": 128,
+        "squared_norm_error": 4.773959005888173e-15,
+        "max_coordinate_error": 1.2212453270876722e-15
+      },
+      {
+        "dimension": 8,
+        "k": 256,
+        "squared_norm_error": 8.326672684688674e-15,
+        "max_coordinate_error": 2.4424906541753444e-15
+      },
+      {
+        "dimension": 32,
+        "k": 64,
+        "squared_norm_error": 1.5544275713264e-06,
+        "max_coordinate_error": 0.000520287006352791
+      },
+      {
+        "dimension": 32,
+        "k": 128,
+        "squared_norm_error": 7.410115879827775e+21,
+        "max_coordinate_error": 35922821390.94063
+      },
+      {
+        "dimension": 32,
+        "k": 256,
+        "squared_norm_error": 1.6839686986296047e+77,
+        "max_coordinate_error": 1.712477785672928e+38
+      }
+    ],
+    "bump_discontinuity": {
+      "at_real_unit": 3,
+      "nearby_off_line_values": [
+        1.004987562112089,
+        1.0000499987500624,
+        1.000000499999875
+      ]
+    },
+    "complex_pathological_restriction": [
+      {
+        "angle_pi": "0",
+        "angle_one": "1",
+        "log_root_over_radius": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "angle_pi": "1",
+        "angle_one": "-1",
+        "log_root_over_radius": [
+          -1.0,
+          -1.0,
+          -1.0,
+          -1.0,
+          -1.0,
+          -1.0,
+          -1.0,
+          -1.0
+        ]
+      },
+      {
+        "angle_pi": "1/3",
+        "angle_one": "0",
+        "log_root_over_radius": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "quaternion_homogeneity_counterexample_log_h": {
+      "q": 1,
+      "minus_q": -1
+    },
+    "quaternion_folded_power_roots": [
+      {
+        "k": 1,
+        "phi_arg_qk": "1",
+        "log_root": 1.0
+      },
+      {
+        "k": 2,
+        "phi_arg_qk": "2",
+        "log_root": 1.0
+      },
+      {
+        "k": 3,
+        "phi_arg_qk": "3",
+        "log_root": 1.0
+      },
+      {
+        "k": 4,
+        "phi_arg_qk": "-4",
+        "log_root": -1.0
+      },
+      {
+        "k": 5,
+        "phi_arg_qk": "-5",
+        "log_root": -1.0
+      },
+      {
+        "k": 6,
+        "phi_arg_qk": "-6",
+        "log_root": -1.0
+      },
+      {
+        "k": 7,
+        "phi_arg_qk": "7",
+        "log_root": 1.0
+      },
+      {
+        "k": 8,
+        "phi_arg_qk": "8",
+        "log_root": 1.0
+      },
+      {
+        "k": 16,
+        "phi_arg_qk": "-16",
+        "log_root": -1.0
+      },
+      {
+        "k": 32,
+        "phi_arg_qk": "32",
+        "log_root": 1.0
+      },
+      {
+        "k": 64,
+        "phi_arg_qk": "64",
+        "log_root": 1.0
+      }
+    ],
+    "dense_angle_and_unbounded_log_samples": [
+      {
+        "target": 0.2,
+        "angle_error": 0.00015130233005039573,
+        "phi": -1000
+      },
+      {
+        "target": 0.2,
+        "angle_error": 7.604713202907787e-05,
+        "phi": 1000
+      },
+      {
+        "target": 1.0,
+        "angle_error": 1.234653927895124e-05,
+        "phi": -1000
+      },
+      {
+        "target": 1.0,
+        "angle_error": 7.446326412718918e-05,
+        "phi": 1000
+      },
+      {
+        "target": 2.0,
+        "angle_error": 1.871182303148089e-05,
+        "phi": -1000
+      },
+      {
+        "target": 2.0,
+        "angle_error": 0.00010552162632393447,
+        "phi": 1000
+      },
+      {
+        "target": 5.0,
+        "angle_error": 0.00011188691007646412,
+        "phi": -1000
+      },
+      {
+        "target": 5.0,
+        "angle_error": 0.0001154625517756358,
+        "phi": 1000
+      }
+    ],
+    "lp_instability": [
+      {
+        "p": "3",
+        "k": [
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "log_stability_ratio": [
+          0.4620981203732968,
+          0.9241962407465936,
+          1.8483924814931871,
+          3.6967849629863743,
+          7.3935699259727485
+        ]
+      },
+      {
+        "p": "4",
+        "k": [
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "log_stability_ratio": [
+          0.6931471805599454,
+          1.3862943611198908,
+          2.7725887222397816,
+          5.545177444479563,
+          11.090354888959126
+        ]
+      },
+      {
+        "p": "inf",
+        "k": [
+          4,
+          8,
+          16,
+          32,
+          64
+        ],
+        "log_stability_ratio": [
+          1.3862943611198906,
+          2.772588722239781,
+          5.545177444479562,
+          11.090354888959125,
+          22.18070977791825
+        ]
+      }
+    ],
+    "corollary_4_2_missing_continuity": {
+      "log_g_unit": -1,
+      "log_radius": 0,
+      "scope": "restriction with Hamel extension argument"
+    },
+    "quaternion_unbounded_stability_family": [
+      {
+        "m": 1,
+        "M": 2,
+        "theta": 2.141592653589793,
+        "k": 2,
+        "log_h_q2_over_h_q_squared": 4
+      },
+      {
+        "m": 2,
+        "M": 8,
+        "theta": 2.2831853071795862,
+        "k": 2,
+        "log_h_q2_over_h_q_squared": 16
+      },
+      {
+        "m": 10,
+        "M": 58,
+        "theta": 2.415926535897931,
+        "k": 2,
+        "log_h_q2_over_h_q_squared": 116
+      },
+      {
+        "m": 100,
+        "M": 624,
+        "theta": 2.159265358979326,
+        "k": 2,
+        "log_h_q2_over_h_q_squared": 1248
+      }
+    ],
+    "weighted_l1_boundary": {
+      "u": 4,
+      "v": 2,
+      "strong": true,
+      "printed_not_strong": true,
+      "correct_strict_condition": "u > v^2 >= 1"
+    },
+    "theorem_5_2b_log_power_defect_k4": -8,
+    "sqrt_experiments": {
+      "ordinary_max_absolute_residual": 3.9968028886505635e-15,
+      "near_negative_real": [
+        -1.0,
+        1e-12
+      ],
+      "stable_root": [
+        5e-13,
+        1.0
+      ],
+      "literal_formula_float64": "division by zero through cancellation"
+    }
+  },
+  "scope": "Finite evidence, not universal proofs. Counterexample passes reproduce discrepancies. Additive phi is exact only on Q*pi+Q; global statements use an explicit Hamel-extension argument.",
+  "seed": 150501670,
+  "dimensions": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64
+  ]
+}

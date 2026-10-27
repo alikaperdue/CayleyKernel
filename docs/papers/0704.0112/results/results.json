@@ -1,0 +1,2204 @@
+{
+  "paper": "0704.0112v3",
+  "title": "Placeholder Substructures III: A Bit-String-Driven Recipe Theory for Infinite-Dimensional Zero-Divisor Spaces",
+  "paper_sha256": "11b098adace527d5c7c8c723a09468ccc681a64b8fe24c0390e5bbf22eda2d10",
+  "recorded_at_utc": "2026-10-24T04:49:39.694063+00:00",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [GCC 12.3.0]",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "git_head": "399309c1ff14dd229d88d4a6ea673b4279fb7502",
+  "source_sha256": {
+    "tests/papers/arxiv_0704_0112/__init__.py": "a6b19ffc55607cead9f735109f0e1a614ab6dc08185d854817a419488754f33a",
+    "tests/papers/arxiv_0704_0112/emanation.py": "66521d9ad091a8fde7dbe8a48d15aca6b72e41f021231b6818e27f761462ea00",
+    "tests/papers/arxiv_0704_0112/run.py": "99c2da828e6b5dab04fd264d7b1d51e5c8b87f1ee8fb3c18ffa27ffff8821ce3",
+    "tests/papers/arxiv_0704_0112/test_sections.py": "e2ba748a59d5a70538846c54d8efd9d602ccbd7cb5260bbad18923a61716d2e4",
+    "CayleyKernel/__init__.py": "16185a0ddc8fd18c179ae5ce3b50d56dbe5a962754b045d98c075d2286fe5af6"
+  },
+  "kernel_loaded": true,
+  "kernel_abi": 1,
+  "cuda_requested": false,
+  "gpu_tests_not_selected": 3,
+  "cuda_device_probe_performed": false,
+  "elapsed_seconds": 16.265316149991122,
+  "tests_run": 29,
+  "passed": [
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_01_xor_signs_and_signed_labels_against_doubling",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_02_rules_zero_one_two_and_cyclic_positive_trips",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_03_assessor_diagonals_and_unsigned_viziers",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_04_seven_sedenion_box_kites_and_edge_signs",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_05_emanation_table_construction_and_actual_two_way_products",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_01_06_trip_count_two_step_and_number_hub",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_02_01_theorem_11_central_embedding_preserves_marks_and_blanks",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_02_02_theorem_11_label_lines_become_dmz_contents",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_02_03_theorem_12_four_corners_zero_padding",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_02_04_theorem_13_french_window_shutters_and_diagonals",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_02_05_theorem_13_label_line_extensions_reverse_marks",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_01_whorfian_formula_and_printed_sequence",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_02_muntin_and_diagonal_contributions_units",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_03_explicit_box_kites_partition_edges",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_04_theorem_14_singleton_high_bit_and_tandem_shifts",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_05_theorem_14_recursive_harmonics",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_03_06_density_limit_and_finite_degree_histograms",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_01_chingon_hide_fill_counts",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_02_theorem_15_restricted_two_bit_off_switch",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_03_theorem_15_unrestricted_wording_counterexample",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_04_hidden_box_octonion_clones",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_05_theorem_16_hat_trick_restoration",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_04_06_rule_priority_and_paper_examples_25_41_57_73",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_01_proposition_inner_skybox_and_613_bit_preparation",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_02_cookbook_literal_preparation_exhaustive_finite_audit",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_03_proposed_trailing_bit_correction_exhaustive_finite_audit",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_04_recipe_613_seeded_large_bit_queries",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_05_literal_mutual_orthogonality_and_repeated_lines",
+    "tests.papers.arxiv_0704_0112.test_sections.PaperVerification.test_05_06_triadic_relation_join_example"
+  ],
+  "skipped": [],
+  "failures": [],
+  "errors": [],
+  "successful": true,
+  "seed": 7040112,
+  "observations": {
+    "basis_pairs_checked": 87380,
+    "rule_two_trip_checks": 2547,
+    "sedenion_box_kites": [
+      {
+        "S": 1,
+        "vertices": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "marked_directed_cells": 12,
+        "unmarked_directed_cells": 12,
+        "triangular_faces": 8,
+        "xor_sails": [
+          [
+            2,
+            4,
+            6
+          ],
+          [
+            2,
+            5,
+            7
+          ],
+          [
+            3,
+            4,
+            7
+          ],
+          [
+            3,
+            5,
+            6
+          ]
+        ],
+        "all_negative_edge_faces": 2
+      },
+      {
+        "S": 2,
+        "vertices": [
+          1,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "marked_directed_cells": 12,
+        "unmarked_directed_cells": 12,
+        "triangular_faces": 8,
+        "xor_sails": [
+          [
+            1,
+            4,
+            5
+          ],
+          [
+            1,
+            6,
+            7
+          ],
+          [
+            3,
+            4,
+            7
+          ],
+          [
+            3,
+            5,
+            6
+          ]
+        ],
+        "all_negative_edge_faces": 2
+      },
+      {
+        "S": 3,
+        "vertices": [
+          1,
+          2,
+          4,
+          5,
+          6,
+          7
+        ],
+        "marked_directed_cells": 12,
+        "unmarked_directed_cells": 12,
+        "triangular_faces": 8,
+        "xor_sails": [
+          [
+            1,
+            4,
+            5
+          ],
+          [
+            1,
+            6,
+            7
+          ],
+          [
+            2,
+            4,
+            6
+          ],
+          [
+            2,
+            5,
+            7
+          ]
+        ],
+        "all_negative_edge_faces": 2
+      },
+      {
+        "S": 4,
+        "vertices": [
+          1,
+          2,
+          3,
+          5,
+          6,
+          7
+        ],
+        "marked_directed_cells": 12,
+        "unmarked_directed_cells": 12,
+        "triangular_faces": 8,
+        "xor_sails": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            6,
+            7
+          ],
+          [
+            2,
+            5,
+            7
+          ],
+          [
+            3,
+            5,
+            6
+          ]
+        ],
+        "all_negative_edge_faces": 2
+      },
+      {
+        "S": 5,
+        "vertices": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          7
+        ],
+        "marked_directed_cells": 12,
+        "unmarked_directed_cells": 12,
+        "triangular_faces": 8,
+        "xor_sails": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            6,
+            7
+          ],
+          [
+            2,
+            4,
+            6
+          ],
+          [
+            3,
+            4,
+            7
+          ]
+        ],
+        "all_negative_edge_faces": 2
+      },
+      {
+        "S": 6,
+        "vertices": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          7
+        ],
+        "marked_directed_cells": 12,
+        "unmarked_directed_cells": 12,
+        "triangular_faces": 8,
+        "xor_sails": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            4,
+            5
+          ],
+          [
+            2,
+            5,
+            7
+          ],
+          [
+            3,
+            4,
+            7
+          ]
+        ],
+        "all_negative_edge_faces": 2
+      },
+      {
+        "S": 7,
+        "vertices": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "marked_directed_cells": 12,
+        "unmarked_directed_cells": 12,
+        "triangular_faces": 8,
+        "xor_sails": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            1,
+            4,
+            5
+          ],
+          [
+            2,
+            4,
+            6
+          ],
+          [
+            3,
+            5,
+            6
+          ]
+        ],
+        "all_negative_edge_faces": 2
+      }
+    ],
+    "cells_checked_with_full_basiss": 31092,
+    "full_tables_and_number_hubs": [
+      {
+        "N": 4,
+        "S": 1,
+        "G": 8,
+        "filled_directed_cells": 24,
+        "edges": 12,
+        "edge_count_divided_by_12": 1,
+        "divisible_by_24": true
+      },
+      {
+        "N": 4,
+        "S": 2,
+        "G": 8,
+        "filled_directed_cells": 24,
+        "edges": 12,
+        "edge_count_divided_by_12": 1,
+        "divisible_by_24": true
+      },
+      {
+        "N": 4,
+        "S": 3,
+        "G": 8,
+        "filled_directed_cells": 24,
+        "edges": 12,
+        "edge_count_divided_by_12": 1,
+        "divisible_by_24": true
+      },
+      {
+        "N": 4,
+        "S": 4,
+        "G": 8,
+        "filled_directed_cells": 24,
+        "edges": 12,
+        "edge_count_divided_by_12": 1,
+        "divisible_by_24": true
+      },
+      {
+        "N": 4,
+        "S": 5,
+        "G": 8,
+        "filled_directed_cells": 24,
+        "edges": 12,
+        "edge_count_divided_by_12": 1,
+        "divisible_by_24": true
+      },
+      {
+        "N": 4,
+        "S": 6,
+        "G": 8,
+        "filled_directed_cells": 24,
+        "edges": 12,
+        "edge_count_divided_by_12": 1,
+        "divisible_by_24": true
+      },
+      {
+        "N": 4,
+        "S": 7,
+        "G": 8,
+        "filled_directed_cells": 24,
+        "edges": 12,
+        "edge_count_divided_by_12": 1,
+        "divisible_by_24": true
+      },
+      {
+        "N": 5,
+        "S": 1,
+        "G": 16,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 5,
+        "S": 2,
+        "G": 16,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 5,
+        "S": 3,
+        "G": 16,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 5,
+        "S": 4,
+        "G": 16,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 5,
+        "S": 5,
+        "G": 16,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 5,
+        "S": 6,
+        "G": 16,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 5,
+        "S": 7,
+        "G": 16,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 5,
+        "S": 8,
+        "G": 16,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 1,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 2,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 3,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 4,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 5,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 6,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 7,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 8,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 16,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 1,
+        "G": 64,
+        "filled_directed_cells": 3720,
+        "edges": 1860,
+        "edge_count_divided_by_12": 155,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 2,
+        "G": 64,
+        "filled_directed_cells": 3720,
+        "edges": 1860,
+        "edge_count_divided_by_12": 155,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 3,
+        "G": 64,
+        "filled_directed_cells": 3720,
+        "edges": 1860,
+        "edge_count_divided_by_12": 155,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 4,
+        "G": 64,
+        "filled_directed_cells": 3720,
+        "edges": 1860,
+        "edge_count_divided_by_12": 155,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 5,
+        "G": 64,
+        "filled_directed_cells": 3720,
+        "edges": 1860,
+        "edge_count_divided_by_12": 155,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 6,
+        "G": 64,
+        "filled_directed_cells": 3720,
+        "edges": 1860,
+        "edge_count_divided_by_12": 155,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 7,
+        "G": 64,
+        "filled_directed_cells": 3720,
+        "edges": 1860,
+        "edge_count_divided_by_12": 155,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 8,
+        "G": 64,
+        "filled_directed_cells": 3720,
+        "edges": 1860,
+        "edge_count_divided_by_12": 155,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 16,
+        "G": 64,
+        "filled_directed_cells": 3720,
+        "edges": 1860,
+        "edge_count_divided_by_12": 155,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 32,
+        "G": 64,
+        "filled_directed_cells": 3720,
+        "edges": 1860,
+        "edge_count_divided_by_12": 155,
+        "divisible_by_24": true
+      }
+    ],
+    "theorem_11_central_embedding": [
+      {
+        "S": 9,
+        "old_N": 5,
+        "cells_including_blanks_and_marks": 196
+      },
+      {
+        "S": 15,
+        "old_N": 5,
+        "cells_including_blanks_and_marks": 196
+      },
+      {
+        "S": 15,
+        "old_N": 6,
+        "cells_including_blanks_and_marks": 900
+      },
+      {
+        "S": 17,
+        "old_N": 6,
+        "cells_including_blanks_and_marks": 900
+      },
+      {
+        "S": 24,
+        "old_N": 6,
+        "cells_including_blanks_and_marks": 900
+      },
+      {
+        "S": 25,
+        "old_N": 6,
+        "cells_including_blanks_and_marks": 900
+      },
+      {
+        "S": 31,
+        "old_N": 6,
+        "cells_including_blanks_and_marks": 900
+      },
+      {
+        "S": 48,
+        "old_N": 7,
+        "cells_including_blanks_and_marks": 3844
+      },
+      {
+        "S": 57,
+        "old_N": 7,
+        "cells_including_blanks_and_marks": 3844
+      },
+      {
+        "S": 73,
+        "old_N": 8,
+        "cells_including_blanks_and_marks": 15876
+      }
+    ],
+    "label_content_involution": [
+      {
+        "S": 9,
+        "old_N": 5,
+        "label_count": 14
+      },
+      {
+        "S": 15,
+        "old_N": 5,
+        "label_count": 14
+      },
+      {
+        "S": 25,
+        "old_N": 6,
+        "label_count": 30
+      },
+      {
+        "S": 57,
+        "old_N": 7,
+        "label_count": 62
+      }
+    ],
+    "four_corners_scope": "All prior labels in five specified transitions, including both edge marks and blanks.",
+    "theorem_13_shutters": [
+      {
+        "S": 9,
+        "old_N": 5,
+        "categories": {
+          "main_diagonal": 14,
+          "old_filled": 72,
+          "strut_diagonal": 14,
+          "rule_hidden": 96
+        }
+      },
+      {
+        "S": 15,
+        "old_N": 5,
+        "categories": {
+          "main_diagonal": 14,
+          "rule_hidden": 96,
+          "old_filled": 72,
+          "strut_diagonal": 14
+        }
+      },
+      {
+        "S": 25,
+        "old_N": 6,
+        "categories": {
+          "main_diagonal": 30,
+          "rule_hidden": 288,
+          "old_filled": 552,
+          "strut_diagonal": 30
+        }
+      },
+      {
+        "S": 31,
+        "old_N": 6,
+        "categories": {
+          "main_diagonal": 30,
+          "old_filled": 552,
+          "rule_hidden": 288,
+          "strut_diagonal": 30
+        }
+      },
+      {
+        "S": 48,
+        "old_N": 7,
+        "categories": {
+          "main_diagonal": 62,
+          "rule_hidden": 3360,
+          "old_filled": 360,
+          "strut_diagonal": 62
+        }
+      },
+      {
+        "S": 57,
+        "old_N": 7,
+        "categories": {
+          "main_diagonal": 62,
+          "old_filled": 1512,
+          "rule_hidden": 2208,
+          "strut_diagonal": 62
+        }
+      }
+    ],
+    "whorfian_counts": [
+      {
+        "N": 5,
+        "S": 15,
+        "G": 16,
+        "filled_directed_cells": 72,
+        "edges": 36,
+        "edge_count_divided_by_12": 3,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 15,
+        "G": 32,
+        "filled_directed_cells": 456,
+        "edges": 228,
+        "edge_count_divided_by_12": 19,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 15,
+        "G": 64,
+        "filled_directed_cells": 2184,
+        "edges": 1092,
+        "edge_count_divided_by_12": 91,
+        "divisible_by_24": true
+      },
+      {
+        "N": 8,
+        "S": 15,
+        "G": 128,
+        "filled_directed_cells": 9480,
+        "edges": 4740,
+        "edge_count_divided_by_12": 395,
+        "divisible_by_24": true
+      },
+      {
+        "N": 9,
+        "S": 15,
+        "G": 256,
+        "filled_directed_cells": 39432,
+        "edges": 19716,
+        "edge_count_divided_by_12": 1643,
+        "divisible_by_24": true
+      },
+      {
+        "N": 10,
+        "S": 15,
+        "G": 512,
+        "filled_directed_cells": 160776,
+        "edges": 80388,
+        "edge_count_divided_by_12": 6699,
+        "divisible_by_24": true
+      }
+    ],
+    "omega_delta_cell_vs_box_units": [
+      {
+        "N": 5,
+        "mu": 1,
+        "omega_cells": 48,
+        "delta_cells": 24,
+        "box_kites": 3
+      },
+      {
+        "N": 6,
+        "mu": 3,
+        "omega_cells": 288,
+        "delta_cells": 168,
+        "box_kites": 19
+      },
+      {
+        "N": 7,
+        "mu": 7,
+        "omega_cells": 1344,
+        "delta_cells": 840,
+        "box_kites": 91
+      },
+      {
+        "N": 8,
+        "mu": 15,
+        "omega_cells": 5760,
+        "delta_cells": 3720,
+        "box_kites": 395
+      }
+    ],
+    "explicit_box_partition": [
+      {
+        "S": 1,
+        "N": 5,
+        "box_kites": 7,
+        "every_edge_in_exactly_one_box": true
+      },
+      {
+        "S": 8,
+        "N": 5,
+        "box_kites": 7,
+        "every_edge_in_exactly_one_box": true
+      },
+      {
+        "S": 9,
+        "N": 5,
+        "box_kites": 3,
+        "every_edge_in_exactly_one_box": true
+      },
+      {
+        "S": 15,
+        "N": 6,
+        "box_kites": 19,
+        "every_edge_in_exactly_one_box": true
+      },
+      {
+        "S": 15,
+        "N": 7,
+        "box_kites": 91,
+        "every_edge_in_exactly_one_box": true
+      },
+      {
+        "S": 17,
+        "N": 6,
+        "box_kites": 7,
+        "every_edge_in_exactly_one_box": true
+      },
+      {
+        "S": 25,
+        "N": 6,
+        "box_kites": 23,
+        "every_edge_in_exactly_one_box": true
+      },
+      {
+        "S": 31,
+        "N": 6,
+        "box_kites": 23,
+        "every_edge_in_exactly_one_box": true
+      },
+      {
+        "S": 57,
+        "N": 7,
+        "box_kites": 63,
+        "every_edge_in_exactly_one_box": true
+      }
+    ],
+    "singleton_tandem_shifts": [
+      {
+        "N": 5,
+        "S": 9,
+        "cells": 72,
+        "box_kites": 3
+      },
+      {
+        "N": 5,
+        "S": 10,
+        "cells": 72,
+        "box_kites": 3
+      },
+      {
+        "N": 5,
+        "S": 11,
+        "cells": 72,
+        "box_kites": 3
+      },
+      {
+        "N": 5,
+        "S": 12,
+        "cells": 72,
+        "box_kites": 3
+      },
+      {
+        "N": 5,
+        "S": 13,
+        "cells": 72,
+        "box_kites": 3
+      },
+      {
+        "N": 5,
+        "S": 14,
+        "cells": 72,
+        "box_kites": 3
+      },
+      {
+        "N": 5,
+        "S": 15,
+        "cells": 72,
+        "box_kites": 3
+      },
+      {
+        "N": 6,
+        "S": 17,
+        "cells": 168,
+        "box_kites": 7
+      },
+      {
+        "N": 6,
+        "S": 18,
+        "cells": 168,
+        "box_kites": 7
+      },
+      {
+        "N": 6,
+        "S": 19,
+        "cells": 168,
+        "box_kites": 7
+      },
+      {
+        "N": 6,
+        "S": 20,
+        "cells": 168,
+        "box_kites": 7
+      },
+      {
+        "N": 6,
+        "S": 21,
+        "cells": 168,
+        "box_kites": 7
+      },
+      {
+        "N": 6,
+        "S": 22,
+        "cells": 168,
+        "box_kites": 7
+      },
+      {
+        "N": 6,
+        "S": 23,
+        "cells": 168,
+        "box_kites": 7
+      },
+      {
+        "N": 6,
+        "S": 24,
+        "cells": 168,
+        "box_kites": 7
+      },
+      {
+        "N": 7,
+        "S": 33,
+        "cells": 360,
+        "box_kites": 15
+      },
+      {
+        "N": 7,
+        "S": 34,
+        "cells": 360,
+        "box_kites": 15
+      },
+      {
+        "N": 7,
+        "S": 35,
+        "cells": 360,
+        "box_kites": 15
+      },
+      {
+        "N": 7,
+        "S": 36,
+        "cells": 360,
+        "box_kites": 15
+      },
+      {
+        "N": 7,
+        "S": 37,
+        "cells": 360,
+        "box_kites": 15
+      },
+      {
+        "N": 7,
+        "S": 38,
+        "cells": 360,
+        "box_kites": 15
+      },
+      {
+        "N": 7,
+        "S": 39,
+        "cells": 360,
+        "box_kites": 15
+      },
+      {
+        "N": 7,
+        "S": 40,
+        "cells": 360,
+        "box_kites": 15
+      },
+      {
+        "N": 8,
+        "S": 65,
+        "cells": 744,
+        "box_kites": 31
+      },
+      {
+        "N": 8,
+        "S": 66,
+        "cells": 744,
+        "box_kites": 31
+      },
+      {
+        "N": 8,
+        "S": 67,
+        "cells": 744,
+        "box_kites": 31
+      },
+      {
+        "N": 8,
+        "S": 68,
+        "cells": 744,
+        "box_kites": 31
+      },
+      {
+        "N": 8,
+        "S": 69,
+        "cells": 744,
+        "box_kites": 31
+      },
+      {
+        "N": 8,
+        "S": 70,
+        "cells": 744,
+        "box_kites": 31
+      },
+      {
+        "N": 8,
+        "S": 71,
+        "cells": 744,
+        "box_kites": 31
+      },
+      {
+        "N": 8,
+        "S": 72,
+        "cells": 744,
+        "box_kites": 31
+      },
+      {
+        "N": 9,
+        "S": 129,
+        "cells": 1512,
+        "box_kites": 63
+      },
+      {
+        "N": 9,
+        "S": 130,
+        "cells": 1512,
+        "box_kites": 63
+      },
+      {
+        "N": 9,
+        "S": 131,
+        "cells": 1512,
+        "box_kites": 63
+      },
+      {
+        "N": 9,
+        "S": 132,
+        "cells": 1512,
+        "box_kites": 63
+      },
+      {
+        "N": 9,
+        "S": 133,
+        "cells": 1512,
+        "box_kites": 63
+      },
+      {
+        "N": 9,
+        "S": 134,
+        "cells": 1512,
+        "box_kites": 63
+      },
+      {
+        "N": 9,
+        "S": 135,
+        "cells": 1512,
+        "box_kites": 63
+      },
+      {
+        "N": 9,
+        "S": 136,
+        "cells": 1512,
+        "box_kites": 63
+      }
+    ],
+    "singleton_recursive_harmonics": [
+      {
+        "N": 5,
+        "S": 9,
+        "G": 16,
+        "filled_directed_cells": 72,
+        "edges": 36,
+        "edge_count_divided_by_12": 3,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 9,
+        "G": 32,
+        "filled_directed_cells": 456,
+        "edges": 228,
+        "edge_count_divided_by_12": 19,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 9,
+        "G": 64,
+        "filled_directed_cells": 2184,
+        "edges": 1092,
+        "edge_count_divided_by_12": 91,
+        "divisible_by_24": true
+      },
+      {
+        "N": 5,
+        "S": 15,
+        "G": 16,
+        "filled_directed_cells": 72,
+        "edges": 36,
+        "edge_count_divided_by_12": 3,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 15,
+        "G": 32,
+        "filled_directed_cells": 456,
+        "edges": 228,
+        "edge_count_divided_by_12": 19,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 15,
+        "G": 64,
+        "filled_directed_cells": 2184,
+        "edges": 1092,
+        "edge_count_divided_by_12": 91,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 17,
+        "G": 32,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 17,
+        "G": 64,
+        "filled_directed_cells": 1032,
+        "edges": 516,
+        "edge_count_divided_by_12": 43,
+        "divisible_by_24": true
+      },
+      {
+        "N": 8,
+        "S": 17,
+        "G": 128,
+        "filled_directed_cells": 4872,
+        "edges": 2436,
+        "edge_count_divided_by_12": 203,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 24,
+        "G": 32,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 24,
+        "G": 64,
+        "filled_directed_cells": 1032,
+        "edges": 516,
+        "edge_count_divided_by_12": 43,
+        "divisible_by_24": true
+      },
+      {
+        "N": 8,
+        "S": 24,
+        "G": 128,
+        "filled_directed_cells": 4872,
+        "edges": 2436,
+        "edge_count_divided_by_12": 203,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 33,
+        "G": 64,
+        "filled_directed_cells": 360,
+        "edges": 180,
+        "edge_count_divided_by_12": 15,
+        "divisible_by_24": true
+      },
+      {
+        "N": 8,
+        "S": 33,
+        "G": 128,
+        "filled_directed_cells": 2184,
+        "edges": 1092,
+        "edge_count_divided_by_12": 91,
+        "divisible_by_24": true
+      },
+      {
+        "N": 9,
+        "S": 33,
+        "G": 256,
+        "filled_directed_cells": 10248,
+        "edges": 5124,
+        "edge_count_divided_by_12": 427,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 40,
+        "G": 64,
+        "filled_directed_cells": 360,
+        "edges": 180,
+        "edge_count_divided_by_12": 15,
+        "divisible_by_24": true
+      },
+      {
+        "N": 8,
+        "S": 40,
+        "G": 128,
+        "filled_directed_cells": 2184,
+        "edges": 1092,
+        "edge_count_divided_by_12": 91,
+        "divisible_by_24": true
+      },
+      {
+        "N": 9,
+        "S": 40,
+        "G": 256,
+        "filled_directed_cells": 10248,
+        "edges": 5124,
+        "edge_count_divided_by_12": 427,
+        "divisible_by_24": true
+      }
+    ],
+    "density_and_degree_histograms": {
+      "densities": [
+        {
+          "N": 5,
+          "filled_fraction": "18/49",
+          "gap_to_5_over_8": "101/392"
+        },
+        {
+          "N": 6,
+          "filled_fraction": "38/75",
+          "gap_to_5_over_8": "71/600"
+        },
+        {
+          "N": 7,
+          "filled_fraction": "546/961",
+          "gap_to_5_over_8": "437/7688"
+        },
+        {
+          "N": 8,
+          "filled_fraction": "790/1323",
+          "gap_to_5_over_8": "295/10584"
+        },
+        {
+          "N": 9,
+          "filled_fraction": "9858/16129",
+          "gap_to_5_over_8": "1781/129032"
+        },
+        {
+          "N": 10,
+          "filled_fraction": "4466/7225",
+          "gap_to_5_over_8": "397/57800"
+        },
+        {
+          "N": 11,
+          "filled_fraction": "162306/261121",
+          "gap_to_5_over_8": "7157/2088968"
+        },
+        {
+          "N": 12,
+          "filled_fraction": "217430/348843",
+          "gap_to_5_over_8": "4775/2790744"
+        },
+        {
+          "N": 13,
+          "filled_fraction": "2615298/4190209",
+          "gap_to_5_over_8": "28661/33521672"
+        },
+        {
+          "N": 14,
+          "filled_fraction": "3491158/5589675",
+          "gap_to_5_over_8": "19111/44717400"
+        }
+      ],
+      "graphs": [
+        {
+          "N": 5,
+          "degree_histogram": {
+            "4": 12,
+            "12": 2
+          }
+        },
+        {
+          "N": 6,
+          "degree_histogram": {
+            "12": 24,
+            "28": 6
+          }
+        },
+        {
+          "N": 7,
+          "degree_histogram": {
+            "28": 48,
+            "60": 14
+          }
+        },
+        {
+          "N": 8,
+          "degree_histogram": {
+            "60": 96,
+            "124": 30
+          }
+        }
+      ],
+      "scope": "Finite graph degrees and a formula asymptotic; no proof of a power-law scale-free network or a fractal dimension."
+    },
+    "chingon_spectrography": [
+      {
+        "N": 6,
+        "S": 1,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 2,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 3,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 4,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 5,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 6,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 7,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 8,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 9,
+        "G": 32,
+        "filled_directed_cells": 456,
+        "edges": 228,
+        "edge_count_divided_by_12": 19,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 10,
+        "G": 32,
+        "filled_directed_cells": 456,
+        "edges": 228,
+        "edge_count_divided_by_12": 19,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 11,
+        "G": 32,
+        "filled_directed_cells": 456,
+        "edges": 228,
+        "edge_count_divided_by_12": 19,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 12,
+        "G": 32,
+        "filled_directed_cells": 456,
+        "edges": 228,
+        "edge_count_divided_by_12": 19,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 13,
+        "G": 32,
+        "filled_directed_cells": 456,
+        "edges": 228,
+        "edge_count_divided_by_12": 19,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 14,
+        "G": 32,
+        "filled_directed_cells": 456,
+        "edges": 228,
+        "edge_count_divided_by_12": 19,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 15,
+        "G": 32,
+        "filled_directed_cells": 456,
+        "edges": 228,
+        "edge_count_divided_by_12": 19,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 16,
+        "G": 32,
+        "filled_directed_cells": 840,
+        "edges": 420,
+        "edge_count_divided_by_12": 35,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 17,
+        "G": 32,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 18,
+        "G": 32,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 19,
+        "G": 32,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 20,
+        "G": 32,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 21,
+        "G": 32,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 22,
+        "G": 32,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 23,
+        "G": 32,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 24,
+        "G": 32,
+        "filled_directed_cells": 168,
+        "edges": 84,
+        "edge_count_divided_by_12": 7,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 25,
+        "G": 32,
+        "filled_directed_cells": 552,
+        "edges": 276,
+        "edge_count_divided_by_12": 23,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 26,
+        "G": 32,
+        "filled_directed_cells": 552,
+        "edges": 276,
+        "edge_count_divided_by_12": 23,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 27,
+        "G": 32,
+        "filled_directed_cells": 552,
+        "edges": 276,
+        "edge_count_divided_by_12": 23,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 28,
+        "G": 32,
+        "filled_directed_cells": 552,
+        "edges": 276,
+        "edge_count_divided_by_12": 23,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 29,
+        "G": 32,
+        "filled_directed_cells": 552,
+        "edges": 276,
+        "edge_count_divided_by_12": 23,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 30,
+        "G": 32,
+        "filled_directed_cells": 552,
+        "edges": 276,
+        "edge_count_divided_by_12": 23,
+        "divisible_by_24": true
+      },
+      {
+        "N": 6,
+        "S": 31,
+        "G": 32,
+        "filled_directed_cells": 552,
+        "edges": 276,
+        "edge_count_divided_by_12": 23,
+        "divisible_by_24": true
+      }
+    ],
+    "two_bit_off_switch_restricted": [
+      {
+        "N": 5,
+        "S": 1,
+        "new_bit": 8,
+        "old_labels_strictly_below_bit": true,
+        "before": 24,
+        "turned_off": 24
+      },
+      {
+        "N": 6,
+        "S": 9,
+        "new_bit": 16,
+        "old_labels_strictly_below_bit": true,
+        "before": 72,
+        "turned_off": 72
+      },
+      {
+        "N": 7,
+        "S": 9,
+        "new_bit": 32,
+        "old_labels_strictly_below_bit": true,
+        "before": 456,
+        "turned_off": 456
+      },
+      {
+        "N": 7,
+        "S": 17,
+        "new_bit": 32,
+        "old_labels_strictly_below_bit": true,
+        "before": 168,
+        "turned_off": 168
+      }
+    ],
+    "theorem_15_range_qualification": "R=2,C=8 remains a DMZ when S=1 becomes9 in dimension32. Proof uses addition of bit8 to upper indices, which needs labels below8; XOR toggles that bit for C=8 instead.",
+    "hidden_octonion_clone_count": 4,
+    "hat_trick_examples": [
+      {
+        "N": 6,
+        "S": 1,
+        "L": 8,
+        "M": 16,
+        "restored_old_directed_cells": 24
+      },
+      {
+        "N": 7,
+        "S": 1,
+        "L": 8,
+        "M": 32,
+        "restored_old_directed_cells": 24
+      },
+      {
+        "N": 8,
+        "S": 9,
+        "L": 16,
+        "M": 64,
+        "restored_old_directed_cells": 72
+      }
+    ],
+    "paper_rule_examples": [
+      {
+        "N": 6,
+        "S": 25,
+        "rules": [
+          {
+            "bit": 16,
+            "action": "fill",
+            "values": [
+              9,
+              16
+            ]
+          },
+          {
+            "bit": 8,
+            "action": "hide",
+            "values": [
+              1,
+              8,
+              9,
+              16,
+              17,
+              24
+            ]
+          }
+        ],
+        "cells_matching_more_than_one_rule": 168,
+        "first_match_distribution": {
+          "rule_2": 288,
+          "rule_1": 168,
+          "default": 384
+        },
+        "G": 32,
+        "filled_directed_cells": 552,
+        "edges": 276,
+        "edge_count_divided_by_12": 23,
+        "divisible_by_24": true
+      },
+      {
+        "N": 8,
+        "S": 41,
+        "rules": [
+          {
+            "bit": 32,
+            "action": "fill",
+            "values": [
+              9,
+              32,
+              64,
+              73,
+              96,
+              105
+            ]
+          },
+          {
+            "bit": 8,
+            "action": "hide",
+            "values": [
+              1,
+              8,
+              9,
+              16,
+              17,
+              24,
+              25,
+              32,
+              33,
+              40,
+              48,
+              49,
+              56,
+              57,
+              64,
+              65,
+              72,
+              73,
+              80,
+              81,
+              88,
+              89,
+              96,
+              97,
+              104,
+              105,
+              112,
+              113,
+              120,
+              121
+            ]
+          }
+        ],
+        "cells_matching_more_than_one_rule": 2184,
+        "first_match_distribution": {
+          "rule_2": 7296,
+          "rule_1": 2184,
+          "default": 6144
+        },
+        "G": 128,
+        "filled_directed_cells": 8328,
+        "edges": 4164,
+        "edge_count_divided_by_12": 347,
+        "divisible_by_24": true
+      },
+      {
+        "N": 7,
+        "S": 57,
+        "rules": [
+          {
+            "bit": 32,
+            "action": "fill",
+            "values": [
+              25,
+              32
+            ]
+          },
+          {
+            "bit": 16,
+            "action": "hide",
+            "values": [
+              9,
+              16,
+              25,
+              32,
+              41,
+              48
+            ]
+          },
+          {
+            "bit": 8,
+            "action": "fill",
+            "values": [
+              1,
+              8,
+              9,
+              16,
+              17,
+              24,
+              25,
+              32,
+              33,
+              40,
+              41,
+              48,
+              49,
+              56
+            ]
+          }
+        ],
+        "cells_matching_more_than_one_rule": 1032,
+        "first_match_distribution": {
+          "rule_3": 1152,
+          "rule_2": 672,
+          "rule_1": 360,
+          "default": 1536
+        },
+        "G": 64,
+        "filled_directed_cells": 1512,
+        "edges": 756,
+        "edge_count_divided_by_12": 63,
+        "divisible_by_24": true
+      },
+      {
+        "N": 8,
+        "S": 73,
+        "rules": [
+          {
+            "bit": 64,
+            "action": "fill",
+            "values": [
+              9,
+              64
+            ]
+          },
+          {
+            "bit": 8,
+            "action": "hide",
+            "values": [
+              1,
+              8,
+              9,
+              16,
+              17,
+              24,
+              25,
+              32,
+              33,
+              40,
+              41,
+              48,
+              49,
+              56,
+              57,
+              64,
+              65,
+              72,
+              80,
+              81,
+              88,
+              89,
+              96,
+              97,
+              104,
+              105,
+              112,
+              113,
+              120,
+              121
+            ]
+          }
+        ],
+        "cells_matching_more_than_one_rule": 744,
+        "first_match_distribution": {
+          "rule_2": 8736,
+          "rule_1": 744,
+          "default": 6144
+        },
+        "G": 128,
+        "filled_directed_cells": 6888,
+        "edges": 3444,
+        "edge_count_divided_by_12": 287,
+        "divisible_by_24": true
+      }
+    ],
+    "S613_preparation": {
+      "S": 613,
+      "inner_N": 11,
+      "dimension": 2048,
+      "binary": "1001100101",
+      "high_bit_exponents": [
+        9,
+        6,
+        5
+      ]
+    },
+    "literal_cookbook_audit": [
+      {
+        "N": 4,
+        "cells_checked": 252,
+        "mismatching_strut_constants": []
+      },
+      {
+        "N": 5,
+        "cells_checked": 2940,
+        "mismatching_strut_constants": []
+      },
+      {
+        "N": 6,
+        "cells_checked": 27900,
+        "mismatching_strut_constants": [
+          {
+            "S": 16,
+            "mismatches": 840
+          }
+        ]
+      },
+      {
+        "N": 7,
+        "cells_checked": 242172,
+        "mismatching_strut_constants": [
+          {
+            "S": 16,
+            "mismatches": 3360
+          },
+          {
+            "S": 32,
+            "mismatches": 3720
+          },
+          {
+            "S": 48,
+            "mismatches": 3360
+          }
+        ]
+      },
+      {
+        "N": 8,
+        "cells_checked": 2016252,
+        "mismatching_strut_constants": [
+          {
+            "S": 16,
+            "mismatches": 13440
+          },
+          {
+            "S": 32,
+            "mismatches": 14880
+          },
+          {
+            "S": 48,
+            "mismatches": 13440
+          },
+          {
+            "S": 64,
+            "mismatches": 15624
+          },
+          {
+            "S": 80,
+            "mismatches": 13440
+          },
+          {
+            "S": 96,
+            "mismatches": 14880
+          },
+          {
+            "S": 112,
+            "mismatches": 13440
+          }
+        ]
+      }
+    ],
+    "multiple_of_16_band_boundary": {
+      "S47": {
+        "N": 7,
+        "S": 47,
+        "G": 64,
+        "filled_directed_cells": 1896,
+        "edges": 948,
+        "edge_count_divided_by_12": 79,
+        "divisible_by_24": true
+      },
+      "S48": {
+        "N": 7,
+        "S": 48,
+        "G": 64,
+        "filled_directed_cells": 360,
+        "edges": 180,
+        "edge_count_divided_by_12": 15,
+        "divisible_by_24": true
+      }
+    },
+    "proposed_corrected_preparation_audit": [
+      {
+        "N": 4,
+        "strut_constants": 7,
+        "cells_checked": 252,
+        "mismatches": 0
+      },
+      {
+        "N": 5,
+        "strut_constants": 15,
+        "cells_checked": 2940,
+        "mismatches": 0
+      },
+      {
+        "N": 6,
+        "strut_constants": 31,
+        "cells_checked": 27900,
+        "mismatches": 0
+      },
+      {
+        "N": 7,
+        "strut_constants": 63,
+        "cells_checked": 242172,
+        "mismatches": 0
+      },
+      {
+        "N": 8,
+        "strut_constants": 127,
+        "cells_checked": 2016252,
+        "mismatches": 0
+      }
+    ],
+    "large_bit_query_samples": [
+      {
+        "N": 11,
+        "S": 613,
+        "queried_cells": 5000,
+        "full_basis_controls": 10
+      },
+      {
+        "N": 12,
+        "S": 613,
+        "queried_cells": 1000,
+        "full_basis_controls": 10
+      },
+      {
+        "N": 10,
+        "S": 48,
+        "queried_cells": 1000,
+        "full_basis_controls": 10
+      },
+      {
+        "N": 10,
+        "S": 112,
+        "queried_cells": 1000,
+        "full_basis_controls": 10
+      },
+      {
+        "N": 203,
+        "S": 1606938044258990275541962092341796427822317108483541186904069,
+        "queried_cells": 1000,
+        "full_basis_controls": 10
+      }
+    ],
+    "orthogonality_interpretation": {
+      "S": 1,
+      "N": 4,
+      "row": 2,
+      "partner_labels": [
+        4,
+        6,
+        7,
+        5
+      ],
+      "repeated_row_line": {
+        "2": 1,
+        "11": 1
+      },
+      "ambient_dimension": 16,
+      "filled_directed_cells": 24,
+      "scope": "A cell is a zero-product relationship between two lines, not a fresh independent algebra direction per cell. Infinite orthogonality needs a separately specified enlarged space."
+    },
+    "trijoin_example": {
+      "R": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          4,
+          2,
+          3
+        ]
+      ],
+      "S": [
+        [
+          2,
+          5,
+          6
+        ]
+      ],
+      "T": [
+        [
+          3,
+          6,
+          7
+        ],
+        [
+          3,
+          6,
+          8
+        ]
+      ],
+      "result": [
+        [
+          1,
+          5,
+          7
+        ],
+        [
+          1,
+          5,
+          8
+        ],
+        [
+          4,
+          5,
+          7
+        ],
+        [
+          4,
+          5,
+          8
+        ]
+      ],
+      "scope": "Implements the explicit finite relation definition on p29, not a database architecture or a dynamical chaos model."
+    }
+  },
+  "scope": "Finite exact basis/ET/recipe tests; complete cells through N8, with selected samples up to N203. Neither infinite Skies, Class4 complexity, scale-free laws nor applications are proved. Printed preparation and proposed correction are separate."
+}

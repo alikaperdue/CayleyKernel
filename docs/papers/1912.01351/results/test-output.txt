@@ -1,0 +1,30 @@
+test_02_01_basis_twist_and_independent_doubling (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_02_01_basis_twist_and_independent_doubling) ... ok
+test_02_02_printed_octonion_table (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_02_02_printed_octonion_table) ... ok
+test_02_03_involution_quadratic_power_and_inverse (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_02_03_involution_quadratic_power_and_inverse) ... ok
+test_02_04_composition_alternativity_moufang_and_conjugate_rule (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_02_04_composition_alternativity_moufang_and_conjugate_rule) ... ok
+test_02_05_associativity_boundary_and_sedenion_failures (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_02_05_associativity_boundary_and_sedenion_failures) ... ok
+test_03_01_trace_norm_polarization_and_brandt_conditions (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_03_01_trace_norm_polarization_and_brandt_conditions) ... ok
+test_03_02_exact_multiquadratic_lattice_structure_constants (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_03_02_exact_multiquadratic_lattice_structure_constants) ... ok
+test_03_03_rational_coefficients_do_not_ensure_lattice_closure (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_03_03_rational_coefficients_do_not_ensure_lattice_closure) ... ok
+test_04_01_01_cauchy_kernel_left_right_regular_and_derivatives (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_01_01_cauchy_kernel_left_right_regular_and_derivatives) ... ok
+test_04_01_02_fueter_linear_polynomials_and_module_obstruction (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_01_02_fueter_linear_polynomials_and_module_obstruction) ... ok
+test_04_01_03_cauchy_sphere_center_and_singularity_scaling (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_01_03_cauchy_sphere_center_and_singularity_scaling) ... ok
+test_04_01_04_higher_algebra_regular_need_not_be_harmonic (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_01_04_higher_algebra_regular_need_not_be_harmonic) ... ok
+test_04_02_01_wp_even_zeta_odd_and_corrected_derivative (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_02_01_wp_even_zeta_odd_and_corrected_derivative) ... ok
+test_04_02_02_printed_zeta_plus_sign_counterexample (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_02_02_printed_zeta_plus_sign_counterexample) ... ok
+test_04_02_03_finite_lattice_periodicity_and_quasiperiod_experiment (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_02_03_finite_lattice_periodicity_and_quasiperiod_experiment) ... ok
+test_04_03_01_kernel_conjugation_and_one_sided_transformations (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_01_kernel_conjugation_and_one_sided_transformations) ... ok
+test_04_03_02_proposition_4_9_exact_counterexample (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_02_proposition_4_9_exact_counterexample) ... ok
+test_04_03_03_exhaust_basis_triples_and_associative_controls (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_03_exhaust_basis_triples_and_associative_controls) ... ok
+test_04_03_04_proposition_4_11_regular_counterexample (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_04_proposition_4_11_regular_counterexample) ... ok
+test_04_03_05_cm_map_inverse_period_coefficients_and_count (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_05_cm_map_inverse_period_coefficients_and_count) ... ok
+test_04_03_06_parentheses_and_laurent_cancellation_counterexample (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_06_parentheses_and_laurent_cancellation_counterexample) ... ok
+test_04_03_07_cofactor_elimination_for_arbitrary_data_only (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_07_cofactor_elimination_for_arbitrary_data_only) ... ok
+test_04_03_08_trace_formula_unit_cm_numerical_diagnostic (tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_08_trace_formula_unit_cm_numerical_diagnostic) ... ok
+test_02_multiply_basis_and_dense_independent_oracle (tests.papers.arxiv_1912_01351.test_sections.GPUVerification.test_02_multiply_basis_and_dense_independent_oracle) ... skipped 'CuPy unavailable; multiply() was not executed'
+test_04_03_multiply_proposition_4_9_counterexample (tests.papers.arxiv_1912_01351.test_sections.GPUVerification.test_04_03_multiply_proposition_4_9_counterexample) ... skipped 'CuPy unavailable; multiply() was not executed'
+
+----------------------------------------------------------------------
+Ran 25 tests in 2.787s
+
+OK (skipped=2)

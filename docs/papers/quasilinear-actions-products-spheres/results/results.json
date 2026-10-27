@@ -1,0 +1,3191 @@
+{
+  "paper": "Quasilinear actions on products of spheres; doi:10.1112/blms/bdq072",
+  "paper_sha256": "a23b7d20929c6508b3330e94b9cb0cf9cbc8dc6b505c87fda2ce883647859076",
+  "recorded_at_utc": "2026-10-24T04:22:10.015287+00:00",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [GCC 12.3.0]",
+  "numpy": "2.4.1",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "git_head": "399309c1ff14dd229d88d4a6ea673b4279fb7502",
+  "source_sha256": {
+    "CayleyKernel/__init__.py": "16185a0ddc8fd18c179ae5ce3b50d56dbe5a962754b045d98c075d2286fe5af6",
+    "tests/papers/quasilinear_spheres/__init__.py": "86e44eec2197698dbc4dbceec5c1fd2156e72cf48b4cc197116ba74d0faaf90b",
+    "tests/papers/quasilinear_spheres/algebra.py": "552e5a585beaf78279cf6ff827f88ab6877031e53239004845c5fe857a1e7c71",
+    "tests/papers/quasilinear_spheres/run.py": "9e302eb7274a7eecb3543c8c62e53f52f91e6fde84f02fb421319239809a3253",
+    "tests/papers/quasilinear_spheres/test_sections.py": "1ccf0d53d86b4361b80408d8aaf4a3e97b5dea9d91f64aae1819f2bd626db01a"
+  },
+  "kernel_loaded": true,
+  "kernel_abi": 1,
+  "cupy_importable": false,
+  "elapsed_seconds": 0.16758596198633313,
+  "tests_run": 24,
+  "passed": [
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_01_01_fixity_and_free_stiefel_dimension_obstruction",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_01_02_theorems_1_1_1_2_sphere_dimension_arithmetic",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_01_conjugation_hermitian_and_real_group_invariance",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_02_stiefel_fibres_and_lemma_2_1_stable_complement",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_03_lemma_2_2_exact_integer_stable_range_boundaries",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_04_theorem_1_1_complex_to_quaternionic_fixity",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_05_real_fixity_three_whitney_bounds",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_06_omitting_complex_orthogonality_creates_fixed_points",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_07_remark_2_4_orientation_sign_arithmetic",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_01_full_doubling_table_twist_and_signed_basis_labels",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_02_module_warning_bilinearity_and_nonassociativity",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_03_lemma_3_1_uniformity_polynomial_certificate",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_04_sedenion_zero_divisors_and_sixth_stage_obstruction",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_05_definition_3_2_separability_and_full_direct_sum",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_06_lemma_3_3_pairwise_condition_alone_is_insufficient",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_07_proposition_3_4_exact_complement_and_stabilization",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_08_proposition_3_5_equation_3_1_thresholds",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_09_whitney_double_rank_and_sphere_off_by_one",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_10_group_equivariance_and_frame_preservation",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_11_fixity_four_final_fibre_has_no_fixed_vectors",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_12_corollary_coordinate_extraction_requires_orthogonalization",
+    "tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_13_corollary_fixity_five_next_frame_dimension"
+  ],
+  "skipped": [
+    {
+      "test": "tests.papers.quasilinear_spheres.test_sections.GPUVerification.test_04_01_multiply_all_basis_pairs_through_sedenions",
+      "reason": "CuPy/CUDA runtime unavailable; multiply() was not executed"
+    },
+    {
+      "test": "tests.papers.quasilinear_spheres.test_sections.GPUVerification.test_04_02_multiply_uniformity_and_zero_divisor_witness",
+      "reason": "CuPy/CUDA runtime unavailable; multiply() was not executed"
+    }
+  ],
+  "failures": [],
+  "errors": [],
+  "successful": true,
+  "observations": {
+    "fixity_examples": [
+      {
+        "group": "C2",
+        "dimension": 2,
+        "fixity": 0,
+        "first_free_frame_length": 1
+      },
+      {
+        "group": "C2",
+        "dimension": 3,
+        "fixity": 1,
+        "first_free_frame_length": 2
+      },
+      {
+        "group": "C2",
+        "dimension": 4,
+        "fixity": 2,
+        "first_free_frame_length": 3
+      },
+      {
+        "group": "C2",
+        "dimension": 5,
+        "fixity": 3,
+        "first_free_frame_length": 4
+      },
+      {
+        "group": "C2",
+        "dimension": 6,
+        "fixity": 4,
+        "first_free_frame_length": 5
+      },
+      {
+        "group": "C2",
+        "dimension": 7,
+        "fixity": 5,
+        "first_free_frame_length": 6
+      }
+    ],
+    "theorem_1_1_dimensions": [
+      {
+        "n": 3,
+        "complex_q": 3,
+        "complex_spheres": [
+          5,
+          7,
+          11
+        ]
+      },
+      {
+        "n": 4,
+        "complex_q": 2,
+        "complex_spheres": [
+          7,
+          11,
+          15
+        ]
+      },
+      {
+        "n": 5,
+        "complex_q": 2,
+        "complex_spheres": [
+          9,
+          15,
+          23
+        ]
+      },
+      {
+        "n": 6,
+        "complex_q": 2,
+        "complex_spheres": [
+          11,
+          19,
+          31
+        ]
+      },
+      {
+        "n": 7,
+        "complex_q": 2,
+        "complex_spheres": [
+          13,
+          23,
+          39
+        ]
+      },
+      {
+        "n": 8,
+        "complex_q": 2,
+        "complex_spheres": [
+          15,
+          27,
+          47
+        ]
+      },
+      {
+        "n": 9,
+        "complex_q": 2,
+        "complex_spheres": [
+          17,
+          31,
+          55
+        ]
+      },
+      {
+        "n": 10,
+        "complex_q": 2,
+        "complex_spheres": [
+          19,
+          35,
+          63
+        ]
+      },
+      {
+        "n": 11,
+        "complex_q": 2,
+        "complex_spheres": [
+          21,
+          39,
+          71
+        ]
+      },
+      {
+        "n": 12,
+        "complex_q": 2,
+        "complex_spheres": [
+          23,
+          43,
+          79
+        ]
+      },
+      {
+        "n": 13,
+        "complex_q": 2,
+        "complex_spheres": [
+          25,
+          47,
+          87
+        ]
+      },
+      {
+        "n": 14,
+        "complex_q": 2,
+        "complex_spheres": [
+          27,
+          51,
+          95
+        ]
+      },
+      {
+        "n": 15,
+        "complex_q": 2,
+        "complex_spheres": [
+          29,
+          55,
+          103
+        ]
+      },
+      {
+        "n": 16,
+        "complex_q": 2,
+        "complex_spheres": [
+          31,
+          59,
+          111
+        ]
+      },
+      {
+        "n": 17,
+        "complex_q": 2,
+        "complex_spheres": [
+          33,
+          63,
+          119
+        ]
+      },
+      {
+        "n": 18,
+        "complex_q": 2,
+        "complex_spheres": [
+          35,
+          67,
+          127
+        ]
+      },
+      {
+        "n": 19,
+        "complex_q": 2,
+        "complex_spheres": [
+          37,
+          71,
+          135
+        ]
+      },
+      {
+        "n": 20,
+        "complex_q": 2,
+        "complex_spheres": [
+          39,
+          75,
+          143
+        ]
+      },
+      {
+        "n": 21,
+        "complex_q": 2,
+        "complex_spheres": [
+          41,
+          79,
+          151
+        ]
+      },
+      {
+        "n": 22,
+        "complex_q": 2,
+        "complex_spheres": [
+          43,
+          83,
+          159
+        ]
+      },
+      {
+        "n": 23,
+        "complex_q": 2,
+        "complex_spheres": [
+          45,
+          87,
+          167
+        ]
+      },
+      {
+        "n": 24,
+        "complex_q": 2,
+        "complex_spheres": [
+          47,
+          91,
+          175
+        ]
+      },
+      {
+        "n": 25,
+        "complex_q": 2,
+        "complex_spheres": [
+          49,
+          95,
+          183
+        ]
+      },
+      {
+        "n": 26,
+        "complex_q": 2,
+        "complex_spheres": [
+          51,
+          99,
+          191
+        ]
+      },
+      {
+        "n": 27,
+        "complex_q": 2,
+        "complex_spheres": [
+          53,
+          103,
+          199
+        ]
+      },
+      {
+        "n": 28,
+        "complex_q": 2,
+        "complex_spheres": [
+          55,
+          107,
+          207
+        ]
+      },
+      {
+        "n": 29,
+        "complex_q": 2,
+        "complex_spheres": [
+          57,
+          111,
+          215
+        ]
+      },
+      {
+        "n": 30,
+        "complex_q": 2,
+        "complex_spheres": [
+          59,
+          115,
+          223
+        ]
+      },
+      {
+        "n": 31,
+        "complex_q": 2,
+        "complex_spheres": [
+          61,
+          119,
+          231
+        ]
+      },
+      {
+        "n": 32,
+        "complex_q": 2,
+        "complex_spheres": [
+          63,
+          123,
+          239
+        ]
+      },
+      {
+        "n": 33,
+        "complex_q": 2,
+        "complex_spheres": [
+          65,
+          127,
+          247
+        ]
+      },
+      {
+        "n": 34,
+        "complex_q": 2,
+        "complex_spheres": [
+          67,
+          131,
+          255
+        ]
+      },
+      {
+        "n": 35,
+        "complex_q": 2,
+        "complex_spheres": [
+          69,
+          135,
+          263
+        ]
+      },
+      {
+        "n": 36,
+        "complex_q": 2,
+        "complex_spheres": [
+          71,
+          139,
+          271
+        ]
+      },
+      {
+        "n": 37,
+        "complex_q": 2,
+        "complex_spheres": [
+          73,
+          143,
+          279
+        ]
+      },
+      {
+        "n": 38,
+        "complex_q": 2,
+        "complex_spheres": [
+          75,
+          147,
+          287
+        ]
+      },
+      {
+        "n": 39,
+        "complex_q": 2,
+        "complex_spheres": [
+          77,
+          151,
+          295
+        ]
+      },
+      {
+        "n": 40,
+        "complex_q": 2,
+        "complex_spheres": [
+          79,
+          155,
+          303
+        ]
+      },
+      {
+        "n": 41,
+        "complex_q": 2,
+        "complex_spheres": [
+          81,
+          159,
+          311
+        ]
+      },
+      {
+        "n": 42,
+        "complex_q": 2,
+        "complex_spheres": [
+          83,
+          163,
+          319
+        ]
+      },
+      {
+        "n": 43,
+        "complex_q": 2,
+        "complex_spheres": [
+          85,
+          167,
+          327
+        ]
+      },
+      {
+        "n": 44,
+        "complex_q": 2,
+        "complex_spheres": [
+          87,
+          171,
+          335
+        ]
+      },
+      {
+        "n": 45,
+        "complex_q": 2,
+        "complex_spheres": [
+          89,
+          175,
+          343
+        ]
+      },
+      {
+        "n": 46,
+        "complex_q": 2,
+        "complex_spheres": [
+          91,
+          179,
+          351
+        ]
+      },
+      {
+        "n": 47,
+        "complex_q": 2,
+        "complex_spheres": [
+          93,
+          183,
+          359
+        ]
+      },
+      {
+        "n": 48,
+        "complex_q": 2,
+        "complex_spheres": [
+          95,
+          187,
+          367
+        ]
+      },
+      {
+        "n": 49,
+        "complex_q": 2,
+        "complex_spheres": [
+          97,
+          191,
+          375
+        ]
+      },
+      {
+        "n": 50,
+        "complex_q": 2,
+        "complex_spheres": [
+          99,
+          195,
+          383
+        ]
+      },
+      {
+        "n": 51,
+        "complex_q": 2,
+        "complex_spheres": [
+          101,
+          199,
+          391
+        ]
+      },
+      {
+        "n": 52,
+        "complex_q": 2,
+        "complex_spheres": [
+          103,
+          203,
+          399
+        ]
+      },
+      {
+        "n": 53,
+        "complex_q": 2,
+        "complex_spheres": [
+          105,
+          207,
+          407
+        ]
+      },
+      {
+        "n": 54,
+        "complex_q": 2,
+        "complex_spheres": [
+          107,
+          211,
+          415
+        ]
+      },
+      {
+        "n": 55,
+        "complex_q": 2,
+        "complex_spheres": [
+          109,
+          215,
+          423
+        ]
+      },
+      {
+        "n": 56,
+        "complex_q": 2,
+        "complex_spheres": [
+          111,
+          219,
+          431
+        ]
+      },
+      {
+        "n": 57,
+        "complex_q": 2,
+        "complex_spheres": [
+          113,
+          223,
+          439
+        ]
+      },
+      {
+        "n": 58,
+        "complex_q": 2,
+        "complex_spheres": [
+          115,
+          227,
+          447
+        ]
+      },
+      {
+        "n": 59,
+        "complex_q": 2,
+        "complex_spheres": [
+          117,
+          231,
+          455
+        ]
+      },
+      {
+        "n": 60,
+        "complex_q": 2,
+        "complex_spheres": [
+          119,
+          235,
+          463
+        ]
+      },
+      {
+        "n": 61,
+        "complex_q": 2,
+        "complex_spheres": [
+          121,
+          239,
+          471
+        ]
+      },
+      {
+        "n": 62,
+        "complex_q": 2,
+        "complex_spheres": [
+          123,
+          243,
+          479
+        ]
+      },
+      {
+        "n": 63,
+        "complex_q": 2,
+        "complex_spheres": [
+          125,
+          247,
+          487
+        ]
+      },
+      {
+        "n": 64,
+        "complex_q": 2,
+        "complex_spheres": [
+          127,
+          251,
+          495
+        ]
+      },
+      {
+        "n": 65,
+        "complex_q": 2,
+        "complex_spheres": [
+          129,
+          255,
+          503
+        ]
+      },
+      {
+        "n": 66,
+        "complex_q": 2,
+        "complex_spheres": [
+          131,
+          259,
+          511
+        ]
+      },
+      {
+        "n": 67,
+        "complex_q": 2,
+        "complex_spheres": [
+          133,
+          263,
+          519
+        ]
+      },
+      {
+        "n": 68,
+        "complex_q": 2,
+        "complex_spheres": [
+          135,
+          267,
+          527
+        ]
+      },
+      {
+        "n": 69,
+        "complex_q": 2,
+        "complex_spheres": [
+          137,
+          271,
+          535
+        ]
+      },
+      {
+        "n": 70,
+        "complex_q": 2,
+        "complex_spheres": [
+          139,
+          275,
+          543
+        ]
+      },
+      {
+        "n": 71,
+        "complex_q": 2,
+        "complex_spheres": [
+          141,
+          279,
+          551
+        ]
+      },
+      {
+        "n": 72,
+        "complex_q": 2,
+        "complex_spheres": [
+          143,
+          283,
+          559
+        ]
+      },
+      {
+        "n": 73,
+        "complex_q": 2,
+        "complex_spheres": [
+          145,
+          287,
+          567
+        ]
+      },
+      {
+        "n": 74,
+        "complex_q": 2,
+        "complex_spheres": [
+          147,
+          291,
+          575
+        ]
+      },
+      {
+        "n": 75,
+        "complex_q": 2,
+        "complex_spheres": [
+          149,
+          295,
+          583
+        ]
+      },
+      {
+        "n": 76,
+        "complex_q": 2,
+        "complex_spheres": [
+          151,
+          299,
+          591
+        ]
+      },
+      {
+        "n": 77,
+        "complex_q": 2,
+        "complex_spheres": [
+          153,
+          303,
+          599
+        ]
+      },
+      {
+        "n": 78,
+        "complex_q": 2,
+        "complex_spheres": [
+          155,
+          307,
+          607
+        ]
+      },
+      {
+        "n": 79,
+        "complex_q": 2,
+        "complex_spheres": [
+          157,
+          311,
+          615
+        ]
+      },
+      {
+        "n": 80,
+        "complex_q": 2,
+        "complex_spheres": [
+          159,
+          315,
+          623
+        ]
+      },
+      {
+        "n": 81,
+        "complex_q": 2,
+        "complex_spheres": [
+          161,
+          319,
+          631
+        ]
+      },
+      {
+        "n": 82,
+        "complex_q": 2,
+        "complex_spheres": [
+          163,
+          323,
+          639
+        ]
+      },
+      {
+        "n": 83,
+        "complex_q": 2,
+        "complex_spheres": [
+          165,
+          327,
+          647
+        ]
+      },
+      {
+        "n": 84,
+        "complex_q": 2,
+        "complex_spheres": [
+          167,
+          331,
+          655
+        ]
+      },
+      {
+        "n": 85,
+        "complex_q": 2,
+        "complex_spheres": [
+          169,
+          335,
+          663
+        ]
+      },
+      {
+        "n": 86,
+        "complex_q": 2,
+        "complex_spheres": [
+          171,
+          339,
+          671
+        ]
+      },
+      {
+        "n": 87,
+        "complex_q": 2,
+        "complex_spheres": [
+          173,
+          343,
+          679
+        ]
+      },
+      {
+        "n": 88,
+        "complex_q": 2,
+        "complex_spheres": [
+          175,
+          347,
+          687
+        ]
+      },
+      {
+        "n": 89,
+        "complex_q": 2,
+        "complex_spheres": [
+          177,
+          351,
+          695
+        ]
+      },
+      {
+        "n": 90,
+        "complex_q": 2,
+        "complex_spheres": [
+          179,
+          355,
+          703
+        ]
+      },
+      {
+        "n": 91,
+        "complex_q": 2,
+        "complex_spheres": [
+          181,
+          359,
+          711
+        ]
+      },
+      {
+        "n": 92,
+        "complex_q": 2,
+        "complex_spheres": [
+          183,
+          363,
+          719
+        ]
+      },
+      {
+        "n": 93,
+        "complex_q": 2,
+        "complex_spheres": [
+          185,
+          367,
+          727
+        ]
+      },
+      {
+        "n": 94,
+        "complex_q": 2,
+        "complex_spheres": [
+          187,
+          371,
+          735
+        ]
+      },
+      {
+        "n": 95,
+        "complex_q": 2,
+        "complex_spheres": [
+          189,
+          375,
+          743
+        ]
+      },
+      {
+        "n": 96,
+        "complex_q": 2,
+        "complex_spheres": [
+          191,
+          379,
+          751
+        ]
+      },
+      {
+        "n": 97,
+        "complex_q": 2,
+        "complex_spheres": [
+          193,
+          383,
+          759
+        ]
+      },
+      {
+        "n": 98,
+        "complex_q": 2,
+        "complex_spheres": [
+          195,
+          387,
+          767
+        ]
+      },
+      {
+        "n": 99,
+        "complex_q": 2,
+        "complex_spheres": [
+          197,
+          391,
+          775
+        ]
+      },
+      {
+        "n": 100,
+        "complex_q": 2,
+        "complex_spheres": [
+          199,
+          395,
+          783
+        ]
+      }
+    ],
+    "lemma_2_1_fibre_checks": [
+      {
+        "field_real_dimension": 1,
+        "n": 4,
+        "k": 2,
+        "fibre_rank": 2,
+        "sphere_dimension": 1,
+        "stabilized_rank": 4
+      },
+      {
+        "field_real_dimension": 2,
+        "n": 4,
+        "k": 2,
+        "fibre_rank": 4,
+        "sphere_dimension": 3,
+        "stabilized_rank": 8
+      },
+      {
+        "field_real_dimension": 4,
+        "n": 4,
+        "k": 2,
+        "fibre_rank": 8,
+        "sphere_dimension": 7,
+        "stabilized_rank": 16
+      }
+    ],
+    "lemma_2_2_boundaries": [
+      {
+        "c": 1,
+        "rank": 1,
+        "last_base_for_q1": 0
+      },
+      {
+        "c": 1,
+        "rank": 2,
+        "last_base_for_q1": 1
+      },
+      {
+        "c": 1,
+        "rank": 3,
+        "last_base_for_q1": 2
+      },
+      {
+        "c": 1,
+        "rank": 4,
+        "last_base_for_q1": 3
+      },
+      {
+        "c": 1,
+        "rank": 5,
+        "last_base_for_q1": 4
+      },
+      {
+        "c": 1,
+        "rank": 6,
+        "last_base_for_q1": 5
+      },
+      {
+        "c": 1,
+        "rank": 7,
+        "last_base_for_q1": 6
+      },
+      {
+        "c": 1,
+        "rank": 8,
+        "last_base_for_q1": 7
+      },
+      {
+        "c": 1,
+        "rank": 9,
+        "last_base_for_q1": 8
+      },
+      {
+        "c": 1,
+        "rank": 10,
+        "last_base_for_q1": 9
+      },
+      {
+        "c": 1,
+        "rank": 11,
+        "last_base_for_q1": 10
+      },
+      {
+        "c": 2,
+        "rank": 1,
+        "last_base_for_q1": 2
+      },
+      {
+        "c": 2,
+        "rank": 2,
+        "last_base_for_q1": 4
+      },
+      {
+        "c": 2,
+        "rank": 3,
+        "last_base_for_q1": 6
+      },
+      {
+        "c": 2,
+        "rank": 4,
+        "last_base_for_q1": 8
+      },
+      {
+        "c": 2,
+        "rank": 5,
+        "last_base_for_q1": 10
+      },
+      {
+        "c": 2,
+        "rank": 6,
+        "last_base_for_q1": 12
+      },
+      {
+        "c": 2,
+        "rank": 7,
+        "last_base_for_q1": 14
+      },
+      {
+        "c": 2,
+        "rank": 8,
+        "last_base_for_q1": 16
+      },
+      {
+        "c": 2,
+        "rank": 9,
+        "last_base_for_q1": 18
+      },
+      {
+        "c": 2,
+        "rank": 10,
+        "last_base_for_q1": 20
+      },
+      {
+        "c": 2,
+        "rank": 11,
+        "last_base_for_q1": 22
+      },
+      {
+        "c": 4,
+        "rank": 1,
+        "last_base_for_q1": 6
+      },
+      {
+        "c": 4,
+        "rank": 2,
+        "last_base_for_q1": 10
+      },
+      {
+        "c": 4,
+        "rank": 3,
+        "last_base_for_q1": 14
+      },
+      {
+        "c": 4,
+        "rank": 4,
+        "last_base_for_q1": 18
+      },
+      {
+        "c": 4,
+        "rank": 5,
+        "last_base_for_q1": 22
+      },
+      {
+        "c": 4,
+        "rank": 6,
+        "last_base_for_q1": 26
+      },
+      {
+        "c": 4,
+        "rank": 7,
+        "last_base_for_q1": 30
+      },
+      {
+        "c": 4,
+        "rank": 8,
+        "last_base_for_q1": 34
+      },
+      {
+        "c": 4,
+        "rank": 9,
+        "last_base_for_q1": 38
+      },
+      {
+        "c": 4,
+        "rank": 10,
+        "last_base_for_q1": 42
+      },
+      {
+        "c": 4,
+        "rank": 11,
+        "last_base_for_q1": 46
+      }
+    ],
+    "complex_fixity_two": {
+      "n": 4,
+      "complex_fixity": 2,
+      "quaternionic_fixed_real_dimension": 8,
+      "fixed_last_fibre_rank": 0,
+      "q2_sphere_dimensions": [
+        7,
+        11,
+        15
+      ]
+    },
+    "real_fixity_three_dimensions": [
+      {
+        "n": 4,
+        "q": 4,
+        "spheres": [
+          3,
+          5,
+          7,
+          15
+        ]
+      },
+      {
+        "n": 5,
+        "q": 3,
+        "spheres": [
+          4,
+          7,
+          11,
+          23
+        ]
+      },
+      {
+        "n": 6,
+        "q": 3,
+        "spheres": [
+          5,
+          9,
+          15,
+          35
+        ]
+      },
+      {
+        "n": 7,
+        "q": 3,
+        "spheres": [
+          6,
+          11,
+          19,
+          47
+        ]
+      },
+      {
+        "n": 8,
+        "q": 3,
+        "spheres": [
+          7,
+          13,
+          23,
+          59
+        ]
+      },
+      {
+        "n": 9,
+        "q": 2,
+        "spheres": [
+          8,
+          15,
+          27,
+          47
+        ]
+      },
+      {
+        "n": 10,
+        "q": 2,
+        "spheres": [
+          9,
+          17,
+          31,
+          55
+        ]
+      },
+      {
+        "n": 11,
+        "q": 2,
+        "spheres": [
+          10,
+          19,
+          35,
+          63
+        ]
+      },
+      {
+        "n": 12,
+        "q": 2,
+        "spheres": [
+          11,
+          21,
+          39,
+          71
+        ]
+      },
+      {
+        "n": 13,
+        "q": 2,
+        "spheres": [
+          12,
+          23,
+          43,
+          79
+        ]
+      },
+      {
+        "n": 14,
+        "q": 2,
+        "spheres": [
+          13,
+          25,
+          47,
+          87
+        ]
+      },
+      {
+        "n": 15,
+        "q": 2,
+        "spheres": [
+          14,
+          27,
+          51,
+          95
+        ]
+      },
+      {
+        "n": 16,
+        "q": 2,
+        "spheres": [
+          15,
+          29,
+          55,
+          103
+        ]
+      },
+      {
+        "n": 17,
+        "q": 2,
+        "spheres": [
+          16,
+          31,
+          59,
+          111
+        ]
+      },
+      {
+        "n": 18,
+        "q": 2,
+        "spheres": [
+          17,
+          33,
+          63,
+          119
+        ]
+      },
+      {
+        "n": 19,
+        "q": 2,
+        "spheres": [
+          18,
+          35,
+          67,
+          127
+        ]
+      },
+      {
+        "n": 20,
+        "q": 2,
+        "spheres": [
+          19,
+          37,
+          71,
+          135
+        ]
+      },
+      {
+        "n": 21,
+        "q": 2,
+        "spheres": [
+          20,
+          39,
+          75,
+          143
+        ]
+      },
+      {
+        "n": 22,
+        "q": 2,
+        "spheres": [
+          21,
+          41,
+          79,
+          151
+        ]
+      },
+      {
+        "n": 23,
+        "q": 2,
+        "spheres": [
+          22,
+          43,
+          83,
+          159
+        ]
+      },
+      {
+        "n": 24,
+        "q": 2,
+        "spheres": [
+          23,
+          45,
+          87,
+          167
+        ]
+      },
+      {
+        "n": 25,
+        "q": 2,
+        "spheres": [
+          24,
+          47,
+          91,
+          175
+        ]
+      },
+      {
+        "n": 26,
+        "q": 2,
+        "spheres": [
+          25,
+          49,
+          95,
+          183
+        ]
+      },
+      {
+        "n": 27,
+        "q": 2,
+        "spheres": [
+          26,
+          51,
+          99,
+          191
+        ]
+      },
+      {
+        "n": 28,
+        "q": 2,
+        "spheres": [
+          27,
+          53,
+          103,
+          199
+        ]
+      },
+      {
+        "n": 29,
+        "q": 2,
+        "spheres": [
+          28,
+          55,
+          107,
+          207
+        ]
+      },
+      {
+        "n": 30,
+        "q": 2,
+        "spheres": [
+          29,
+          57,
+          111,
+          215
+        ]
+      },
+      {
+        "n": 31,
+        "q": 2,
+        "spheres": [
+          30,
+          59,
+          115,
+          223
+        ]
+      },
+      {
+        "n": 32,
+        "q": 2,
+        "spheres": [
+          31,
+          61,
+          119,
+          231
+        ]
+      },
+      {
+        "n": 33,
+        "q": 2,
+        "spheres": [
+          32,
+          63,
+          123,
+          239
+        ]
+      },
+      {
+        "n": 34,
+        "q": 2,
+        "spheres": [
+          33,
+          65,
+          127,
+          247
+        ]
+      },
+      {
+        "n": 35,
+        "q": 2,
+        "spheres": [
+          34,
+          67,
+          131,
+          255
+        ]
+      },
+      {
+        "n": 36,
+        "q": 2,
+        "spheres": [
+          35,
+          69,
+          135,
+          263
+        ]
+      },
+      {
+        "n": 37,
+        "q": 2,
+        "spheres": [
+          36,
+          71,
+          139,
+          271
+        ]
+      },
+      {
+        "n": 38,
+        "q": 2,
+        "spheres": [
+          37,
+          73,
+          143,
+          279
+        ]
+      },
+      {
+        "n": 39,
+        "q": 2,
+        "spheres": [
+          38,
+          75,
+          147,
+          287
+        ]
+      },
+      {
+        "n": 40,
+        "q": 2,
+        "spheres": [
+          39,
+          77,
+          151,
+          295
+        ]
+      },
+      {
+        "n": 41,
+        "q": 2,
+        "spheres": [
+          40,
+          79,
+          155,
+          303
+        ]
+      },
+      {
+        "n": 42,
+        "q": 2,
+        "spheres": [
+          41,
+          81,
+          159,
+          311
+        ]
+      },
+      {
+        "n": 43,
+        "q": 2,
+        "spheres": [
+          42,
+          83,
+          163,
+          319
+        ]
+      },
+      {
+        "n": 44,
+        "q": 2,
+        "spheres": [
+          43,
+          85,
+          167,
+          327
+        ]
+      },
+      {
+        "n": 45,
+        "q": 2,
+        "spheres": [
+          44,
+          87,
+          171,
+          335
+        ]
+      },
+      {
+        "n": 46,
+        "q": 2,
+        "spheres": [
+          45,
+          89,
+          175,
+          343
+        ]
+      },
+      {
+        "n": 47,
+        "q": 2,
+        "spheres": [
+          46,
+          91,
+          179,
+          351
+        ]
+      },
+      {
+        "n": 48,
+        "q": 2,
+        "spheres": [
+          47,
+          93,
+          183,
+          359
+        ]
+      },
+      {
+        "n": 49,
+        "q": 2,
+        "spheres": [
+          48,
+          95,
+          187,
+          367
+        ]
+      },
+      {
+        "n": 50,
+        "q": 2,
+        "spheres": [
+          49,
+          97,
+          191,
+          375
+        ]
+      },
+      {
+        "n": 51,
+        "q": 2,
+        "spheres": [
+          50,
+          99,
+          195,
+          383
+        ]
+      },
+      {
+        "n": 52,
+        "q": 2,
+        "spheres": [
+          51,
+          101,
+          199,
+          391
+        ]
+      },
+      {
+        "n": 53,
+        "q": 2,
+        "spheres": [
+          52,
+          103,
+          203,
+          399
+        ]
+      },
+      {
+        "n": 54,
+        "q": 2,
+        "spheres": [
+          53,
+          105,
+          207,
+          407
+        ]
+      },
+      {
+        "n": 55,
+        "q": 2,
+        "spheres": [
+          54,
+          107,
+          211,
+          415
+        ]
+      },
+      {
+        "n": 56,
+        "q": 2,
+        "spheres": [
+          55,
+          109,
+          215,
+          423
+        ]
+      },
+      {
+        "n": 57,
+        "q": 2,
+        "spheres": [
+          56,
+          111,
+          219,
+          431
+        ]
+      },
+      {
+        "n": 58,
+        "q": 2,
+        "spheres": [
+          57,
+          113,
+          223,
+          439
+        ]
+      },
+      {
+        "n": 59,
+        "q": 2,
+        "spheres": [
+          58,
+          115,
+          227,
+          447
+        ]
+      },
+      {
+        "n": 60,
+        "q": 2,
+        "spheres": [
+          59,
+          117,
+          231,
+          455
+        ]
+      },
+      {
+        "n": 61,
+        "q": 2,
+        "spheres": [
+          60,
+          119,
+          235,
+          463
+        ]
+      },
+      {
+        "n": 62,
+        "q": 2,
+        "spheres": [
+          61,
+          121,
+          239,
+          471
+        ]
+      },
+      {
+        "n": 63,
+        "q": 2,
+        "spheres": [
+          62,
+          123,
+          243,
+          479
+        ]
+      },
+      {
+        "n": 64,
+        "q": 2,
+        "spheres": [
+          63,
+          125,
+          247,
+          487
+        ]
+      },
+      {
+        "n": 65,
+        "q": 2,
+        "spheres": [
+          64,
+          127,
+          251,
+          495
+        ]
+      },
+      {
+        "n": 66,
+        "q": 2,
+        "spheres": [
+          65,
+          129,
+          255,
+          503
+        ]
+      },
+      {
+        "n": 67,
+        "q": 2,
+        "spheres": [
+          66,
+          131,
+          259,
+          511
+        ]
+      },
+      {
+        "n": 68,
+        "q": 2,
+        "spheres": [
+          67,
+          133,
+          263,
+          519
+        ]
+      },
+      {
+        "n": 69,
+        "q": 2,
+        "spheres": [
+          68,
+          135,
+          267,
+          527
+        ]
+      },
+      {
+        "n": 70,
+        "q": 2,
+        "spheres": [
+          69,
+          137,
+          271,
+          535
+        ]
+      },
+      {
+        "n": 71,
+        "q": 2,
+        "spheres": [
+          70,
+          139,
+          275,
+          543
+        ]
+      },
+      {
+        "n": 72,
+        "q": 2,
+        "spheres": [
+          71,
+          141,
+          279,
+          551
+        ]
+      },
+      {
+        "n": 73,
+        "q": 2,
+        "spheres": [
+          72,
+          143,
+          283,
+          559
+        ]
+      },
+      {
+        "n": 74,
+        "q": 2,
+        "spheres": [
+          73,
+          145,
+          287,
+          567
+        ]
+      },
+      {
+        "n": 75,
+        "q": 2,
+        "spheres": [
+          74,
+          147,
+          291,
+          575
+        ]
+      },
+      {
+        "n": 76,
+        "q": 2,
+        "spheres": [
+          75,
+          149,
+          295,
+          583
+        ]
+      },
+      {
+        "n": 77,
+        "q": 2,
+        "spheres": [
+          76,
+          151,
+          299,
+          591
+        ]
+      },
+      {
+        "n": 78,
+        "q": 2,
+        "spheres": [
+          77,
+          153,
+          303,
+          599
+        ]
+      },
+      {
+        "n": 79,
+        "q": 2,
+        "spheres": [
+          78,
+          155,
+          307,
+          607
+        ]
+      },
+      {
+        "n": 80,
+        "q": 2,
+        "spheres": [
+          79,
+          157,
+          311,
+          615
+        ]
+      },
+      {
+        "n": 81,
+        "q": 2,
+        "spheres": [
+          80,
+          159,
+          315,
+          623
+        ]
+      },
+      {
+        "n": 82,
+        "q": 2,
+        "spheres": [
+          81,
+          161,
+          319,
+          631
+        ]
+      },
+      {
+        "n": 83,
+        "q": 2,
+        "spheres": [
+          82,
+          163,
+          323,
+          639
+        ]
+      },
+      {
+        "n": 84,
+        "q": 2,
+        "spheres": [
+          83,
+          165,
+          327,
+          647
+        ]
+      },
+      {
+        "n": 85,
+        "q": 2,
+        "spheres": [
+          84,
+          167,
+          331,
+          655
+        ]
+      },
+      {
+        "n": 86,
+        "q": 2,
+        "spheres": [
+          85,
+          169,
+          335,
+          663
+        ]
+      },
+      {
+        "n": 87,
+        "q": 2,
+        "spheres": [
+          86,
+          171,
+          339,
+          671
+        ]
+      },
+      {
+        "n": 88,
+        "q": 2,
+        "spheres": [
+          87,
+          173,
+          343,
+          679
+        ]
+      },
+      {
+        "n": 89,
+        "q": 2,
+        "spheres": [
+          88,
+          175,
+          347,
+          687
+        ]
+      },
+      {
+        "n": 90,
+        "q": 2,
+        "spheres": [
+          89,
+          177,
+          351,
+          695
+        ]
+      },
+      {
+        "n": 91,
+        "q": 2,
+        "spheres": [
+          90,
+          179,
+          355,
+          703
+        ]
+      },
+      {
+        "n": 92,
+        "q": 2,
+        "spheres": [
+          91,
+          181,
+          359,
+          711
+        ]
+      },
+      {
+        "n": 93,
+        "q": 2,
+        "spheres": [
+          92,
+          183,
+          363,
+          719
+        ]
+      },
+      {
+        "n": 94,
+        "q": 2,
+        "spheres": [
+          93,
+          185,
+          367,
+          727
+        ]
+      },
+      {
+        "n": 95,
+        "q": 2,
+        "spheres": [
+          94,
+          187,
+          371,
+          735
+        ]
+      },
+      {
+        "n": 96,
+        "q": 2,
+        "spheres": [
+          95,
+          189,
+          375,
+          743
+        ]
+      },
+      {
+        "n": 97,
+        "q": 2,
+        "spheres": [
+          96,
+          191,
+          379,
+          751
+        ]
+      },
+      {
+        "n": 98,
+        "q": 2,
+        "spheres": [
+          97,
+          193,
+          383,
+          759
+        ]
+      },
+      {
+        "n": 99,
+        "q": 2,
+        "spheres": [
+          98,
+          195,
+          387,
+          767
+        ]
+      },
+      {
+        "n": 100,
+        "q": 2,
+        "spheres": [
+          99,
+          197,
+          391,
+          775
+        ]
+      }
+    ],
+    "missing_orthogonality_fixed_point": {
+      "v1": {
+        "0": 1
+      },
+      "v2": {
+        "2": 1
+      },
+      "v3": {
+        "5": 1
+      },
+      "violated_imaginary_constraint": 1
+    },
+    "orientation_scope": "Checks determinant signs and reduction mod2; does not calculate bundle homology actions.",
+    "basis_pairs_against_independent_recursion": 341,
+    "nonassociative_module_warning": [
+      {
+        "dimension": 8,
+        "indices": [
+          1,
+          2,
+          4
+        ],
+        "left_associated": {
+          "7": 1
+        },
+        "right_associated": {
+          "7": -1
+        }
+      },
+      {
+        "dimension": 16,
+        "indices": [
+          1,
+          2,
+          4
+        ],
+        "left_associated": {
+          "7": 1
+        },
+        "right_associated": {
+          "7": -1
+        }
+      }
+    ],
+    "uniformity_coefficient_certificates": [
+      {
+        "low_dimension": 1,
+        "high_dimension": 2,
+        "all_norm_coefficients_verified": true,
+        "nonzero_left_factor_injective": true
+      },
+      {
+        "low_dimension": 1,
+        "high_dimension": 4,
+        "all_norm_coefficients_verified": true,
+        "nonzero_left_factor_injective": true
+      },
+      {
+        "low_dimension": 1,
+        "high_dimension": 8,
+        "all_norm_coefficients_verified": true,
+        "nonzero_left_factor_injective": true
+      },
+      {
+        "low_dimension": 1,
+        "high_dimension": 16,
+        "all_norm_coefficients_verified": true,
+        "nonzero_left_factor_injective": true
+      },
+      {
+        "low_dimension": 2,
+        "high_dimension": 4,
+        "all_norm_coefficients_verified": true,
+        "nonzero_left_factor_injective": true
+      },
+      {
+        "low_dimension": 2,
+        "high_dimension": 8,
+        "all_norm_coefficients_verified": true,
+        "nonzero_left_factor_injective": true
+      },
+      {
+        "low_dimension": 2,
+        "high_dimension": 16,
+        "all_norm_coefficients_verified": true,
+        "nonzero_left_factor_injective": true
+      },
+      {
+        "low_dimension": 4,
+        "high_dimension": 8,
+        "all_norm_coefficients_verified": true,
+        "nonzero_left_factor_injective": true
+      },
+      {
+        "low_dimension": 4,
+        "high_dimension": 16,
+        "all_norm_coefficients_verified": true,
+        "nonzero_left_factor_injective": true
+      },
+      {
+        "low_dimension": 8,
+        "high_dimension": 16,
+        "all_norm_coefficients_verified": true,
+        "nonzero_left_factor_injective": true
+      }
+    ],
+    "sixth_stage_uniformity_failure": {
+      "a": {
+        "1": 1,
+        "10": 1
+      },
+      "b": {
+        "5": 1,
+        "14": 1
+      },
+      "product": {},
+      "annihilator_in_dimension32": 8,
+      "identity_annihilator_dimension": 0
+    },
+    "separability_and_joint_rank": [
+      {
+        "n": 5,
+        "seed": 2010,
+        "k": 1,
+        "block_rank": 2,
+        "sum_rank": 2
+      },
+      {
+        "n": 5,
+        "seed": 2010,
+        "k": 2,
+        "block_rank": 4,
+        "sum_rank": 8
+      },
+      {
+        "n": 5,
+        "seed": 2010,
+        "k": 3,
+        "block_rank": 8,
+        "sum_rank": 24
+      },
+      {
+        "n": 5,
+        "seed": 2010,
+        "k": 4,
+        "block_rank": 16,
+        "sum_rank": 64
+      },
+      {
+        "n": 5,
+        "seed": 981,
+        "k": 1,
+        "block_rank": 2,
+        "sum_rank": 2
+      },
+      {
+        "n": 5,
+        "seed": 981,
+        "k": 2,
+        "block_rank": 4,
+        "sum_rank": 8
+      },
+      {
+        "n": 5,
+        "seed": 981,
+        "k": 3,
+        "block_rank": 8,
+        "sum_rank": 24
+      },
+      {
+        "n": 5,
+        "seed": 981,
+        "k": 4,
+        "block_rank": 16,
+        "sum_rank": 64
+      },
+      {
+        "n": 12,
+        "seed": 2010,
+        "k": 1,
+        "block_rank": 2,
+        "sum_rank": 2
+      },
+      {
+        "n": 12,
+        "seed": 2010,
+        "k": 2,
+        "block_rank": 4,
+        "sum_rank": 8
+      },
+      {
+        "n": 12,
+        "seed": 2010,
+        "k": 3,
+        "block_rank": 8,
+        "sum_rank": 24
+      },
+      {
+        "n": 12,
+        "seed": 2010,
+        "k": 4,
+        "block_rank": 16,
+        "sum_rank": 64
+      }
+    ],
+    "pairwise_vs_joint_caution": "Three lines in R2 are pairwise disjoint but their sum is not direct. Actual Cayley-Dickson W-frames are tested for full joint rank separately; this diagnostic does not refute the construction.",
+    "proposition_3_4_ranks": [
+      {
+        "k": 1,
+        "algebra_dimension": 2,
+        "ambient_dimension": 10,
+        "constraint_rank": 2,
+        "kernel_dimension": 8
+      },
+      {
+        "k": 2,
+        "algebra_dimension": 4,
+        "ambient_dimension": 20,
+        "constraint_rank": 8,
+        "kernel_dimension": 12
+      },
+      {
+        "k": 3,
+        "algebra_dimension": 8,
+        "ambient_dimension": 40,
+        "constraint_rank": 24,
+        "kernel_dimension": 16
+      },
+      {
+        "k": 4,
+        "algebra_dimension": 16,
+        "ambient_dimension": 80,
+        "constraint_rank": 64,
+        "kernel_dimension": 16
+      }
+    ],
+    "equation_3_1_minimal_n": [
+      2,
+      5,
+      12,
+      27
+    ],
+    "whitney_double_dimensions": [
+      {
+        "n": 12,
+        "base_dimension": 142,
+        "original_vector_rank": 128,
+        "minimum_q": 2,
+        "q2_vector_rank": 256,
+        "q2_sphere_dimension": 255
+      },
+      {
+        "n": 13,
+        "base_dimension": 157,
+        "original_vector_rank": 144,
+        "minimum_q": 2,
+        "q2_vector_rank": 288,
+        "q2_sphere_dimension": 287
+      },
+      {
+        "n": 14,
+        "base_dimension": 172,
+        "original_vector_rank": 160,
+        "minimum_q": 2,
+        "q2_vector_rank": 320,
+        "q2_sphere_dimension": 319
+      },
+      {
+        "n": 15,
+        "base_dimension": 187,
+        "original_vector_rank": 176,
+        "minimum_q": 2,
+        "q2_vector_rank": 352,
+        "q2_sphere_dimension": 351
+      },
+      {
+        "n": 16,
+        "base_dimension": 202,
+        "original_vector_rank": 192,
+        "minimum_q": 2,
+        "q2_vector_rank": 384,
+        "q2_sphere_dimension": 383
+      },
+      {
+        "n": 17,
+        "base_dimension": 217,
+        "original_vector_rank": 208,
+        "minimum_q": 2,
+        "q2_vector_rank": 416,
+        "q2_sphere_dimension": 415
+      },
+      {
+        "n": 18,
+        "base_dimension": 232,
+        "original_vector_rank": 224,
+        "minimum_q": 2,
+        "q2_vector_rank": 448,
+        "q2_sphere_dimension": 447
+      },
+      {
+        "n": 19,
+        "base_dimension": 247,
+        "original_vector_rank": 240,
+        "minimum_q": 2,
+        "q2_vector_rank": 480,
+        "q2_sphere_dimension": 479
+      },
+      {
+        "n": 20,
+        "base_dimension": 262,
+        "original_vector_rank": 256,
+        "minimum_q": 2,
+        "q2_vector_rank": 512,
+        "q2_sphere_dimension": 511
+      },
+      {
+        "n": 21,
+        "base_dimension": 277,
+        "original_vector_rank": 272,
+        "minimum_q": 2,
+        "q2_vector_rank": 544,
+        "q2_sphere_dimension": 543
+      },
+      {
+        "n": 22,
+        "base_dimension": 292,
+        "original_vector_rank": 288,
+        "minimum_q": 2,
+        "q2_vector_rank": 576,
+        "q2_sphere_dimension": 575
+      },
+      {
+        "n": 23,
+        "base_dimension": 307,
+        "original_vector_rank": 304,
+        "minimum_q": 2,
+        "q2_vector_rank": 608,
+        "q2_sphere_dimension": 607
+      },
+      {
+        "n": 24,
+        "base_dimension": 322,
+        "original_vector_rank": 320,
+        "minimum_q": 2,
+        "q2_vector_rank": 640,
+        "q2_sphere_dimension": 639
+      },
+      {
+        "n": 25,
+        "base_dimension": 337,
+        "original_vector_rank": 336,
+        "minimum_q": 2,
+        "q2_vector_rank": 672,
+        "q2_sphere_dimension": 671
+      },
+      {
+        "n": 26,
+        "base_dimension": 352,
+        "original_vector_rank": 352,
+        "minimum_q": 2,
+        "q2_vector_rank": 704,
+        "q2_sphere_dimension": 703
+      },
+      {
+        "n": 27,
+        "base_dimension": 367,
+        "original_vector_rank": 368,
+        "minimum_q": 1,
+        "q2_vector_rank": 736,
+        "q2_sphere_dimension": 735
+      },
+      {
+        "n": 28,
+        "base_dimension": 382,
+        "original_vector_rank": 384,
+        "minimum_q": 1,
+        "q2_vector_rank": 768,
+        "q2_sphere_dimension": 767
+      },
+      {
+        "n": 29,
+        "base_dimension": 397,
+        "original_vector_rank": 400,
+        "minimum_q": 1,
+        "q2_vector_rank": 800,
+        "q2_sphere_dimension": 799
+      },
+      {
+        "n": 30,
+        "base_dimension": 412,
+        "original_vector_rank": 416,
+        "minimum_q": 1,
+        "q2_vector_rank": 832,
+        "q2_sphere_dimension": 831
+      },
+      {
+        "n": 31,
+        "base_dimension": 427,
+        "original_vector_rank": 432,
+        "minimum_q": 1,
+        "q2_vector_rank": 864,
+        "q2_sphere_dimension": 863
+      },
+      {
+        "n": 32,
+        "base_dimension": 442,
+        "original_vector_rank": 448,
+        "minimum_q": 1,
+        "q2_vector_rank": 896,
+        "q2_sphere_dimension": 895
+      },
+      {
+        "n": 33,
+        "base_dimension": 457,
+        "original_vector_rank": 464,
+        "minimum_q": 1,
+        "q2_vector_rank": 928,
+        "q2_sphere_dimension": 927
+      },
+      {
+        "n": 34,
+        "base_dimension": 472,
+        "original_vector_rank": 480,
+        "minimum_q": 1,
+        "q2_vector_rank": 960,
+        "q2_sphere_dimension": 959
+      },
+      {
+        "n": 35,
+        "base_dimension": 487,
+        "original_vector_rank": 496,
+        "minimum_q": 1,
+        "q2_vector_rank": 992,
+        "q2_sphere_dimension": 991
+      },
+      {
+        "n": 36,
+        "base_dimension": 502,
+        "original_vector_rank": 512,
+        "minimum_q": 1,
+        "q2_vector_rank": 1024,
+        "q2_sphere_dimension": 1023
+      },
+      {
+        "n": 37,
+        "base_dimension": 517,
+        "original_vector_rank": 528,
+        "minimum_q": 1,
+        "q2_vector_rank": 1056,
+        "q2_sphere_dimension": 1055
+      },
+      {
+        "n": 38,
+        "base_dimension": 532,
+        "original_vector_rank": 544,
+        "minimum_q": 1,
+        "q2_vector_rank": 1088,
+        "q2_sphere_dimension": 1087
+      },
+      {
+        "n": 39,
+        "base_dimension": 547,
+        "original_vector_rank": 560,
+        "minimum_q": 1,
+        "q2_vector_rank": 1120,
+        "q2_sphere_dimension": 1119
+      },
+      {
+        "n": 40,
+        "base_dimension": 562,
+        "original_vector_rank": 576,
+        "minimum_q": 1,
+        "q2_vector_rank": 1152,
+        "q2_sphere_dimension": 1151
+      },
+      {
+        "n": 41,
+        "base_dimension": 577,
+        "original_vector_rank": 592,
+        "minimum_q": 1,
+        "q2_vector_rank": 1184,
+        "q2_sphere_dimension": 1183
+      },
+      {
+        "n": 42,
+        "base_dimension": 592,
+        "original_vector_rank": 608,
+        "minimum_q": 1,
+        "q2_vector_rank": 1216,
+        "q2_sphere_dimension": 1215
+      },
+      {
+        "n": 43,
+        "base_dimension": 607,
+        "original_vector_rank": 624,
+        "minimum_q": 1,
+        "q2_vector_rank": 1248,
+        "q2_sphere_dimension": 1247
+      },
+      {
+        "n": 44,
+        "base_dimension": 622,
+        "original_vector_rank": 640,
+        "minimum_q": 1,
+        "q2_vector_rank": 1280,
+        "q2_sphere_dimension": 1279
+      },
+      {
+        "n": 45,
+        "base_dimension": 637,
+        "original_vector_rank": 656,
+        "minimum_q": 1,
+        "q2_vector_rank": 1312,
+        "q2_sphere_dimension": 1311
+      },
+      {
+        "n": 46,
+        "base_dimension": 652,
+        "original_vector_rank": 672,
+        "minimum_q": 1,
+        "q2_vector_rank": 1344,
+        "q2_sphere_dimension": 1343
+      },
+      {
+        "n": 47,
+        "base_dimension": 667,
+        "original_vector_rank": 688,
+        "minimum_q": 1,
+        "q2_vector_rank": 1376,
+        "q2_sphere_dimension": 1375
+      },
+      {
+        "n": 48,
+        "base_dimension": 682,
+        "original_vector_rank": 704,
+        "minimum_q": 1,
+        "q2_vector_rank": 1408,
+        "q2_sphere_dimension": 1407
+      },
+      {
+        "n": 49,
+        "base_dimension": 697,
+        "original_vector_rank": 720,
+        "minimum_q": 1,
+        "q2_vector_rank": 1440,
+        "q2_sphere_dimension": 1439
+      },
+      {
+        "n": 50,
+        "base_dimension": 712,
+        "original_vector_rank": 736,
+        "minimum_q": 1,
+        "q2_vector_rank": 1472,
+        "q2_sphere_dimension": 1471
+      },
+      {
+        "n": 51,
+        "base_dimension": 727,
+        "original_vector_rank": 752,
+        "minimum_q": 1,
+        "q2_vector_rank": 1504,
+        "q2_sphere_dimension": 1503
+      },
+      {
+        "n": 52,
+        "base_dimension": 742,
+        "original_vector_rank": 768,
+        "minimum_q": 1,
+        "q2_vector_rank": 1536,
+        "q2_sphere_dimension": 1535
+      },
+      {
+        "n": 53,
+        "base_dimension": 757,
+        "original_vector_rank": 784,
+        "minimum_q": 1,
+        "q2_vector_rank": 1568,
+        "q2_sphere_dimension": 1567
+      },
+      {
+        "n": 54,
+        "base_dimension": 772,
+        "original_vector_rank": 800,
+        "minimum_q": 1,
+        "q2_vector_rank": 1600,
+        "q2_sphere_dimension": 1599
+      },
+      {
+        "n": 55,
+        "base_dimension": 787,
+        "original_vector_rank": 816,
+        "minimum_q": 1,
+        "q2_vector_rank": 1632,
+        "q2_sphere_dimension": 1631
+      },
+      {
+        "n": 56,
+        "base_dimension": 802,
+        "original_vector_rank": 832,
+        "minimum_q": 1,
+        "q2_vector_rank": 1664,
+        "q2_sphere_dimension": 1663
+      },
+      {
+        "n": 57,
+        "base_dimension": 817,
+        "original_vector_rank": 848,
+        "minimum_q": 1,
+        "q2_vector_rank": 1696,
+        "q2_sphere_dimension": 1695
+      },
+      {
+        "n": 58,
+        "base_dimension": 832,
+        "original_vector_rank": 864,
+        "minimum_q": 1,
+        "q2_vector_rank": 1728,
+        "q2_sphere_dimension": 1727
+      },
+      {
+        "n": 59,
+        "base_dimension": 847,
+        "original_vector_rank": 880,
+        "minimum_q": 1,
+        "q2_vector_rank": 1760,
+        "q2_sphere_dimension": 1759
+      },
+      {
+        "n": 60,
+        "base_dimension": 862,
+        "original_vector_rank": 896,
+        "minimum_q": 1,
+        "q2_vector_rank": 1792,
+        "q2_sphere_dimension": 1791
+      },
+      {
+        "n": 61,
+        "base_dimension": 877,
+        "original_vector_rank": 912,
+        "minimum_q": 1,
+        "q2_vector_rank": 1824,
+        "q2_sphere_dimension": 1823
+      },
+      {
+        "n": 62,
+        "base_dimension": 892,
+        "original_vector_rank": 928,
+        "minimum_q": 1,
+        "q2_vector_rank": 1856,
+        "q2_sphere_dimension": 1855
+      },
+      {
+        "n": 63,
+        "base_dimension": 907,
+        "original_vector_rank": 944,
+        "minimum_q": 1,
+        "q2_vector_rank": 1888,
+        "q2_sphere_dimension": 1887
+      },
+      {
+        "n": 64,
+        "base_dimension": 922,
+        "original_vector_rank": 960,
+        "minimum_q": 1,
+        "q2_vector_rank": 1920,
+        "q2_sphere_dimension": 1919
+      },
+      {
+        "n": 65,
+        "base_dimension": 937,
+        "original_vector_rank": 976,
+        "minimum_q": 1,
+        "q2_vector_rank": 1952,
+        "q2_sphere_dimension": 1951
+      },
+      {
+        "n": 66,
+        "base_dimension": 952,
+        "original_vector_rank": 992,
+        "minimum_q": 1,
+        "q2_vector_rank": 1984,
+        "q2_sphere_dimension": 1983
+      },
+      {
+        "n": 67,
+        "base_dimension": 967,
+        "original_vector_rank": 1008,
+        "minimum_q": 1,
+        "q2_vector_rank": 2016,
+        "q2_sphere_dimension": 2015
+      },
+      {
+        "n": 68,
+        "base_dimension": 982,
+        "original_vector_rank": 1024,
+        "minimum_q": 1,
+        "q2_vector_rank": 2048,
+        "q2_sphere_dimension": 2047
+      },
+      {
+        "n": 69,
+        "base_dimension": 997,
+        "original_vector_rank": 1040,
+        "minimum_q": 1,
+        "q2_vector_rank": 2080,
+        "q2_sphere_dimension": 2079
+      },
+      {
+        "n": 70,
+        "base_dimension": 1012,
+        "original_vector_rank": 1056,
+        "minimum_q": 1,
+        "q2_vector_rank": 2112,
+        "q2_sphere_dimension": 2111
+      },
+      {
+        "n": 71,
+        "base_dimension": 1027,
+        "original_vector_rank": 1072,
+        "minimum_q": 1,
+        "q2_vector_rank": 2144,
+        "q2_sphere_dimension": 2143
+      },
+      {
+        "n": 72,
+        "base_dimension": 1042,
+        "original_vector_rank": 1088,
+        "minimum_q": 1,
+        "q2_vector_rank": 2176,
+        "q2_sphere_dimension": 2175
+      },
+      {
+        "n": 73,
+        "base_dimension": 1057,
+        "original_vector_rank": 1104,
+        "minimum_q": 1,
+        "q2_vector_rank": 2208,
+        "q2_sphere_dimension": 2207
+      },
+      {
+        "n": 74,
+        "base_dimension": 1072,
+        "original_vector_rank": 1120,
+        "minimum_q": 1,
+        "q2_vector_rank": 2240,
+        "q2_sphere_dimension": 2239
+      },
+      {
+        "n": 75,
+        "base_dimension": 1087,
+        "original_vector_rank": 1136,
+        "minimum_q": 1,
+        "q2_vector_rank": 2272,
+        "q2_sphere_dimension": 2271
+      },
+      {
+        "n": 76,
+        "base_dimension": 1102,
+        "original_vector_rank": 1152,
+        "minimum_q": 1,
+        "q2_vector_rank": 2304,
+        "q2_sphere_dimension": 2303
+      },
+      {
+        "n": 77,
+        "base_dimension": 1117,
+        "original_vector_rank": 1168,
+        "minimum_q": 1,
+        "q2_vector_rank": 2336,
+        "q2_sphere_dimension": 2335
+      },
+      {
+        "n": 78,
+        "base_dimension": 1132,
+        "original_vector_rank": 1184,
+        "minimum_q": 1,
+        "q2_vector_rank": 2368,
+        "q2_sphere_dimension": 2367
+      },
+      {
+        "n": 79,
+        "base_dimension": 1147,
+        "original_vector_rank": 1200,
+        "minimum_q": 1,
+        "q2_vector_rank": 2400,
+        "q2_sphere_dimension": 2399
+      },
+      {
+        "n": 80,
+        "base_dimension": 1162,
+        "original_vector_rank": 1216,
+        "minimum_q": 1,
+        "q2_vector_rank": 2432,
+        "q2_sphere_dimension": 2431
+      },
+      {
+        "n": 81,
+        "base_dimension": 1177,
+        "original_vector_rank": 1232,
+        "minimum_q": 1,
+        "q2_vector_rank": 2464,
+        "q2_sphere_dimension": 2463
+      },
+      {
+        "n": 82,
+        "base_dimension": 1192,
+        "original_vector_rank": 1248,
+        "minimum_q": 1,
+        "q2_vector_rank": 2496,
+        "q2_sphere_dimension": 2495
+      },
+      {
+        "n": 83,
+        "base_dimension": 1207,
+        "original_vector_rank": 1264,
+        "minimum_q": 1,
+        "q2_vector_rank": 2528,
+        "q2_sphere_dimension": 2527
+      },
+      {
+        "n": 84,
+        "base_dimension": 1222,
+        "original_vector_rank": 1280,
+        "minimum_q": 1,
+        "q2_vector_rank": 2560,
+        "q2_sphere_dimension": 2559
+      },
+      {
+        "n": 85,
+        "base_dimension": 1237,
+        "original_vector_rank": 1296,
+        "minimum_q": 1,
+        "q2_vector_rank": 2592,
+        "q2_sphere_dimension": 2591
+      },
+      {
+        "n": 86,
+        "base_dimension": 1252,
+        "original_vector_rank": 1312,
+        "minimum_q": 1,
+        "q2_vector_rank": 2624,
+        "q2_sphere_dimension": 2623
+      },
+      {
+        "n": 87,
+        "base_dimension": 1267,
+        "original_vector_rank": 1328,
+        "minimum_q": 1,
+        "q2_vector_rank": 2656,
+        "q2_sphere_dimension": 2655
+      },
+      {
+        "n": 88,
+        "base_dimension": 1282,
+        "original_vector_rank": 1344,
+        "minimum_q": 1,
+        "q2_vector_rank": 2688,
+        "q2_sphere_dimension": 2687
+      },
+      {
+        "n": 89,
+        "base_dimension": 1297,
+        "original_vector_rank": 1360,
+        "minimum_q": 1,
+        "q2_vector_rank": 2720,
+        "q2_sphere_dimension": 2719
+      },
+      {
+        "n": 90,
+        "base_dimension": 1312,
+        "original_vector_rank": 1376,
+        "minimum_q": 1,
+        "q2_vector_rank": 2752,
+        "q2_sphere_dimension": 2751
+      },
+      {
+        "n": 91,
+        "base_dimension": 1327,
+        "original_vector_rank": 1392,
+        "minimum_q": 1,
+        "q2_vector_rank": 2784,
+        "q2_sphere_dimension": 2783
+      },
+      {
+        "n": 92,
+        "base_dimension": 1342,
+        "original_vector_rank": 1408,
+        "minimum_q": 1,
+        "q2_vector_rank": 2816,
+        "q2_sphere_dimension": 2815
+      },
+      {
+        "n": 93,
+        "base_dimension": 1357,
+        "original_vector_rank": 1424,
+        "minimum_q": 1,
+        "q2_vector_rank": 2848,
+        "q2_sphere_dimension": 2847
+      },
+      {
+        "n": 94,
+        "base_dimension": 1372,
+        "original_vector_rank": 1440,
+        "minimum_q": 1,
+        "q2_vector_rank": 2880,
+        "q2_sphere_dimension": 2879
+      },
+      {
+        "n": 95,
+        "base_dimension": 1387,
+        "original_vector_rank": 1456,
+        "minimum_q": 1,
+        "q2_vector_rank": 2912,
+        "q2_sphere_dimension": 2911
+      },
+      {
+        "n": 96,
+        "base_dimension": 1402,
+        "original_vector_rank": 1472,
+        "minimum_q": 1,
+        "q2_vector_rank": 2944,
+        "q2_sphere_dimension": 2943
+      },
+      {
+        "n": 97,
+        "base_dimension": 1417,
+        "original_vector_rank": 1488,
+        "minimum_q": 1,
+        "q2_vector_rank": 2976,
+        "q2_sphere_dimension": 2975
+      },
+      {
+        "n": 98,
+        "base_dimension": 1432,
+        "original_vector_rank": 1504,
+        "minimum_q": 1,
+        "q2_vector_rank": 3008,
+        "q2_sphere_dimension": 3007
+      },
+      {
+        "n": 99,
+        "base_dimension": 1447,
+        "original_vector_rank": 1520,
+        "minimum_q": 1,
+        "q2_vector_rank": 3040,
+        "q2_sphere_dimension": 3039
+      },
+      {
+        "n": 100,
+        "base_dimension": 1462,
+        "original_vector_rank": 1536,
+        "minimum_q": 1,
+        "q2_vector_rank": 3072,
+        "q2_sphere_dimension": 3071
+      }
+    ],
+    "real_group_action": {
+      "group": "C2",
+      "n": 12,
+      "determinant": 1,
+      "fixity": 4,
+      "frame_preserved": true
+    },
+    "fixity_four_freeness_certificate": {
+      "fixed_base_dimension": 4,
+      "fixed_tensor_dimension": 64,
+      "constraint_rank": 64,
+      "fixed_fibre_rank": 0,
+      "q2_fixed_fibre_rank": 0,
+      "frame_rays": [
+        {
+          "1": -1,
+          "3": 2,
+          "2": 2
+        },
+        {
+          "4": -1,
+          "2": 2,
+          "1": 1,
+          "6": 2
+        },
+        {
+          "15": 2,
+          "2": 12,
+          "7": 4,
+          "9": 1,
+          "0": 3,
+          "5": 2,
+          "12": -1,
+          "1": 6,
+          "4": -2
+        },
+        {
+          "27": 1,
+          "0": "-135/436",
+          "2": "207/436",
+          "3": "-45/436",
+          "9": "-45/218",
+          "10": "15/218",
+          "11": "-367/218",
+          "17": "-45/436",
+          "18": "15/436",
+          "19": "-803/436",
+          "28": 2,
+          "4": "45/122",
+          "5": "9/122",
+          "6": "-54/61",
+          "7": "-63/61",
+          "12": "-247/61",
+          "13": "15/61",
+          "14": "-42/61",
+          "15": "36/61",
+          "20": "-491/122",
+          "21": "15/122",
+          "22": "-21/61",
+          "23": "18/61",
+          "24": -1,
+          "1": "207/436",
+          "8": "367/218",
+          "16": "803/436"
+        }
+      ]
+    },
+    "corollary_1_3_coordinate_qualification": "Raw coordinate vectors need not form a Stiefel point. In this exact example Gram-Schmidt supplies five fixed orthogonal rays; normalization supplies a Stiefel point.",
+    "corollary_dimension_check": {
+      "fixed_dimension": 5,
+      "fixed_coordinate_rank": 5,
+      "fixed_six_frame_possible": false,
+      "topology_verified": false
+    }
+  },
+  "scope": "Exact algebra coefficients through dimension16; rational tensor frames, ranks and fixed-space examples. Finite frame checks do not establish global bundle triviality, smoothness, homology actions or the general group-action theorems.",
+  "seed": 2010981,
+  "maximum_algebra_dimension_computed": 32
+}

@@ -1,0 +1,29 @@
+test_01_01_fixity_and_free_stiefel_dimension_obstruction (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_01_01_fixity_and_free_stiefel_dimension_obstruction) ... ok
+test_01_02_theorems_1_1_1_2_sphere_dimension_arithmetic (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_01_02_theorems_1_1_1_2_sphere_dimension_arithmetic) ... ok
+test_02_01_conjugation_hermitian_and_real_group_invariance (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_01_conjugation_hermitian_and_real_group_invariance) ... ok
+test_02_02_stiefel_fibres_and_lemma_2_1_stable_complement (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_02_stiefel_fibres_and_lemma_2_1_stable_complement) ... ok
+test_02_03_lemma_2_2_exact_integer_stable_range_boundaries (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_03_lemma_2_2_exact_integer_stable_range_boundaries) ... ok
+test_02_04_theorem_1_1_complex_to_quaternionic_fixity (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_04_theorem_1_1_complex_to_quaternionic_fixity) ... ok
+test_02_05_real_fixity_three_whitney_bounds (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_05_real_fixity_three_whitney_bounds) ... ok
+test_02_06_omitting_complex_orthogonality_creates_fixed_points (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_06_omitting_complex_orthogonality_creates_fixed_points) ... ok
+test_02_07_remark_2_4_orientation_sign_arithmetic (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_02_07_remark_2_4_orientation_sign_arithmetic) ... ok
+test_03_01_full_doubling_table_twist_and_signed_basis_labels (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_01_full_doubling_table_twist_and_signed_basis_labels) ... ok
+test_03_02_module_warning_bilinearity_and_nonassociativity (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_02_module_warning_bilinearity_and_nonassociativity) ... ok
+test_03_03_lemma_3_1_uniformity_polynomial_certificate (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_03_lemma_3_1_uniformity_polynomial_certificate) ... ok
+test_03_04_sedenion_zero_divisors_and_sixth_stage_obstruction (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_04_sedenion_zero_divisors_and_sixth_stage_obstruction) ... ok
+test_03_05_definition_3_2_separability_and_full_direct_sum (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_05_definition_3_2_separability_and_full_direct_sum) ... ok
+test_03_06_lemma_3_3_pairwise_condition_alone_is_insufficient (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_06_lemma_3_3_pairwise_condition_alone_is_insufficient) ... ok
+test_03_07_proposition_3_4_exact_complement_and_stabilization (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_07_proposition_3_4_exact_complement_and_stabilization) ... ok
+test_03_08_proposition_3_5_equation_3_1_thresholds (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_08_proposition_3_5_equation_3_1_thresholds) ... ok
+test_03_09_whitney_double_rank_and_sphere_off_by_one (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_09_whitney_double_rank_and_sphere_off_by_one) ... ok
+test_03_10_group_equivariance_and_frame_preservation (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_10_group_equivariance_and_frame_preservation) ... ok
+test_03_11_fixity_four_final_fibre_has_no_fixed_vectors (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_11_fixity_four_final_fibre_has_no_fixed_vectors) ... ok
+test_03_12_corollary_coordinate_extraction_requires_orthogonalization (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_12_corollary_coordinate_extraction_requires_orthogonalization) ... ok
+test_03_13_corollary_fixity_five_next_frame_dimension (tests.papers.quasilinear_spheres.test_sections.PaperVerification.test_03_13_corollary_fixity_five_next_frame_dimension) ... ok
+test_04_01_multiply_all_basis_pairs_through_sedenions (tests.papers.quasilinear_spheres.test_sections.GPUVerification.test_04_01_multiply_all_basis_pairs_through_sedenions) ... skipped 'CuPy/CUDA runtime unavailable; multiply() was not executed'
+test_04_02_multiply_uniformity_and_zero_divisor_witness (tests.papers.quasilinear_spheres.test_sections.GPUVerification.test_04_02_multiply_uniformity_and_zero_divisor_witness) ... skipped 'CuPy/CUDA runtime unavailable; multiply() was not executed'
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.165s
+
+OK (skipped=2)

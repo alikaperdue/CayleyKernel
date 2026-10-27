@@ -1,0 +1,1182 @@
+{
+  "paper": "617-0702/2024",
+  "title": "Graphical and Computational Analysis of Cayley-Dickson Algebra Elements over Z_p",
+  "paper_sha256": "5e83a7ad9e0f0a673c04bfe57bcc1747209561df1bd47b9fd204b5e65ddb2bed",
+  "recorded_at_utc": "2026-10-24T06:23:09.596622+00:00",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [GCC 12.3.0]",
+  "numpy": "2.4.1",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "git_head": "399309c1ff14dd229d88d4a6ea673b4279fb7502",
+  "source_sha256": {
+    "tests/papers/journal_617_0702_2024/__init__.py": "28a71bbaf1a0e84496172e9dc51df1b2056fa9f7d86c684f22de09a03be784e4",
+    "tests/papers/journal_617_0702_2024/figures.py": "0988fe86452a88d1936d95f1ce0d1f5e5eaeb460642f7cbe71b0e06e9024c44a",
+    "tests/papers/journal_617_0702_2024/finite.py": "603d31001281644afb6453f3148ab121f676be2d8595098590e19d5e72029080",
+    "tests/papers/journal_617_0702_2024/run.py": "c8d368a390a52b9e35b9edfa4379469d203951c64c8ca812b9be6ce099635c5f",
+    "tests/papers/journal_617_0702_2024/test_sections.py": "f58e8f52d41b3a726dd25a58119ece42580a4e229db46a124c1183e495501938",
+    "CayleyKernel/__init__.py": "16185a0ddc8fd18c179ae5ce3b50d56dbe5a962754b045d98c075d2286fe5af6"
+  },
+  "kernel_loaded": true,
+  "kernel_abi": 1,
+  "cuda_requested": false,
+  "gpu_tests_not_selected": 4,
+  "cuda_device_probe_performed": false,
+  "elapsed_seconds": 0.759337729003164,
+  "tests_run": 23,
+  "passed": [
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_01_01_intro_complex_plus_sign_and_split_quaternion_relations",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_01_02_basis_twist_and_parameterized_doubling",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_01_03_printed_octonion_table_and_split_table_norm_conflict",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_01_04_zorn_product_determinant_and_split_isomorphism",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_01_05_standard_and_split_octonions_are_isomorphic_over_odd_fields",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_01_06_norm_composition_coefficients_for_composition_dimensions",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_02_01_full_enumeration_method_and_quadratic_identity",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_02_02_quadratic_identity_coefficient_certificate_through_dimension64",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_01_theorem1_octonion_idempotent_counts",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_02_theorem1_zorn_cases_and_missing_factors",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_03_corollary2_idempotents_in_higher_dimensions",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_04_figure1_formula_data",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_05_theorem3_nilpotents_and_nilpotency_index",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_06_ordinary_matrix_nilpotent_probability_is_not_zorn_proof",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_07_corollary4_odd_prime_nilpotent_counts_and_characteristic2",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_08_figure2_formula_data",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_09_theorem5_common_nilpotents_exhaustive_coordinates",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_10_theorem5_factorization_and_figure3_data",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_11_zero_divisor_definition_and_norm_zero_witnesses",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_12_corollary6_printed_sign_and_zero_convention",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_13_theorem7_unit_counts_and_actual_two_sided_inverses",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_03_14_higher_dimensions_unit_and_zero_divisor_overlap",
+    "tests.papers.journal_617_0702_2024.test_sections.PaperVerification.test_04_01_finite_field_signs_do_not_define_causal_types"
+  ],
+  "skipped": [],
+  "failures": [],
+  "errors": [],
+  "successful": true,
+  "seed": 6172024,
+  "observations": {
+    "intro_sign_qualifications": {
+      "complex_formula": "Printed plus sign gives split-complex multiplication, not standard complex multiplication.",
+      "split_quaternion": "Printed i^2=1,j^2=k^2=-1,ij=k is incompatible with associative anticommuting quaternion generators in odd characteristic."
+    },
+    "basis_pairs_against_recursive_doubling": 5460,
+    "composition_polynomial_certificates": [
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": false,
+        "all_similitude_coefficients_verified": true
+      },
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": true,
+        "all_similitude_coefficients_verified": true
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": false,
+        "all_similitude_coefficients_verified": true
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": true,
+        "all_similitude_coefficients_verified": true
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": false,
+        "all_similitude_coefficients_verified": true
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": true,
+        "all_similitude_coefficients_verified": true
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": false,
+        "all_similitude_coefficients_verified": true
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": true,
+        "all_similitude_coefficients_verified": true
+      }
+    ],
+    "complete_enumerations": [
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": false,
+        "total": 81,
+        "idempotents": 14,
+        "square_zero_including_zero": 9,
+        "norm_zero_including_zero": 33,
+        "nonzero_zero_divisors": 32,
+        "units": 48
+      },
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": true,
+        "total": 81,
+        "idempotents": 14,
+        "square_zero_including_zero": 9,
+        "norm_zero_including_zero": 33,
+        "nonzero_zero_divisors": 32,
+        "units": 48
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": false,
+        "total": 6561,
+        "idempotents": 758,
+        "square_zero_including_zero": 729,
+        "norm_zero_including_zero": 2241,
+        "nonzero_zero_divisors": 2240,
+        "units": 4320
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": true,
+        "total": 6561,
+        "idempotents": 758,
+        "square_zero_including_zero": 729,
+        "norm_zero_including_zero": 2241,
+        "nonzero_zero_divisors": 2240,
+        "units": 4320
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": false,
+        "total": 625,
+        "idempotents": 32,
+        "square_zero_including_zero": 25,
+        "norm_zero_including_zero": 145,
+        "nonzero_zero_divisors": 144,
+        "units": 480
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": true,
+        "total": 625,
+        "idempotents": 32,
+        "square_zero_including_zero": 25,
+        "norm_zero_including_zero": 145,
+        "nonzero_zero_divisors": 144,
+        "units": 480
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": false,
+        "total": 390625,
+        "idempotents": 15752,
+        "square_zero_including_zero": 15625,
+        "norm_zero_including_zero": 78625,
+        "nonzero_zero_divisors": 78624,
+        "units": 312000
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": true,
+        "total": 390625,
+        "idempotents": 15752,
+        "square_zero_including_zero": 15625,
+        "norm_zero_including_zero": 78625,
+        "nonzero_zero_divisors": 78624,
+        "units": 312000
+      }
+    ],
+    "quadratic_identity_coefficients": [
+      {
+        "dimension": 4,
+        "split": false,
+        "all_square_coefficients_verified": true
+      },
+      {
+        "dimension": 4,
+        "split": true,
+        "all_square_coefficients_verified": true
+      },
+      {
+        "dimension": 8,
+        "split": false,
+        "all_square_coefficients_verified": true
+      },
+      {
+        "dimension": 8,
+        "split": true,
+        "all_square_coefficients_verified": true
+      },
+      {
+        "dimension": 16,
+        "split": false,
+        "all_square_coefficients_verified": true
+      },
+      {
+        "dimension": 16,
+        "split": true,
+        "all_square_coefficients_verified": true
+      },
+      {
+        "dimension": 32,
+        "split": false,
+        "all_square_coefficients_verified": true
+      },
+      {
+        "dimension": 32,
+        "split": true,
+        "all_square_coefficients_verified": true
+      },
+      {
+        "dimension": 64,
+        "split": false,
+        "all_square_coefficients_verified": true
+      },
+      {
+        "dimension": 64,
+        "split": true,
+        "all_square_coefficients_verified": true
+      }
+    ],
+    "theorem1": [
+      {
+        "p": 3,
+        "split": false,
+        "enumerated": 758,
+        "printed": 758
+      },
+      {
+        "p": 3,
+        "split": true,
+        "enumerated": 758,
+        "printed": 758
+      },
+      {
+        "p": 5,
+        "split": false,
+        "enumerated": 15752,
+        "printed": 15752
+      },
+      {
+        "p": 5,
+        "split": true,
+        "enumerated": 15752,
+        "printed": 15752
+      }
+    ],
+    "theorem1_case_counts": {
+      "p": 3,
+      "actual": {
+        "I": 4,
+        "II": 52,
+        "III": 52,
+        "IV": 650
+      },
+      "sum": 758,
+      "printed_case_II": 26,
+      "printed_case_III": 26,
+      "printed_case_sum": 706
+    },
+    "corollary2_quadratic_counts": [
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": false,
+        "count": 14
+      },
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": true,
+        "count": 14
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": false,
+        "count": 758
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": true,
+        "count": 758
+      },
+      {
+        "p": 3,
+        "dimension": 16,
+        "split": false,
+        "count": 4785158
+      },
+      {
+        "p": 3,
+        "dimension": 16,
+        "split": true,
+        "count": 4785158
+      },
+      {
+        "p": 3,
+        "dimension": 32,
+        "split": false,
+        "count": 205891146443558
+      },
+      {
+        "p": 3,
+        "dimension": 32,
+        "split": true,
+        "count": 205891146443558
+      },
+      {
+        "p": 3,
+        "dimension": 64,
+        "split": false,
+        "count": 381520424476946449302046182758
+      },
+      {
+        "p": 3,
+        "dimension": 64,
+        "split": true,
+        "count": 381520424476946449302046182758
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": false,
+        "count": 32
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": true,
+        "count": 32
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": false,
+        "count": 15752
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": true,
+        "count": 15752
+      },
+      {
+        "p": 5,
+        "dimension": 16,
+        "split": false,
+        "count": 6103593752
+      },
+      {
+        "p": 5,
+        "dimension": 16,
+        "split": true,
+        "count": 6103593752
+      },
+      {
+        "p": 5,
+        "dimension": 32,
+        "split": false,
+        "count": 931322574645996093752
+      },
+      {
+        "p": 5,
+        "dimension": 32,
+        "split": true,
+        "count": 931322574645996093752
+      },
+      {
+        "p": 5,
+        "dimension": 64,
+        "split": false,
+        "count": 21684043449710088680153712630271911621093752
+      },
+      {
+        "p": 5,
+        "dimension": 64,
+        "split": true,
+        "count": 21684043449710088680153712630271911621093752
+      },
+      {
+        "p": 7,
+        "dimension": 4,
+        "split": false,
+        "count": 58
+      },
+      {
+        "p": 7,
+        "dimension": 4,
+        "split": true,
+        "count": 58
+      },
+      {
+        "p": 7,
+        "dimension": 8,
+        "split": false,
+        "count": 117994
+      },
+      {
+        "p": 7,
+        "dimension": 8,
+        "split": true,
+        "count": 117994
+      },
+      {
+        "p": 7,
+        "dimension": 16,
+        "split": false,
+        "count": 678223896394
+      },
+      {
+        "p": 7,
+        "dimension": 16,
+        "split": true,
+        "count": 678223896394
+      },
+      {
+        "p": 7,
+        "dimension": 32,
+        "split": false,
+        "count": 22539340290697005649373194
+      },
+      {
+        "p": 7,
+        "dimension": 32,
+        "split": true,
+        "count": 22539340290697005649373194
+      },
+      {
+        "p": 7,
+        "dimension": 64,
+        "split": false,
+        "count": 24893071176241544900787221842733990621695098332006794
+      },
+      {
+        "p": 7,
+        "dimension": 64,
+        "split": true,
+        "count": 24893071176241544900787221842733990621695098332006794
+      },
+      {
+        "p": 11,
+        "dimension": 4,
+        "split": false,
+        "count": 134
+      },
+      {
+        "p": 11,
+        "dimension": 4,
+        "split": true,
+        "count": 134
+      },
+      {
+        "p": 11,
+        "dimension": 8,
+        "split": false,
+        "count": 1772894
+      },
+      {
+        "p": 11,
+        "dimension": 8,
+        "split": true,
+        "count": 1772894
+      },
+      {
+        "p": 11,
+        "dimension": 16,
+        "split": false,
+        "count": 379749853070414
+      },
+      {
+        "p": 11,
+        "dimension": 16,
+        "split": true,
+        "count": 379749853070414
+      },
+      {
+        "p": 11,
+        "dimension": 32,
+        "split": false,
+        "count": 17449402268886411495806973169454
+      },
+      {
+        "p": 11,
+        "dimension": 32,
+        "split": true,
+        "count": 17449402268886411495806973169454
+      },
+      {
+        "p": 11,
+        "dimension": 64,
+        "split": false,
+        "count": 36842278384511590048508364738593923674748605973550972870096951534
+      },
+      {
+        "p": 11,
+        "dimension": 64,
+        "split": true,
+        "count": 36842278384511590048508364738593923674748605973550972870096951534
+      }
+    ],
+    "figure1": [
+      {
+        "p": 3,
+        "paper": 758,
+        "verified_quadratic_count": 758
+      },
+      {
+        "p": 5,
+        "paper": 15752,
+        "verified_quadratic_count": 15752
+      },
+      {
+        "p": 7,
+        "paper": 117994,
+        "verified_quadratic_count": 117994
+      },
+      {
+        "p": 11,
+        "paper": 1772894,
+        "verified_quadratic_count": 1772894
+      },
+      {
+        "p": 13,
+        "paper": 4829008,
+        "verified_quadratic_count": 4829008
+      },
+      {
+        "p": 17,
+        "paper": 24142484,
+        "verified_quadratic_count": 24142484
+      },
+      {
+        "p": 19,
+        "paper": 47052742,
+        "verified_quadratic_count": 47052742
+      },
+      {
+        "p": 23,
+        "paper": 148048058,
+        "verified_quadratic_count": 148048058
+      },
+      {
+        "p": 29,
+        "paper": 594847712,
+        "verified_quadratic_count": 594847712
+      },
+      {
+        "p": 31,
+        "paper": 887533474,
+        "verified_quadratic_count": 887533474
+      },
+      {
+        "p": 37,
+        "paper": 2565777064,
+        "verified_quadratic_count": 2565777064
+      }
+    ],
+    "theorem3": [
+      {
+        "p": 3,
+        "split": false,
+        "nilpotents_including_zero": 729,
+        "nonzero_nilpotents": 728
+      },
+      {
+        "p": 3,
+        "split": true,
+        "nilpotents_including_zero": 729,
+        "nonzero_nilpotents": 728
+      },
+      {
+        "p": 5,
+        "split": false,
+        "nilpotents_including_zero": 15625,
+        "nonzero_nilpotents": 15624
+      },
+      {
+        "p": 5,
+        "split": true,
+        "nilpotents_including_zero": 15625,
+        "nonzero_nilpotents": 15624
+      }
+    ],
+    "ordinary_matrix_proof_qualification": [
+      {
+        "p": 3,
+        "ordinary_2x2_matrices": 81,
+        "ordinary_nilpotents": 9,
+        "zorn_elements": 6561,
+        "verified_zorn_nilpotents": 729
+      },
+      {
+        "p": 5,
+        "ordinary_2x2_matrices": 625,
+        "ordinary_nilpotents": 25,
+        "zorn_elements": 390625,
+        "verified_zorn_nilpotents": 15625
+      },
+      {
+        "p": 7,
+        "ordinary_2x2_matrices": 2401,
+        "ordinary_nilpotents": 49,
+        "zorn_elements": 5764801,
+        "verified_zorn_nilpotents": 117649
+      }
+    ],
+    "corollary4_odd_prime_counts": [
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": false,
+        "count": 9
+      },
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": true,
+        "count": 9
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": false,
+        "count": 729
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": true,
+        "count": 729
+      },
+      {
+        "p": 3,
+        "dimension": 16,
+        "split": false,
+        "count": 4782969
+      },
+      {
+        "p": 3,
+        "dimension": 16,
+        "split": true,
+        "count": 4782969
+      },
+      {
+        "p": 3,
+        "dimension": 32,
+        "split": false,
+        "count": 205891132094649
+      },
+      {
+        "p": 3,
+        "dimension": 32,
+        "split": true,
+        "count": 205891132094649
+      },
+      {
+        "p": 3,
+        "dimension": 64,
+        "split": false,
+        "count": 381520424476945831628649898809
+      },
+      {
+        "p": 3,
+        "dimension": 64,
+        "split": true,
+        "count": 381520424476945831628649898809
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": false,
+        "count": 25
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": true,
+        "count": 25
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": false,
+        "count": 15625
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": true,
+        "count": 15625
+      },
+      {
+        "p": 5,
+        "dimension": 16,
+        "split": false,
+        "count": 6103515625
+      },
+      {
+        "p": 5,
+        "dimension": 16,
+        "split": true,
+        "count": 6103515625
+      },
+      {
+        "p": 5,
+        "dimension": 32,
+        "split": false,
+        "count": 931322574615478515625
+      },
+      {
+        "p": 5,
+        "dimension": 32,
+        "split": true,
+        "count": 931322574615478515625
+      },
+      {
+        "p": 5,
+        "dimension": 64,
+        "split": false,
+        "count": 21684043449710088680149056017398834228515625
+      },
+      {
+        "p": 5,
+        "dimension": 64,
+        "split": true,
+        "count": 21684043449710088680149056017398834228515625
+      },
+      {
+        "p": 7,
+        "dimension": 4,
+        "split": false,
+        "count": 49
+      },
+      {
+        "p": 7,
+        "dimension": 4,
+        "split": true,
+        "count": 49
+      },
+      {
+        "p": 7,
+        "dimension": 8,
+        "split": false,
+        "count": 117649
+      },
+      {
+        "p": 7,
+        "dimension": 8,
+        "split": true,
+        "count": 117649
+      },
+      {
+        "p": 7,
+        "dimension": 16,
+        "split": false,
+        "count": 678223072849
+      },
+      {
+        "p": 7,
+        "dimension": 16,
+        "split": true,
+        "count": 678223072849
+      },
+      {
+        "p": 7,
+        "dimension": 32,
+        "split": false,
+        "count": 22539340290692258087863249
+      },
+      {
+        "p": 7,
+        "dimension": 32,
+        "split": true,
+        "count": 22539340290692258087863249
+      },
+      {
+        "p": 7,
+        "dimension": 64,
+        "split": false,
+        "count": 24893071176241544900787221684958608586849291716964049
+      },
+      {
+        "p": 7,
+        "dimension": 64,
+        "split": true,
+        "count": 24893071176241544900787221684958608586849291716964049
+      },
+      {
+        "p": 11,
+        "dimension": 4,
+        "split": false,
+        "count": 121
+      },
+      {
+        "p": 11,
+        "dimension": 4,
+        "split": true,
+        "count": 121
+      },
+      {
+        "p": 11,
+        "dimension": 8,
+        "split": false,
+        "count": 1771561
+      },
+      {
+        "p": 11,
+        "dimension": 8,
+        "split": true,
+        "count": 1771561
+      },
+      {
+        "p": 11,
+        "dimension": 16,
+        "split": false,
+        "count": 379749833583241
+      },
+      {
+        "p": 11,
+        "dimension": 16,
+        "split": true,
+        "count": 379749833583241
+      },
+      {
+        "p": 11,
+        "dimension": 32,
+        "split": false,
+        "count": 17449402268886407318558803753801
+      },
+      {
+        "p": 11,
+        "dimension": 32,
+        "split": true,
+        "count": 17449402268886407318558803753801
+      },
+      {
+        "p": 11,
+        "dimension": 64,
+        "split": false,
+        "count": 36842278384511590048508364738593731731323648223070468723255659721
+      },
+      {
+        "p": 11,
+        "dimension": 64,
+        "split": true,
+        "count": 36842278384511590048508364738593731731323648223070468723255659721
+      }
+    ],
+    "corollary4_missing_odd_prime_hypothesis": [
+      {
+        "p": 2,
+        "dimension": 4,
+        "actual": 8,
+        "printed": 4
+      },
+      {
+        "p": 2,
+        "dimension": 8,
+        "actual": 128,
+        "printed": 64
+      }
+    ],
+    "figure2": [
+      {
+        "p": 3,
+        "paper": 729,
+        "verified_quadratic_count": 729
+      },
+      {
+        "p": 5,
+        "paper": 15625,
+        "verified_quadratic_count": 15625
+      },
+      {
+        "p": 7,
+        "paper": 117649,
+        "verified_quadratic_count": 117649
+      },
+      {
+        "p": 11,
+        "paper": 1771561,
+        "verified_quadratic_count": 1771561
+      },
+      {
+        "p": 13,
+        "paper": 4826809,
+        "verified_quadratic_count": 4826809
+      },
+      {
+        "p": 17,
+        "paper": 24137569,
+        "verified_quadratic_count": 24137569
+      },
+      {
+        "p": 19,
+        "paper": 47045881,
+        "verified_quadratic_count": 47045881
+      },
+      {
+        "p": 23,
+        "paper": 148035889,
+        "verified_quadratic_count": 148035889
+      },
+      {
+        "p": 29,
+        "paper": 594823321,
+        "verified_quadratic_count": 594823321
+      },
+      {
+        "p": 31,
+        "paper": 887503681,
+        "verified_quadratic_count": 887503681
+      },
+      {
+        "p": 37,
+        "paper": 2565726409,
+        "verified_quadratic_count": 2565726409
+      }
+    ],
+    "theorem5": [
+      {
+        "p": 3,
+        "actual_including_zero": 297,
+        "printed": 33,
+        "missing_factor": 9
+      },
+      {
+        "p": 5,
+        "actual_including_zero": 3625,
+        "printed": 145,
+        "missing_factor": 25
+      }
+    ],
+    "figure3": [
+      {
+        "p": 3,
+        "paper": 33,
+        "ternary_factor": 9,
+        "quaternary_factor": 33,
+        "corrected_coordinate_intersection": 297
+      },
+      {
+        "p": 5,
+        "paper": 145,
+        "ternary_factor": 25,
+        "quaternary_factor": 145,
+        "corrected_coordinate_intersection": 3625
+      },
+      {
+        "p": 7,
+        "paper": 385,
+        "ternary_factor": 49,
+        "quaternary_factor": 385,
+        "corrected_coordinate_intersection": 18865
+      },
+      {
+        "p": 11,
+        "paper": 1441,
+        "ternary_factor": 121,
+        "quaternary_factor": 1441,
+        "corrected_coordinate_intersection": 174361
+      },
+      {
+        "p": 13,
+        "paper": 2353,
+        "ternary_factor": 169,
+        "quaternary_factor": 2353,
+        "corrected_coordinate_intersection": 397657
+      },
+      {
+        "p": 17,
+        "paper": 5185,
+        "ternary_factor": 289,
+        "quaternary_factor": 5185,
+        "corrected_coordinate_intersection": 1498465
+      },
+      {
+        "p": 19,
+        "paper": 7201,
+        "ternary_factor": 361,
+        "quaternary_factor": 7201,
+        "corrected_coordinate_intersection": 2599561
+      },
+      {
+        "p": 23,
+        "paper": 12673,
+        "ternary_factor": 529,
+        "quaternary_factor": 12673,
+        "corrected_coordinate_intersection": 6704017
+      },
+      {
+        "p": 29,
+        "paper": 25201,
+        "ternary_factor": 841,
+        "quaternary_factor": 25201,
+        "corrected_coordinate_intersection": 21194041
+      },
+      {
+        "p": 31,
+        "paper": 30721,
+        "ternary_factor": 961,
+        "quaternary_factor": 30721,
+        "corrected_coordinate_intersection": 29522881
+      },
+      {
+        "p": 37,
+        "paper": 51985,
+        "ternary_factor": 1369,
+        "quaternary_factor": 51985,
+        "corrected_coordinate_intersection": 71167465
+      }
+    ],
+    "corollary6": [
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": false,
+        "printed": 39,
+        "actual_including_zero": 33,
+        "actual_nonzero_zero_divisors": 32
+      },
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": true,
+        "printed": 39,
+        "actual_including_zero": 33,
+        "actual_nonzero_zero_divisors": 32
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": false,
+        "printed": 2295,
+        "actual_including_zero": 2241,
+        "actual_nonzero_zero_divisors": 2240
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": true,
+        "printed": 2295,
+        "actual_including_zero": 2241,
+        "actual_nonzero_zero_divisors": 2240
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": false,
+        "printed": 155,
+        "actual_including_zero": 145,
+        "actual_nonzero_zero_divisors": 144
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": true,
+        "printed": 155,
+        "actual_including_zero": 145,
+        "actual_nonzero_zero_divisors": 144
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": false,
+        "printed": 78875,
+        "actual_including_zero": 78625,
+        "actual_nonzero_zero_divisors": 78624
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": true,
+        "printed": 78875,
+        "actual_including_zero": 78625,
+        "actual_nonzero_zero_divisors": 78624
+      }
+    ],
+    "theorem7": [
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": false,
+        "actual_units": 48,
+        "printed": 42,
+        "checked_two_sided_inverse_examples": 26
+      },
+      {
+        "p": 3,
+        "dimension": 4,
+        "split": true,
+        "actual_units": 48,
+        "printed": 42,
+        "checked_two_sided_inverse_examples": 23
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": false,
+        "actual_units": 4320,
+        "printed": 4266,
+        "checked_two_sided_inverse_examples": 25
+      },
+      {
+        "p": 3,
+        "dimension": 8,
+        "split": true,
+        "actual_units": 4320,
+        "printed": 4266,
+        "checked_two_sided_inverse_examples": 23
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": false,
+        "actual_units": 480,
+        "printed": 470,
+        "checked_two_sided_inverse_examples": 25
+      },
+      {
+        "p": 5,
+        "dimension": 4,
+        "split": true,
+        "actual_units": 480,
+        "printed": 470,
+        "checked_two_sided_inverse_examples": 30
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": false,
+        "actual_units": 312000,
+        "printed": 311750,
+        "checked_two_sided_inverse_examples": 34
+      },
+      {
+        "p": 5,
+        "dimension": 8,
+        "split": true,
+        "actual_units": 312000,
+        "printed": 311750,
+        "checked_two_sided_inverse_examples": 34
+      }
+    ],
+    "higher_dimensional_unit_partition_failure": "A two-sided-invertible sedenion can also annihilate a nonzero element. Theorem7 cannot assume units are the complement of zero divisors beyond composition dimensions.",
+    "causal_type_scope": "Norm=0 makes sense over F_p; norm<0 and norm>0 do not define ordered-field notions there. The real split norm separately has positive, negative and isotropic examples."
+  },
+  "scope": "Exact modular arithmetic; complete small finite-field enumerations and independent quadratic-form convolutions. Composition-algebra unit/ZD classifications are not extended to sedenions. Printed formulas and corrected counts are kept separate."
+}

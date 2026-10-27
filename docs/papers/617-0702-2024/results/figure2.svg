@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="430" viewBox="0 0 740 430">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="25" font-family="sans-serif" font-size="17">Figure 2 recomputed: octonion nilpotents, including 0</text>
+<text x="20" y="46" font-family="sans-serif" font-size="12" fill="#187a40">Verified and printed counts coincide</text>
+<path d="M 105 365.000 H 715" stroke="#ddd"/>
+<text x="97" y="369.000" text-anchor="end" font-family="sans-serif" font-size="11">0</text>
+<path d="M 105 304.000 H 715" stroke="#ddd"/>
+<text x="97" y="308.000" text-anchor="end" font-family="sans-serif" font-size="11">513,145,282</text>
+<path d="M 105 243.000 H 715" stroke="#ddd"/>
+<text x="97" y="247.000" text-anchor="end" font-family="sans-serif" font-size="11">1,026,290,564</text>
+<path d="M 105 182.000 H 715" stroke="#ddd"/>
+<text x="97" y="186.000" text-anchor="end" font-family="sans-serif" font-size="11">1,539,435,845</text>
+<path d="M 105 121.000 H 715" stroke="#ddd"/>
+<text x="97" y="125.000" text-anchor="end" font-family="sans-serif" font-size="11">2,052,581,127</text>
+<path d="M 105 60.000 H 715" stroke="#ddd"/>
+<text x="97" y="64.000" text-anchor="end" font-family="sans-serif" font-size="11">2,565,726,409</text>
+<text x="105.000" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">3</text>
+<text x="140.882" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">5</text>
+<text x="176.765" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">7</text>
+<text x="248.529" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">11</text>
+<text x="284.412" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">13</text>
+<text x="356.176" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">17</text>
+<text x="392.059" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">19</text>
+<text x="463.824" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">23</text>
+<text x="571.471" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">29</text>
+<text x="607.353" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">31</text>
+<text x="715.000" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">37</text>
+<path d="M 105 60 V 365 H 715" fill="none" stroke="#333"/>
+<polyline points="105.000,365.000 140.882,364.998 176.765,364.986 248.529,364.789 284.412,364.426 356.176,362.131 392.059,359.407 463.824,347.402 571.471,294.291 607.353,259.498 715.000,60.000" fill="none" stroke="#187a40" stroke-width="2"/>
+<circle cx="105.000" cy="365.000" r="3" fill="#187a40"/>
+<circle cx="140.882" cy="364.998" r="3" fill="#187a40"/>
+<circle cx="176.765" cy="364.986" r="3" fill="#187a40"/>
+<circle cx="248.529" cy="364.789" r="3" fill="#187a40"/>
+<circle cx="284.412" cy="364.426" r="3" fill="#187a40"/>
+<circle cx="356.176" cy="362.131" r="3" fill="#187a40"/>
+<circle cx="392.059" cy="359.407" r="3" fill="#187a40"/>
+<circle cx="463.824" cy="347.402" r="3" fill="#187a40"/>
+<circle cx="571.471" cy="294.291" r="3" fill="#187a40"/>
+<circle cx="607.353" cy="259.498" r="3" fill="#187a40"/>
+<circle cx="715.000" cy="60.000" r="3" fill="#187a40"/>
+<text x="410.0" y="415" text-anchor="middle" font-family="sans-serif" font-size="12">Prime p (linear axes); exact values in figure-data.csv</text></svg>

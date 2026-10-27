@@ -1,0 +1,49 @@
+name: CPU and Rust
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  cpu:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.10', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Install Python tests and package without GPU dependencies
+        run: python -m pip install pytest numpy && python -m pip install --no-deps -e .
+      - name: Verify Python fallback before installing Rust
+        env:
+          CAYLEY_KERNEL_CPU_BACKEND: python
+        run: python -m pytest -q -m cpu tests/
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path rust/Cargo.toml --check
+      - name: Test standalone Rust library
+        run: cargo test --manifest-path rust/Cargo.toml --locked
+      - name: Install optional Rust extension
+        run: python -m pip install ./rust
+      - name: Lint Rust and Python bindings
+        run: cargo clippy --manifest-path rust/Cargo.toml --locked --all-targets --features python -- -D warnings
+      - name: Verify native CPU operations and research scripts
+        env:
+          CAYLEY_KERNEL_CPU_BACKEND: rust
+          CAYLEY_TEST_REQUIRE_RUST: '1'
+        run: python -m pytest -q -m cpu tests/
+      - name: Verify independent sparse zero-divisor oracle
+        env:
+          CAYLEY_KERNEL_CPU_BACKEND: rust
+        run: python -m pytest -q tests/test_sparse_zd.py --run-sparse-zd --zd-levels=4,32,256 --zd-samples=16 --zd-repeats=1

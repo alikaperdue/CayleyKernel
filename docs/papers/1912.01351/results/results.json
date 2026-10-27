@@ -1,0 +1,367 @@
+{
+  "paper": "1912.01351v1",
+  "paper_sha256": "9acc2035adadf71050304ab673487741fed23f2711f418d25dde2647f3baacb2",
+  "recorded_at_utc": "2026-10-21T18:27:33.160501+00:00",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [GCC 12.3.0]",
+  "numpy": "2.4.1",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "git_head": "399309c1ff14dd229d88d4a6ea673b4279fb7502",
+  "source_sha256": {
+    "CayleyKernel/__init__.py": "16185a0ddc8fd18c179ae5ce3b50d56dbe5a962754b045d98c075d2286fe5af6",
+    "tests/papers/arxiv_1912_01351/__init__.py": "8611f3d8ee8b862f4f09ecd796da1812ec58583937c3c1722c5c0d5aece69c5c",
+    "tests/papers/arxiv_1912_01351/algebra.py": "fd807c2dbf80a845b8a95f42f04ff80ebc6af7627353edb13da2fe8ba32572bd",
+    "tests/papers/arxiv_1912_01351/run.py": "2fe16df5d87d59a6cf9768fbcf4bb74ac80eb3b20957c79e9881e33c9ea29c20",
+    "tests/papers/arxiv_1912_01351/test_sections.py": "6986d4d5e9c67a61d23f79e2dd4039ac149aa0dd347315e25934cc8d3bdf5819"
+  },
+  "kernel_loaded": true,
+  "kernel_abi": 1,
+  "cupy_importable": false,
+  "elapsed_seconds": 2.7905629570013843,
+  "tests_run": 25,
+  "passed": [
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_02_01_basis_twist_and_independent_doubling",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_02_02_printed_octonion_table",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_02_03_involution_quadratic_power_and_inverse",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_02_04_composition_alternativity_moufang_and_conjugate_rule",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_02_05_associativity_boundary_and_sedenion_failures",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_03_01_trace_norm_polarization_and_brandt_conditions",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_03_02_exact_multiquadratic_lattice_structure_constants",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_03_03_rational_coefficients_do_not_ensure_lattice_closure",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_01_01_cauchy_kernel_left_right_regular_and_derivatives",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_01_02_fueter_linear_polynomials_and_module_obstruction",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_01_03_cauchy_sphere_center_and_singularity_scaling",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_01_04_higher_algebra_regular_need_not_be_harmonic",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_02_01_wp_even_zeta_odd_and_corrected_derivative",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_02_02_printed_zeta_plus_sign_counterexample",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_02_03_finite_lattice_periodicity_and_quasiperiod_experiment",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_01_kernel_conjugation_and_one_sided_transformations",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_02_proposition_4_9_exact_counterexample",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_03_exhaust_basis_triples_and_associative_controls",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_04_proposition_4_11_regular_counterexample",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_05_cm_map_inverse_period_coefficients_and_count",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_06_parentheses_and_laurent_cancellation_counterexample",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_07_cofactor_elimination_for_arbitrary_data_only",
+    "tests.papers.arxiv_1912_01351.test_sections.PaperVerification.test_04_03_08_trace_formula_unit_cm_numerical_diagnostic"
+  ],
+  "skipped": [
+    {
+      "test": "tests.papers.arxiv_1912_01351.test_sections.GPUVerification.test_02_multiply_basis_and_dense_independent_oracle",
+      "reason": "CuPy unavailable; multiply() was not executed"
+    },
+    {
+      "test": "tests.papers.arxiv_1912_01351.test_sections.GPUVerification.test_04_03_multiply_proposition_4_9_counterexample",
+      "reason": "CuPy unavailable; multiply() was not executed"
+    }
+  ],
+  "failures": [],
+  "errors": [],
+  "successful": true,
+  "observations": {
+    "sedenion_zero_divisor": {
+      "a": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "b": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -1
+      ]
+    },
+    "regular_module_obstruction": {
+      "a": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "b": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "c": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "D_fc": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0
+      ]
+    },
+    "nonharmonic_regular_sedenion_polynomial": {
+      "i": 1,
+      "j": 10,
+      "a_index": 4,
+      "laplacian": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -2
+      ]
+    },
+    "printed_zeta_derivative_error_single_summand": [
+      "-1/243",
+      "1/1944",
+      "0",
+      "1/486",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "zeta_summand_decay": {
+      "1": {
+        "norms": [
+          2.920337030563409e-12,
+          1.1726653001497563e-14,
+          4.6470749518694004e-17
+        ],
+        "decay_ratios": [
+          249.03414727036477,
+          252.34482169865214
+        ]
+      },
+      "-1": {
+        "norms": [
+          1.711305728968787e-13,
+          3.4836141917645864e-16,
+          6.948847020861223e-19
+        ],
+        "decay_ratios": [
+          491.24433268597517,
+          501.32261960961057
+        ]
+      }
+    },
+    "finite_lattice_period_experiment": [
+      {
+        "cutoff": 1,
+        "nonzero_lattice_points": 6560,
+        "wp_period_defect": 21.20386604938791,
+        "zeta_quasiperiod_defect": 4.835436203885187,
+        "eta1": [
+          1.6980340744598976e-14,
+          -4.544900533731518,
+          1.726049858596923e-16,
+          -4.9439619065339e-17,
+          -1.9949319973733282e-17,
+          -1.3270634591222574e-16,
+          1.0148132334464322e-16,
+          0.0
+        ]
+      },
+      {
+        "cutoff": 2,
+        "nonzero_lattice_points": 390624,
+        "wp_period_defect": 3.094023663996491,
+        "zeta_quasiperiod_defect": 1.1194930744661533,
+        "eta1": [
+          -5.728911612035679e-13,
+          -4.218714488002398,
+          -6.327060830281766e-16,
+          5.169819006754523e-16,
+          -1.1494533555772395e-16,
+          1.1099562092467714e-16,
+          -7.436144595592865e-17,
+          8.787056267345068e-17
+        ]
+      }
+    ],
+    "proposition_4_9": {
+      "lambda": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "mu": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "z": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "lhs": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "rhs": [
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0
+      ]
+    },
+    "proposition_4_9_basis_triples": {
+      "passed": 344,
+      "failed": 168
+    },
+    "proposition_4_11_D_at_1": [
+      -8,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "theorem_4_14_unit_cm_diagnostic": [
+      {
+        "cutoff": 1,
+        "eta0": [
+          4.544900533744029,
+          -5.490399801466594e-16,
+          1.726049858596923e-16,
+          6.071532165918825e-18,
+          -4.7704895589362195e-17,
+          -1.2576745200831851e-16,
+          1.0148132334464322e-16,
+          0.0
+        ],
+        "trace_lhs_exact": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "trace_rhs_truncated_eta": [
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -9.089801067488057,
+          -0.0,
+          -0.0,
+          -0.0
+        ]
+      },
+      {
+        "cutoff": 2,
+        "eta0": [
+          4.218714487830413,
+          5.711920092997275e-16,
+          -9.588340965118163e-16,
+          2.94937295750421e-16,
+          -5.856682258847772e-17,
+          1.6910885736990018e-16,
+          -7.457828639042575e-17,
+          9.600207896709196e-17
+        ],
+        "trace_lhs_exact": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "trace_rhs_truncated_eta": [
+          -0.0,
+          -0.0,
+          -0.0,
+          -0.0,
+          -8.437428975660826,
+          -0.0,
+          -0.0,
+          -0.0
+        ]
+      }
+    ]
+  },
+  "scope": "Finite evidence. Passing counterexample tests reproduce failures of printed claims. Finite lattice sums have no certified tail bounds."
+}

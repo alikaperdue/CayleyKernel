@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="430" viewBox="0 0 740 430">
+<rect width="100%" height="100%" fill="white"/>
+<text x="20" y="25" font-family="sans-serif" font-size="17">Figure 3 comparison: common nilpotents, including 0</text>
+<text x="20" y="46" font-family="sans-serif" font-size="12" fill="#245f9f">Corrected common-coordinate count</text>
+<text x="370" y="46" font-family="sans-serif" font-size="12" fill="#b73535">Printed formula</text>
+<path d="M 105 365.000 H 715" stroke="#ddd"/>
+<text x="97" y="369.000" text-anchor="end" font-family="sans-serif" font-size="11">0</text>
+<path d="M 105 304.000 H 715" stroke="#ddd"/>
+<text x="97" y="308.000" text-anchor="end" font-family="sans-serif" font-size="11">14,233,493</text>
+<path d="M 105 243.000 H 715" stroke="#ddd"/>
+<text x="97" y="247.000" text-anchor="end" font-family="sans-serif" font-size="11">28,466,986</text>
+<path d="M 105 182.000 H 715" stroke="#ddd"/>
+<text x="97" y="186.000" text-anchor="end" font-family="sans-serif" font-size="11">42,700,479</text>
+<path d="M 105 121.000 H 715" stroke="#ddd"/>
+<text x="97" y="125.000" text-anchor="end" font-family="sans-serif" font-size="11">56,933,972</text>
+<path d="M 105 60.000 H 715" stroke="#ddd"/>
+<text x="97" y="64.000" text-anchor="end" font-family="sans-serif" font-size="11">71,167,465</text>
+<text x="105.000" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">3</text>
+<text x="140.882" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">5</text>
+<text x="176.765" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">7</text>
+<text x="248.529" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">11</text>
+<text x="284.412" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">13</text>
+<text x="356.176" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">17</text>
+<text x="392.059" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">19</text>
+<text x="463.824" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">23</text>
+<text x="571.471" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">29</text>
+<text x="607.353" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">31</text>
+<text x="715.000" y="385" text-anchor="middle" font-family="sans-serif" font-size="11">37</text>
+<path d="M 105 60 V 365 H 715" fill="none" stroke="#333"/>
+<polyline points="105.000,364.999 140.882,364.984 176.765,364.919 248.529,364.253 284.412,363.296 356.176,358.578 392.059,353.859 463.824,336.269 571.471,274.169 607.353,238.475 715.000,60.000" fill="none" stroke="#245f9f" stroke-width="2"/>
+<circle cx="105.000" cy="364.999" r="3" fill="#245f9f"/>
+<circle cx="140.882" cy="364.984" r="3" fill="#245f9f"/>
+<circle cx="176.765" cy="364.919" r="3" fill="#245f9f"/>
+<circle cx="248.529" cy="364.253" r="3" fill="#245f9f"/>
+<circle cx="284.412" cy="363.296" r="3" fill="#245f9f"/>
+<circle cx="356.176" cy="358.578" r="3" fill="#245f9f"/>
+<circle cx="392.059" cy="353.859" r="3" fill="#245f9f"/>
+<circle cx="463.824" cy="336.269" r="3" fill="#245f9f"/>
+<circle cx="571.471" cy="274.169" r="3" fill="#245f9f"/>
+<circle cx="607.353" cy="238.475" r="3" fill="#245f9f"/>
+<circle cx="715.000" cy="60.000" r="3" fill="#245f9f"/>
+<polyline points="105.000,365.000 140.882,364.999 176.765,364.998 248.529,364.994 284.412,364.990 356.176,364.978 392.059,364.969 463.824,364.946 571.471,364.892 607.353,364.868 715.000,364.777" fill="none" stroke="#b73535" stroke-width="2"/>
+<circle cx="105.000" cy="365.000" r="3" fill="#b73535"/>
+<circle cx="140.882" cy="364.999" r="3" fill="#b73535"/>
+<circle cx="176.765" cy="364.998" r="3" fill="#b73535"/>
+<circle cx="248.529" cy="364.994" r="3" fill="#b73535"/>
+<circle cx="284.412" cy="364.990" r="3" fill="#b73535"/>
+<circle cx="356.176" cy="364.978" r="3" fill="#b73535"/>
+<circle cx="392.059" cy="364.969" r="3" fill="#b73535"/>
+<circle cx="463.824" cy="364.946" r="3" fill="#b73535"/>
+<circle cx="571.471" cy="364.892" r="3" fill="#b73535"/>
+<circle cx="607.353" cy="364.868" r="3" fill="#b73535"/>
+<circle cx="715.000" cy="364.777" r="3" fill="#b73535"/>
+<text x="410.0" y="415" text-anchor="middle" font-family="sans-serif" font-size="12">Prime p (linear axes); exact values in figure-data.csv</text></svg>
