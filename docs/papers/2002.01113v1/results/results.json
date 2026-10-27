@@ -1,0 +1,90 @@
+{
+  "paper_id": "2002.01113v1",
+  "paper_filename": "2002.01113v1.pdf",
+  "paper_sha256": "ed8920ff1b611fa47b2ca2821594f25079f1b6f2d97ad81178e9542c74ad7290",
+  "timestamp_utc": "2026-10-26T06:32:27.781761+00:00",
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "git_head": "399309c1ff14dd229d88d4a6ea673b4279fb7502",
+  "source_sha256": {
+    "tests/papers/desktop_batch/test_1474295358.py": "8abf71a7be3ac479203fc87cbd25a1e3fabde8c50f34983781df493c6d4208d0",
+    "tests/papers/desktop_batch/test_2505_11747v3.py": "6047c80a71d8b80a4ecae7f8c44b1fd4de521c57ade629a29325a535932594e9",
+    "tests/papers/desktop_batch/test_1707_07318v4.py": "6c0255a8be7374c9c479b083edc0ec7227186f00fe580ab3d719c20a35e6c46e",
+    "tests/papers/desktop_batch/test_2001_11797v4.py": "aeb9933dfdd6933b07cab16da8c1c52bc5fae1c6141a8279bf94ac8b39570ab8",
+    "tests/papers/desktop_batch/test_1703_00144v4.py": "7bdccb768852af1e5084dba7b9a667ac2e94a045e7e953924210bfcb3fbff112",
+    "tests/papers/desktop_batch/test_1602_02843v3.py": "319d61af0067c7121aa1efaf75206b733f1204fe0003f95994b93db074cc0169",
+    "tests/papers/desktop_batch/test_2609_11588v1.py": "29e73cec2911168e4b6bfa50e1866202cb1beb04b399bf84b135694f3b9951e9",
+    "tests/papers/desktop_batch/test_2503_12402v1.py": "7985caee747a9596c849a4454620e4b3e10ec9f5098f56dde92ddd06d8e1c078",
+    "tests/papers/desktop_batch/test_2205_07986v2.py": "a1fee19d778153111f6a60212f036afaf63980d8edc1ba822cfd4350eb94254c",
+    "tests/papers/desktop_batch/test_12050977.py": "33dac85861cae13796d67f2276172c7627b771c8f143c1c2bd5e0fc32d41f896",
+    "tests/papers/desktop_batch/common.py": "0292e638fcae63e8705f35119be2d9b0f006f8592702dad3ebcbeeb63f0b6dce",
+    "tests/papers/desktop_batch/test_2407_00449v5.py": "d6046c9416cc5f94cb378a6fa2767d240c863d831bb52564e54255f8cca14919",
+    "tests/papers/desktop_batch/test_0311008v1.py": "c258af740d147bb63c09aa8240dadee77f0f93b3e030b32901ede6871ed69f49",
+    "tests/papers/desktop_batch/__init__.py": "9806381379261d485359029c819596fd35e6ba706746beceb57ef7a4f24d5ebf",
+    "tests/papers/desktop_batch/test_2002_01113v1.py": "de48c8ca5296d3a157cbc91ccc72d52b91f5e806d7bbf6cdd93a83bab1c797e5",
+    "tests/papers/desktop_batch/test_2311_02269v1.py": "bb5823a01c9f91f3c28382c162031432d9cee4e905c00108599fb64e600d2f15",
+    "tests/papers/desktop_batch/test_2306_15889v4.py": "9eff3c23078d6e40b2900a72bd2824c84ce19121cab5adfd7d0d55dd448e4a30",
+    "tests/papers/desktop_batch/test_20220019441.py": "1d7965c2218f71dbab32780ff6f9a3ddc2b078001037cc688bde997b860e46d7",
+    "tests/papers/arxiv_2608_28176/algebra.py": "d73ef36dba33123c4a0eb363482048049058696dd735ee455cd635de802a66fd",
+    "scripts/verify_desktop_papers.py": "d0d4f32540daab7e9aa8ad4879f8416352cad7c32f1f01feec3e9d9ede44a8d7",
+    "CayleyKernel/__init__.py": "1e8024526d659bcce7497f69b390ed8e47f5d87178aad6787ecdb0888b2755c0",
+    "scripts/quasilinear_cd.py": "e0a5ac18c29ff24d107af940593dc0b156aef6feaa7c484539b404130e5dc90b"
+  },
+  "kernel_loaded": true,
+  "kernel_abi": 1,
+  "cupy_importable": true,
+  "tests_run": 6,
+  "passed": [
+    "tests.papers.desktop_batch.test_2002_01113v1.Sections.test_03_1_projection_tangent_and_transport_linearity",
+    "tests.papers.desktop_batch.test_2002_01113v1.Sections.test_03_2_closed_cayley_and_module_complex_plane",
+    "tests.papers.desktop_batch.test_2002_01113v1.Sections.test_04_algorithm_1_two_iterations_are_not_exactly_orthonormal",
+    "tests.papers.desktop_batch.test_2002_01113v1.Sections.test_05_1_theorem_1_contraction",
+    "tests.papers.desktop_batch.test_2002_01113v1.Sections.test_05_2_appendix_B_big_O_not_little_o_counterexample",
+    "tests.papers.desktop_batch.test_2002_01113v1.Sections.test_06_gpu_rotation_replay"
+  ],
+  "skipped": [],
+  "failures": [],
+  "errors": [],
+  "successful": true,
+  "elapsed_seconds": 0.126473796000937,
+  "measurements": {
+    "two_iteration_orthogonality_defect": 0.12164499378108412,
+    "fixed_point_errors": [
+      0.13587324409735144,
+      0.027174648819470435,
+      0.005434929763894253,
+      0.00108698595277873,
+      0.0002173971905557347,
+      4.347943811129024e-05,
+      8.69588762229199e-06,
+      1.7391775243226332e-06
+    ],
+    "little_o_counterexample": [
+      {
+        "iterations": 0,
+        "normalized_errors": [
+          0.4993761694389223,
+          0.49999375011718505,
+          0.49999993750001176
+        ]
+      },
+      {
+        "iterations": 1,
+        "normalized_errors": [
+          0.24968808471946116,
+          0.24999687505859253,
+          0.24999996875000588
+        ]
+      },
+      {
+        "iterations": 2,
+        "normalized_errors": [
+          0.12484404235973058,
+          0.12499843752929626,
+          0.12499998437500294
+        ]
+      }
+    ]
+  },
+  "scope": "Finite computations only; see paper README for tested hypotheses and omissions."
+}

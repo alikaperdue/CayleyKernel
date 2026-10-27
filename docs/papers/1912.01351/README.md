@@ -2,7 +2,7 @@
 
 Rolf Sören Kraußhar, **Function Theories in Cayley-Dickson algebras and Number Theory**, version 1, 19 pages. The arXiv stamp is 3 December 2019; the title page says 4 December 2019. Printed and PDF page numbers agree.
 
-Source: `/home/alika/Desktop/CayleyKernel/1912.01351v1.pdf`. SHA-256: `9acc2035adadf71050304ab673487741fed23f2711f418d25dde2647f3baacb2`. The original PDF is not copied into git. This review concerns that version only; it does not assess later revisions or corrections. Formulas on pages 4–6, 10, 12, 14 and 17 were also checked in rendered pages, since extracted text loses conjugation bars.
+Source: `1912.01351v1.pdf`. SHA-256: `9acc2035adadf71050304ab673487741fed23f2711f418d25dde2647f3baacb2`. The original PDF is not copied into git. This review concerns that version only; it does not assess later revisions or corrections. Formulas on pages 4–6, 10, 12, 14 and 17 were also checked in rendered pages, since extracted text loses conjugation bars.
 
 ## Result and interpretation
 
@@ -38,8 +38,8 @@ To regenerate the saved results:
 
 ```bash
 python3 -m tests.papers.arxiv_1912_01351.run \
-  --paper /home/alika/Desktop/CayleyKernel/1912.01351v1.pdf \
-  --output docs/papers/1912.01351/results
+  --paper /path/to/papers/1912.01351v1.pdf \
+  --output /tmp/cayley-paper-1912.01351/results
 ```
 
 Python and NumPy are required; no additional symbolic-math package or pytest is needed. If pytest is installed, the package also supports:
@@ -173,3 +173,7 @@ See [coefficient types and numerical scope](../COEFFICIENT_TYPES.md) for the
 shared float16/complex64/complex128 fixtures, tolerances and reproduction.
 Existing saved results describe their recorded runs; these device additions
 require a working CUDA environment and are not represented by those logs.
+
+## Saved evidence and current reproduction
+
+The [saved JSON snapshot](results/results.json) reports **25 tests: 23 passed, 2 skipped, 0 failures, and 0 errors**. These are historical results for the source hashes and environment in that file, not a fresh run of the current checkout. Hash entries for retired helpers are provenance only; those helpers are not required by the commands above. Later test additions may change the test count. See the [saved-evidence policy](../README.md) for reproduction and log handling.

@@ -2,7 +2,7 @@
 
 Saba Zahid, Muazzam Ali, M Usman Hashmi, Abdul Manan, and Affan Ahmad, *Graphical and Computational Analysis of Cayley-Dickson Algebra Elements over Z_p*, Journal of Computing & Biomedical Informatics, Volume 07 Issue 02 (2024). The supplied PDF prints DOI `10.56979/702/2024` and article ID `617-0702/2024`.
 
-Reviewed source: `/home/alika/Desktop/CayleyKernel/617.pdf`, eight pages. All pages' extracted text was reviewed. The equations, graphs and tables on PDF pages 2–6 were checked visually; Table 1 was transcribed from an enlarged rendering. Page references below are PDF page numbers, since the article does not print ordinary page numbers.
+Reviewed source: `617.pdf`, eight pages. All pages' extracted text was reviewed. The equations, graphs and tables on PDF pages 2–6 were checked visually; Table 1 was transcribed from an enlarged rendering. Page references below are PDF page numbers, since the article does not print ordinary page numbers.
 
 **Suite: 27 tests. Local result: 23 CPU tests passed. Four CUDA tests are written for your machine and were not selected locally.** No `multiply()` call or CUDA-device probe was made here. Normal pytest runs the GPU tests automatically when the CUDA prerequisites are present.
 
@@ -33,15 +33,15 @@ To save a report including your GPU execution:
 ```bash
 python3 -m tests.papers.journal_617_0702_2024.run --cuda \
   --paper /path/to/617.pdf \
-  --output docs/papers/617-0702-2024/results-cuda
+  --output /tmp/cayley-paper-617-0702-2024/results-cuda
 ```
 
 The local CPU-only report is reproduced with:
 
 ```bash
 python3 -m tests.papers.journal_617_0702_2024.run \
-  --paper /home/alika/Desktop/CayleyKernel/617.pdf \
-  --output docs/papers/617-0702-2024/results
+  --paper /path/to/papers/617.pdf \
+  --output /tmp/cayley-paper-617-0702-2024/results
 ```
 
 Only this report runner's default is CPU-only; pytest has no environment-variable opt-in. The GPU tests skip for missing CuPy, compiled library, or device. The tests are marked to avoid the repository's global GPU fixtures suppressing the CPU cases. CPU execution requires NumPy and the local CayleyKernel module; pytest is optional because the suite also supports unittest.
@@ -150,3 +150,7 @@ See [coefficient types and numerical scope](../COEFFICIENT_TYPES.md) for the
 shared float16/complex64/complex128 fixtures, tolerances and reproduction.
 Existing saved results describe their recorded runs; these device additions
 require a working CUDA environment and are not represented by those logs.
+
+## Saved evidence and current reproduction
+
+The [saved JSON snapshot](results/results.json) reports **23 tests: 23 passed, 0 skipped, 0 failures, and 0 errors**. These are historical results for the source hashes and environment in that file, not a fresh run of the current checkout. Hash entries for retired helpers are provenance only; those helpers are not required by the commands above. Later test additions may change the test count. See the [saved-evidence policy](../README.md) for reproduction and log handling.

@@ -2,7 +2,7 @@
 
 Daniel K. Biss, J. Daniel Christensen, Daniel Dugger and Daniel C. Isaksen, **Large Annihilators in Cayley-Dickson Algebras II**, version 2, 22 February 2007, 22 PDF pages. Printed and PDF page numbers agree. The directory uses `math.0702075` to distinguish this legacy arXiv identifier.
 
-Input: `/home/alika/Desktop/CayleyKernel/0702075v2.pdf`.
+Input: `0702075v2.pdf`.
 SHA-256: `8a13b3b2ae6a2c0cf1b6f086400d0b50eeebcdde9be861e68012224a51c95f8c`.
 The complete extracted text was reviewed. Pages 6–7, 9, 13–16, 18 and 20–21 were additionally checked as rendered pages, especially the projections, division notation, normalization and `c/4` stability threshold. The PDF is unchanged and not copied into git. This review concerns the supplied version, without a later-version or cited-literature audit.
 
@@ -43,8 +43,8 @@ Regenerate all saved files:
 
 ```bash
 python3 -m tests.papers.arxiv_math_0702075.run \
-  --paper /home/alika/Desktop/CayleyKernel/0702075v2.pdf \
-  --output docs/papers/math.0702075/results
+  --paper /path/to/papers/0702075v2.pdf \
+  --output /tmp/cayley-paper-math.0702075/results
 ```
 
 Python and NumPy suffice. No pytest, symbolic algebra system, GAP, or GPU runtime is needed for the CPU suite. With pytest installed:
@@ -257,3 +257,7 @@ See [coefficient types and numerical scope](../COEFFICIENT_TYPES.md) for the
 shared float16/complex64/complex128 fixtures, tolerances and reproduction.
 Existing saved results describe their recorded runs; these device additions
 require a working CUDA environment and are not represented by those logs.
+
+## Saved evidence and current reproduction
+
+The [saved JSON snapshot](results/results.json) reports **37 tests: 34 passed, 3 skipped, 0 failures, and 0 errors**. These are historical results for the source hashes and environment in that file, not a fresh run of the current checkout. Hash entries for retired helpers are provenance only; those helpers are not required by the commands above. Later test additions may change the test count. See the [saved-evidence policy](../README.md) for reproduction and log handling.

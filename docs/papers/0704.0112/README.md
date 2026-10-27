@@ -2,7 +2,7 @@
 
 Robert P. C. de Marrais, *Placeholder Substructures III: A Bit-String-Driven “Recipe Theory” for Infinite-Dimensional Zero-Divisor Spaces*.
 
-Reviewed source: `/home/alika/Desktop/CayleyKernel/0704.0112v3.pdf`, 32 pages. The arXiv banner says v3, 22 November 2007; the document's title-page date and PDF creation metadata say 29 October 2018. This review identifies the actual supplied bytes by SHA256 rather than resolving that date discrepancy. Page numbers below are the printed page numbers. The full text was read; Figure 1 and the central counting/cookbook formulas were also inspected in rendered pages.
+Reviewed source: `0704.0112v3.pdf`, 32 pages. The arXiv banner says v3, 22 November 2007; the document's title-page date and PDF creation metadata say 29 October 2018. This review identifies the actual supplied bytes by SHA256 rather than resolving that date discrepancy. Page numbers below are the printed page numbers. The full text was read; Figure 1 and the central counting/cookbook formulas were also inspected in rendered pages.
 
 The computational core is unusually well suited to CayleyKernel: a table painted by bit rules can be compared independently with a table obtained from actual Cayley–Dickson products. The agreement is extensive, but there are qualifications to the printed preparation and unrestricted off-switch wording. See [FINDINGS.md](FINDINGS.md) for exact examples.
 
@@ -20,8 +20,8 @@ Run the CPU checks and save their results from the repository root:
 
 ```bash
 python3 -m tests.papers.arxiv_0704_0112.run \
-  --paper /home/alika/Desktop/CayleyKernel/0704.0112v3.pdf \
-  --output docs/papers/0704.0112/results
+  --paper /path/to/papers/0704.0112v3.pdf \
+  --output /tmp/cayley-paper-0704.0112/results
 ```
 
 On your CUDA machine, run all 32 tests normally:
@@ -42,7 +42,7 @@ Or run the whole suite with GPU opt-in and save a separate result set:
 ```bash
 python3 -m tests.papers.arxiv_0704_0112.run --cuda \
   --paper /path/to/0704.0112v3.pdf \
-  --output docs/papers/0704.0112/results-cuda
+  --output /tmp/cayley-paper-0704.0112/results-cuda
 ```
 
 CPU checks use Python's standard library and the local CayleyKernel package. NumPy, CuPy, the compiled kernel, and a CUDA device are needed for GPU execution. The report runner selects only CPU tests unless `--cuda` is supplied. Ordinary unittest/pytest runs the GPU methods automatically, skipping only if CuPy, the compiled kernel, or a CUDA device is missing. `cpu` pytest markers prevent the repository's GPU fixtures from suppressing these exact CPU tests.
@@ -158,3 +158,7 @@ See [coefficient types and numerical scope](../COEFFICIENT_TYPES.md) for the
 shared float16/complex64/complex128 fixtures, tolerances and reproduction.
 Existing saved results describe their recorded runs; these device additions
 require a working CUDA environment and are not represented by those logs.
+
+## Saved evidence and current reproduction
+
+The [saved JSON snapshot](results/results.json) reports **29 tests: 29 passed, 0 skipped, 0 failures, and 0 errors**. These are historical results for the source hashes and environment in that file, not a fresh run of the current checkout. Hash entries for retired helpers are provenance only; those helpers are not required by the commands above. Later test additions may change the test count. See the [saved-evidence policy](../README.md) for reproduction and log handling.

@@ -1,0 +1,216 @@
+{
+  "reviewed": [
+    {
+      "paper_id": "0311008v1",
+      "title": "Differential characters on orbifolds and string connections I",
+      "tests_run": 6,
+      "passed": 5,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../0311008v1/results/results.json"
+    },
+    {
+      "paper_id": "12050977",
+      "title": "Representation of an ordered group of symbols by hypervectors",
+      "tests_run": 6,
+      "passed": 5,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../12050977/results/results.json"
+    },
+    {
+      "paper_id": "1474295358",
+      "title": "An alternate Cayley-Dickson product",
+      "tests_run": 5,
+      "passed": 4,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../1474295358/results/results.json"
+    },
+    {
+      "paper_id": "1602.02843v3",
+      "title": "Periodicity of the Cayley-Dickson twists",
+      "tests_run": 6,
+      "passed": 5,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../1602.02843v3/results/results.json"
+    },
+    {
+      "paper_id": "1703.00144v4",
+      "title": "Theoretical properties for neural networks with weight matrices of low displacement rank",
+      "tests_run": 7,
+      "passed": 6,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../1703.00144v4/results/results.json"
+    },
+    {
+      "paper_id": "1707.07318v4",
+      "title": "The Cayley-Dickson doubling products",
+      "tests_run": 8,
+      "passed": 7,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../1707.07318v4/results/results.json"
+    },
+    {
+      "paper_id": "2001.11797v4",
+      "title": "A comparison of vector symbolic architectures",
+      "tests_run": 7,
+      "passed": 6,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../2001.11797v4/results/results.json"
+    },
+    {
+      "paper_id": "2002.01113v1",
+      "title": "Efficient Riemannian optimization on the Stiefel manifold via the Cayley transform",
+      "tests_run": 6,
+      "passed": 5,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../2002.01113v1/results/results.json"
+    },
+    {
+      "paper_id": "20220019441",
+      "title": "Circuits, methods, and articles of manufacture for hyper-dimensional computing systems and related applications",
+      "tests_run": 11,
+      "passed": 10,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../20220019441/results/results.json"
+    },
+    {
+      "paper_id": "2205.07986v2",
+      "title": "The twisted group algebra structure of the Cayley-Dickson algebra",
+      "tests_run": 8,
+      "passed": 7,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../2205.07986v2/results/results.json"
+    },
+    {
+      "paper_id": "2306.15889v4",
+      "title": "Alternating roots of polynomials over Cayley-Dickson algebras",
+      "tests_run": 9,
+      "passed": 8,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../2306.15889v4/results/results.json"
+    },
+    {
+      "paper_id": "2311.02269v1",
+      "title": "All Hurwitz algebras from 3D geometric algebras",
+      "tests_run": 8,
+      "passed": 7,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../2311.02269v1/results/results.json"
+    },
+    {
+      "paper_id": "2407.00449v5",
+      "title": "Fully tensorial approach to hypercomplex-valued neural networks",
+      "tests_run": 7,
+      "passed": 6,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../2407.00449v5/results/results.json"
+    },
+    {
+      "paper_id": "2503.12402v1",
+      "title": "A calibration in R16 and Federer's product question",
+      "tests_run": 7,
+      "passed": 6,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../2503.12402v1/results/results.json"
+    },
+    {
+      "paper_id": "2505.11747v3",
+      "title": "Structure of the Cayley-Dickson algebras",
+      "tests_run": 10,
+      "passed": 9,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../2505.11747v3/results/results.json"
+    },
+    {
+      "paper_id": "2609.11588v1",
+      "title": "Quasilinear multiplication in the real Cayley-Dickson tower",
+      "tests_run": 7,
+      "passed": 6,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0,
+      "result": "../2609.11588v1/results/results.json"
+    }
+  ],
+  "archived": [
+    {
+      "pdf": "20240273407.pdf",
+      "sha256": "f03cf67898a8155e47f18e18e0090fbc8af5d4dc5d2b3895da541690e77a8316"
+    },
+    {
+      "pdf": "20260073225.pdf",
+      "sha256": "62722e0174299a0abaeb5d0301fbb23505e99aff918e6d62e7a9f9468074c111"
+    },
+    {
+      "pdf": "20260111768.pdf",
+      "sha256": "3bd1464904fdd57ff63b69dd2d00ec6e90b13f88f6985168746dbbd044fbb223"
+    },
+    {
+      "pdf": "2111.06077v2.pdf",
+      "sha256": "7092266babef3496e03fd8d916ae15017956b0c65f65f5951901c1810ade9f6b"
+    },
+    {
+      "pdf": "2211.00160v1.pdf",
+      "sha256": "1b9080013fb828066abe03ec93ec7b84062eba958c0c9df5efabb05f6742bb25"
+    },
+    {
+      "pdf": "2410.02367v9.pdf",
+      "sha256": "3b80a15770f24e1622b0548b58b5d925960b82b3b34627551fb29e28b970d451"
+    },
+    {
+      "pdf": "2502.17779v1.pdf",
+      "sha256": "283eb964b88175961808cdbc62be69ebdb8ffd398a521b0633693023a9c57f76"
+    },
+    {
+      "pdf": "2504.19874v1.pdf",
+      "sha256": "431eb13926e10491f5fbd0bebd0813c51bd6c1e884426a1500c5db640b2997ab"
+    },
+    {
+      "pdf": "2507.12366v1.pdf",
+      "sha256": "aa438c05fb5468da4025a8fd1aaaa0633d904a48d17a1ba10b6a993d62507214"
+    },
+    {
+      "pdf": "25160-Article Text-29223-1-2-20230626.pdf",
+      "sha256": "85b68f542780424c8265e6f58366fcef0a3b954d8e191bee1c8b698c22920015"
+    }
+  ],
+  "totals": {
+    "tests_run": 118,
+    "passed": 102,
+    "skipped": 16,
+    "failures": 0,
+    "errors": 0
+  },
+  "other_pdf_count": 0,
+  "reviewed_count": 16,
+  "archived_count": 10
+}

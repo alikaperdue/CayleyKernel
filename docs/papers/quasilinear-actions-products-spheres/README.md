@@ -2,7 +2,7 @@
 
 Özgün Ünlü and Ergün Yalçın, *Bulletin of the London Mathematical Society* **42** (2010), 981–990. DOI: `10.1112/blms/bdq072`.
 
-Reviewed source: `/home/alika/Desktop/CayleyKernel/Quasilinear actions on products of spheres.pdf`, the ten-page published article, not an arXiv version. Printed page numbers below refer to 981–990. The complete text was extracted and the important formula pages visually checked against rendered pages.
+Reviewed source: `Quasilinear actions on products of spheres.pdf`, the ten-page published article, not an arXiv version. Printed page numbers below refer to 981–990. The complete text was extracted and the important formula pages visually checked against rendered pages.
 
 The paper uses Cayley–Dickson algebras to construct free finite-group actions on products of spheres. A free action means that no nonidentity group element fixes a point. The representation's **fixity** is the largest dimension of the vectors fixed by a nonidentity element. The authors arrange enough mutually independent algebra-generated constraints that the last sphere has no fixed vectors left.
 
@@ -20,8 +20,8 @@ From the repository root:
 
 ```bash
 python3 -m tests.papers.quasilinear_spheres.run \
-  --paper '/home/alika/Desktop/CayleyKernel/Quasilinear actions on products of spheres.pdf' \
-  --output docs/papers/quasilinear-actions-products-spheres/results
+  --paper '/path/to/papers/Quasilinear actions on products of spheres.pdf' \
+  --output /tmp/cayley-paper-quasilinear-actions-products-spheres/results
 ```
 
 Without writing a report:
@@ -106,3 +106,7 @@ See [coefficient types and numerical scope](../COEFFICIENT_TYPES.md) for the
 shared float16/complex64/complex128 fixtures, tolerances and reproduction.
 Existing saved results describe their recorded runs; these device additions
 require a working CUDA environment and are not represented by those logs.
+
+## Saved evidence and current reproduction
+
+The [saved JSON snapshot](results/results.json) reports **24 tests: 22 passed, 2 skipped, 0 failures, and 0 errors**. These are historical results for the source hashes and environment in that file, not a fresh run of the current checkout. Hash entries for retired helpers are provenance only; those helpers are not required by the commands above. Later test additions may change the test count. See the [saved-evidence policy](../README.md) for reproduction and log handling.

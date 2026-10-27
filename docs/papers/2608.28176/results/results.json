@@ -1,0 +1,67 @@
+{
+  "paper": "2608.28176v1",
+  "paper_sha256": "750e708c0284c4e4b45daaea101c39db0256cf9dec659dc899311f237ac7a490",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [GCC 12.3.0]",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "kernel_loaded": true,
+  "kernel_abi": 1,
+  "cupy_importable": false,
+  "elapsed_seconds": 2.0283322769973893,
+  "tests_run": 31,
+  "passed": [
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_02_01_graph_definitions_and_projective_scaling",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_02_02_definition_2_4_twist_basis_and_oracle",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_02_03_01_norm_involution_bilinear_form_and_flexibility",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_02_03_02_lemma_2_14_anticentralizers",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_02_03_03_lemma_2_16_conditional_norm",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_03_01_lemmas_3_2_to_3_8_hexagon",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_03_01_reference_only_degenerate_cycle_and_zero_norm_branch",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_03_02_lemmas_3_13_3_14_full_annihilator_spaces",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_03_02_proposition_3_10_and_corollary_3_16",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_03_to_04_nonbasis_rational_witness",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_04_01_lemmas_4_1_4_3_corollaries_4_2_4_4",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_04_02_01_lemmas_4_5_4_6_4_10_and_table_1",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_04_02_02_description_4_8_double_hexagon_graph",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_05_01_lemma_5_1_corollary_5_2",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_05_02_lemma_5_3_table_2",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_05_03_corollary_5_5_strong_alternativity_polarization",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_05_04_lemma_5_6_table_3",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_05_05_lemma_5_8_table_4_alternativity_and_moufang",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_05_06_corollary_5_9",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_05_07_reference_only_split_degenerate_homomorphisms",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_06_01_01_lemmas_6_2_6_3_proposition_6_5_components",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_06_01_02_remark_6_6_four_types",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_06_02_01_proposition_6_7_all_pure_basis_pairs",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_06_02_02_proposition_6_8_independent_eight_units",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_06_02_03_lemmas_6_9_to_6_12_and_6_15_neighbors",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_06_02_04_lemma_6_14_reduction",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_06_02_05_lemma_6_14_1_printed_counterexample",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_06_02_06_theorem_6_16_exact_kernel_classification",
+    "tests.papers.arxiv_2608_28176.test_sections.PaperSections.test_06_reference_only_all_signatures_classification_and_neighbors"
+  ],
+  "skipped": [
+    {
+      "test": "tests.papers.arxiv_2608_28176.test_sections.GPUVerification.test_02_multiply_all_basiss_and_dense_oracle",
+      "reason": "multiply(): CuPy is not installed; CPU checks still run"
+    },
+    {
+      "test": "tests.papers.arxiv_2608_28176.test_sections.GPUVerification.test_03_to_06_multiply_hexagon_tables_and_all_sedenion_candidates",
+      "reason": "multiply(): CuPy is not installed; CPU checks still run"
+    }
+  ],
+  "failures": [],
+  "errors": [],
+  "successful": true,
+  "source_sha256": {
+    "__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "algebra.py": "9cf8fd47f30f53151fca6395fbc14993647ee9298d3f09b116b648003e754a91",
+    "run.py": "ca94c912eb4eb00fb710cdeebea5bbacb2934dced80b9c8c4b1980f49eead60f",
+    "tables.py": "0205f455feea66ed43771f72bde041de67384cff5ebcfc78594540f09af3d9b0",
+    "test_sections.py": "89708413f7d0e647cfe32dc05be36ad2e1e619da3a16af26618b26fdfacaf7a0"
+  },
+  "scope": "Finite checks; mixed signatures use an independent reference only.",
+  "paper_discrepancies": [
+    "Corollary 3.7: split example satisfies hypotheses but has four distinct lines, not six.",
+    "Lemma 6.14(1): printed y=(c,gamma_n*d) fails; Proposition 6.7 orbit checked separately."
+  ]
+}

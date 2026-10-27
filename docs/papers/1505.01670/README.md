@@ -2,7 +2,7 @@
 
 Moshe Goldberg and Thomas J. Laffey, **On the Radius in Cayley-Dickson Algebras**, arXiv version 1, 7 May 2015, 14 PDF pages. Printed page numbers match PDF page numbers. Page 14 contains author addresses; the references begin on page 13.
 
-Input: `/home/alika/Desktop/CayleyKernel/1505.01670v1.pdf`.
+Input: `1505.01670v1.pdf`.
 SHA-256: `29c5f289cf0a9c952be9851dca28aa518d2f4e30a4dcf2bc957c354755982e73`.
 The source PDF is unchanged and is not duplicated here. The extracted text was read in full. Pages 2–4, 7–10 and 12–13 were additionally inspected as rendered images to confirm formulas, conjugation, angle conventions and inequalities. This review concerns the supplied file, without a search for later corrections or an audit of its cited papers.
 
@@ -38,8 +38,8 @@ To regenerate the saved record:
 
 ```bash
 python3 -m tests.papers.arxiv_1505_01670.run \
-  --paper /home/alika/Desktop/CayleyKernel/1505.01670v1.pdf \
-  --output docs/papers/1505.01670/results
+  --paper /path/to/papers/1505.01670v1.pdf \
+  --output /tmp/cayley-paper-1505.01670/results
 ```
 
 Python and NumPy suffice for the CPU suite; pytest is optional. With pytest installed:
@@ -177,7 +177,7 @@ Dimensions 2 and 8 stayed near rounding precision in this experiment. In higher 
 | A numerically robust square-root library at every scale | A stable variant handles the tested negative-real cancellation case. No exhaustive subnormal/overflow analysis, all possible root branches, or general arbitrary-precision API is supplied. |
 | Direct GPU verification in this environment | CuPy is missing. Tests are ready to run when CuPy, a CUDA device and the compiled kernel are available; no GPU run or timing claim is made. |
 
-Existing unrelated work and the previous paper packages were preserved. A narrow `.gitignore` exception makes this paper's documentation and saved results visible to git, without unignoring all other documentation.
+Paper documentation and compact reference evidence are exposed consistently by the repository documentation ignore rules.
 
 ## Coefficient-type coverage
 
@@ -187,3 +187,7 @@ See [coefficient types and numerical scope](../COEFFICIENT_TYPES.md) for the
 shared float16/complex64/complex128 fixtures, tolerances and reproduction.
 Existing saved results describe their recorded runs; these device additions
 require a working CUDA environment and are not represented by those logs.
+
+## Saved evidence and current reproduction
+
+The [saved JSON snapshot](results/results.json) reports **36 tests: 33 passed, 3 skipped, 0 failures, and 0 errors**. These are historical results for the source hashes and environment in that file, not a fresh run of the current checkout. Hash entries for retired helpers are provenance only; those helpers are not required by the commands above. Later test additions may change the test count. See the [saved-evidence policy](../README.md) for reproduction and log handling.

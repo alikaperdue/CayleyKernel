@@ -2,7 +2,7 @@
 
 Raoul E. Cawagas, Alexander S. Carrascal, Lincoln A. Bautista, John P. Sta. Maria, Jackie D. Urrutia and Bernadeth Nobles, **The Basic Subalgebra Structure of the Cayley-Dickson Algebra of Dimension 32 (Trigintaduonions)**, version 3, 1 September 2009, 9 PDF pages. Printed and PDF page numbers agree.
 
-Source: `/home/alika/Desktop/CayleyKernel/0907.2047v3.pdf`.
+Source: `0907.2047v3.pdf`.
 SHA-256: `202833bbbf36b0c8bb6ca0c448c98df3f21e2f072a82e3b30c0b029f19cb8ce1`.
 The complete extracted text was reviewed. Pages 4–5 and 7–8, all embedded table images and Figure 1 were also inspected visually. The PDF is unchanged and not duplicated in git. The review concerns this supplied version, without an external literature/version-history audit.
 
@@ -44,8 +44,8 @@ Regenerate all three saved result files:
 
 ```bash
 python3 -m tests.papers.arxiv_0907_2047.run \
-  --paper /home/alika/Desktop/CayleyKernel/0907.2047v3.pdf \
-  --output docs/papers/0907.2047/results
+  --paper /path/to/papers/0907.2047v3.pdf \
+  --output /tmp/cayley-paper-0907.2047/results
 ```
 
 Python and NumPy suffice for CPU checks. No GAP, FINITAS, symbolic-math package or pytest is required. With pytest installed:
@@ -264,3 +264,7 @@ See [coefficient types and numerical scope](../COEFFICIENT_TYPES.md) for the
 shared float16/complex64/complex128 fixtures, tolerances and reproduction.
 Existing saved results describe their recorded runs; these device additions
 require a working CUDA environment and are not represented by those logs.
+
+## Saved evidence and current reproduction
+
+The [saved JSON snapshot](results/results.json) reports **35 tests: 32 passed, 3 skipped, 0 failures, and 0 errors**. These are historical results for the source hashes and environment in that file, not a fresh run of the current checkout. Hash entries for retired helpers are provenance only; those helpers are not required by the commands above. Later test additions may change the test count. See the [saved-evidence policy](../README.md) for reproduction and log handling.
