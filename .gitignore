@@ -13,4 +13,39 @@ wheelhouse/
 *.egg-info/
 __pycache__/
 */__pycache__/
+.pytest_cache/
 
+# Compiled libraries, wheels, and native test executables.
+*.so
+*.whl
+*.pyd
+/compare_sign_tables
+/native_tests/aux_zd_limits
+
+# Editor swap files and local backups.
+*.bak
+*.swp
+*.swo
+*~
+
+# Generated research runs; the clique baseline is an input fixture.
+/clique_growth_results/
+/clique_level_comparison_results/
+/structure_scaling_results/
+/relation_graphs_witnesses.jsonl
+/scripts/results/*
+!/scripts/results/relation_graphs_clique69.json
+
+docs
+# Keep this paper's review and reproducible results visible to git.
+!/docs/
+/docs/*
+!/docs/papers/
+/docs/papers/*
+!/docs/papers/1912.01351/
+!/docs/papers/1505.01670/
+!/docs/papers/0907.2047/
+!/docs/papers/math.0702075/
+!/docs/papers/quasilinear-actions-products-spheres/
+!/docs/papers/0704.0112/
+!/docs/papers/617-0702-2024/

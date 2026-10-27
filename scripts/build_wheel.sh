@@ -5,10 +5,9 @@
 # scripts/build_wheel.sh -- build a redistributable CayleyKernel wheel.
 #
 # Flow:
-#   1. Compile the CUDA kernel (nvcc) into cuda_kernel.so.
-#   2. Copy the kernel into the Python package so setuptools bundles it.
-#   3. Build a sdist+wheel with PEP 517 tooling.
-#   4. Optionally repair the wheel for manylinux portability (auditwheel).
+#   1. Compile the CUDA kernel directly into CayleyKernel/cuda_kernel.so.
+#   2. Build a wheel with PEP 517 tooling.
+#   3. Optionally repair the wheel for manylinux portability (auditwheel).
 #
 # Requirements: nvcc on PATH, python3 with `build`, and (optionally)
 # `auditwheel`.  See README.md -> "Building from source".
@@ -18,21 +17,26 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 # GPU architectures to target.  Override with: ARCHS="sm_80" ./scripts/build_wheel.sh
-ARCHS="${ARCHS:-}"
+# Leave the Makefile's default architecture list intact unless overridden.
+make_args=()
+if [[ -n "${ARCHS:-}" ]]; then
+    make_args+=("ARCHS=$ARCHS")
+else
+    unset ARCHS
+fi
+PYTHON="${PYTHON:-python3}"
+KERNEL="$ROOT/CayleyKernel/cuda_kernel.so"
 
 echo "==> Compiling CUDA kernel..."
-make kernel ARCHS="$ARCHS"
+make kernel "LIB_NAME=$KERNEL" "${make_args[@]}"
 
-if [[ ! -f "$ROOT/cuda_kernel.so" ]]; then
-    echo "ERROR: kernel build did not produce cuda_kernel.so" >&2
+if [[ ! -f "$KERNEL" ]]; then
+    echo "ERROR: kernel build did not produce $KERNEL" >&2
     exit 1
 fi
 
-echo "==> Staging kernel into package..."
-cp "$ROOT/cuda_kernel.so" "$ROOT/CayleyKernel/cuda_kernel.so"
-
 echo "==> Building wheel..."
-python3 -m build --wheel
+"$PYTHON" -m build --wheel
 
 echo "==> Done. Wheel(s) in dist/:"
 ls -1 dist/*.whl
