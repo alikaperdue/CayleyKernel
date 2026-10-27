@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools>=70.1.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -61,6 +61,7 @@ CayleyKernel = ["*.so"]
 
 [tool.pytest.ini_options]
 markers = [
+    "sparse_zd: CPU-only sparse zero-divisor validation (opt-in: --run-sparse-zd)",
     "slow: heavy identity/batch tests at 2^20 and above (opt-in: pytest -m slow)",
     "benchmark: timing gates and scaling checks (opt-in: pytest -m benchmark)",
 ]

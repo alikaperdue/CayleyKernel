@@ -4,6 +4,8 @@ run_tests.py
 CayleyKernel/cuda_kernel.so
 CayleyKernel/amd_kernel.so
 src/
+!/rust/src/
+/rust/target/
 .ipynb_checkpoints/
 build/
 dist/

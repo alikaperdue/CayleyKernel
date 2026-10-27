@@ -17,6 +17,7 @@
 //
 // This code implement O(1) sign determination first seen by this author here:
 //
+// An O(1) Bitwise Evaluator for Cayley–Dickson Sign Structure: Ordinary, Split, Dual, and Tensor Constructions -
 // https://figshare.com/articles/preprint/A_Proven_Sign_Law_for_Cayley-Dickson_Algebras_Ordinary_and_Split_Constructions/33705022
 
 #include <cuda_runtime.h>
@@ -32,10 +33,52 @@ const int threads_per_block = 1024;
 // is walked with a grid-stride loop.
 const int max_grid_y = 65535;
 
-// Accumulator type: bool is accumulated in int to keep the +/- arithmetic well
-// defined, everything else accumulates in its own type (as before).
-template <typename T> struct accum_traits { typedef T type; };
-template <> struct accum_traits<bool>    { typedef int type; };
+// Bool accumulates in int; FP16 uses float to avoid intermediate half
+// overflow and repeated half rounding. Other types accumulate in their own type.
+template <typename T> struct accum_traits { typedef     T type; };
+template <> struct accum_traits<bool>     { typedef   int type; };
+// FP16 storage, FP32 products and accumulation; round once on output.
+template <> struct accum_traits<__half>   { typedef float type; };
+
+// Keep scalar arithmetic unchanged; complex storage types use the vendor's
+// explicit arithmetic functions instead of C++ scalar operators.
+template <typename T> struct arithmetic_traits {
+    __device__ static __forceinline__ T zero()        { return T(0);  }
+    __device__ static __forceinline__ T mul(T a, T b) { return a * b; }
+    __device__ static __forceinline__ void add(T& acc, T term) { acc += term; }
+    __device__ static __forceinline__ void sub(T& acc, T term) { acc -= term; }
+};
+
+template <> struct arithmetic_traits<cuComplex> {
+    __device__ static __forceinline__ cuComplex zero() {
+        return make_cuComplex(0, 0);
+    }
+    __device__ static __forceinline__ cuComplex mul(cuComplex a, cuComplex b) {
+        return cuCmulf(a, b);
+    }
+    __device__ static __forceinline__ void add(cuComplex& acc, cuComplex term) {
+        acc = cuCaddf(acc, term);
+    }
+    __device__ static __forceinline__ void sub(cuComplex& acc, cuComplex term) {
+        acc = cuCsubf(acc, term);
+    }
+};
+
+template <> struct arithmetic_traits<cuDoubleComplex> {
+    __device__ static __forceinline__ cuDoubleComplex zero() {
+        return make_cuDoubleComplex(0, 0);
+    }
+    __device__ static __forceinline__ cuDoubleComplex mul(cuDoubleComplex a, cuDoubleComplex b) {
+        return cuCmul(a, b);
+    }
+    __device__ static __forceinline__ void add(cuDoubleComplex& acc, cuDoubleComplex term) {
+        acc = cuCadd(acc, term);
+    }
+    __device__ static __forceinline__ void sub(cuDoubleComplex& acc, cuDoubleComplex term) {
+        acc = cuCsub(acc, term);
+    }
+};
+
 
 // Sign of the Cayley-Dickson basis product  e_row * e_col = sign * e_(row^col).
 //
@@ -54,27 +97,30 @@ template <> struct accum_traits<bool>    { typedef int type; };
 // Returns +1 or -1.
 __device__ __forceinline__
 int cayley_sign(int row, int col) {
-    int r = row;
-    int c = row ^ col;
-    if (r == 0 || c == 0) return 1;
-    if (r == c) return -1;
 
-    const int ur = r;
-    const int uc = c;
-    const int tr = __ffs(ur) - 1;
-    const int tc = __ffs(uc) - 1;
-    const int tx = __ffs(ur ^ uc) - 1;
+    const int rec = row == col;
+    const int nac = row && col;
+    if (rec | !nac) return !nac;
 
-    const int s = (tc < tr) ? (~uc >> tr) :
-                  (tc < tx) ? (~ur >> tx) :
-                              ( ur >> tc);
+    const int roc = row | col;
+    const int rxc = row ^ col;
 
-    int m = tc;
-    if (tx > m) m = tx;
-    if (tr > m) m = tr;
+    const int vert = 1 << __ffs(row) - 1;
+    const int horz = 1 << __ffs(col) - 1;
+    const int diag = 1 << __ffs(rxc) - 1;
 
-    const int parity = s ^ __popc(static_cast<unsigned int>((ur | uc) >> m));
-    return (parity & 1) ? 1 : -1;
+    const bool vmax = diag < vert && horz < vert;
+    const bool dlow = diag < horz;
+
+    const  int sign = vmax ? ~col & vert :
+                      dlow ?  row & horz :
+                             ~row & diag ;
+
+    const  int span = vmax ? vert :
+                      dlow ? horz :
+                             diag ;
+
+    return __popc(sign ^ roc / span) & 1;
 }
 
 // 1. One template to rule them all
@@ -83,33 +129,32 @@ int cayley_sign(int row, int col) {
 template <typename T>
 __global__ void mult_kernel(const T* __restrict__ a,
                             const T* __restrict__ b,
-                            T* __restrict__ out,
+                                  T* __restrict__ out,
                             int dim,
                             long long batch) {
     typedef typename accum_traits<T>::type Acc;
+    typedef arithmetic_traits<Acc> Ops;
 
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
-    if (col >= dim) return;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    if (index >= dim) return;
 
     for (long long item = blockIdx.y; item < batch; item += gridDim.y) {
         const long long offset = item * (long long)dim;
         const T* a_vec = a + offset;
         const T* b_vec = b + offset;
-        T* out_vec     = out + offset;
+        T* out_vec   = out + offset;
 
-        Acc acc = Acc(0);
+        Acc acc = Ops::zero();
 
         for (int row = 0; row < dim; row++) {
-            const int sign = cayley_sign(row, col);
-            const Acc term = Acc(a_vec[row]) * Acc(b_vec[row ^ col]);
-            if (sign == 1) {
-                acc += term;
-            } else {
-                acc -= term;
-            }
+	    int col = index ^ row;
+            const Acc term = Ops::mul(Acc(a_vec[row]), Acc(b_vec[col]));
+            cayley_sign(row, col) ? 
+                Ops::add(acc, term) : 
+                Ops::sub(acc, term) ;
         }
 
-        out_vec[col] = static_cast<T>(acc);
+        out_vec[index] = static_cast<T>(acc);
     }
 }
 
@@ -159,12 +204,7 @@ extern "C" {
     DEFINE_MULT_ENTRIES(int8,   int8_t)
     DEFINE_MULT_ENTRIES(uint8,  uint8_t)
     DEFINE_MULT_ENTRIES(bool,   bool)
-
-/*
+    DEFINE_MULT_ENTRIES(half, __half)
     DEFINE_MULT_ENTRIES(complex64,  cuComplex)
     DEFINE_MULT_ENTRIES(complex128, cuDoubleComplex)
-*/
-/*
-    DEFINE_MULT_ENTRIES(half, __half)
-*/
 }

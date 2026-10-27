@@ -23,9 +23,9 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-import cupy as cp  # noqa: E402
+cp = pytest.importorskip("cupy", reason="GPU tests require CuPy")
 import CayleyKernel  # noqa: E402
-from CayleyKernel import multiply  # noqa: E402
+from CayleyKernel import multiply, _select_kernel  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -274,10 +274,8 @@ def test_rejects_scalar_inputs():
 
 def test_rejects_unsupported_dtype():
     with pytest.raises(TypeError):
-        multiply(
-            cp.zeros(4, dtype=cp.complex64),
-            cp.zeros(4, dtype=cp.complex64),
-        )
+        # Structured dtypes remain unsupported.
+        _select_kernel(np.dtype([("value", np.float32)]))
 
 
 # ---------------------------------------------------------------------------

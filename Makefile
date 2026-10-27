@@ -9,6 +9,11 @@
 #   make sign-check      host-side equivalence test of the sign function
 #   make test            run the default pytest suite
 #   make test-all        default + slow + benchmark suites
+#   make test-sparse-zd  opt-in CPU sparse zero-divisor validation
+#   make zd-showcase     random million-bit zero-divisor confirmations
+#   make rust-install    install the optional Rust CPU extension
+#   make rust-check      format/lint checks and standalone Rust tests
+#   make test-cpu        run CPU tests without requiring a GPU runtime
 #   make wheel           build a redistributable wheel (bundles the kernel)
 #   make clean           remove build artifacts and compiled binaries
 
@@ -16,6 +21,12 @@ kernel:
 NVCC       ?= nvcc
 HIPCC      ?= hipcc
 CXX        ?= g++
+CARGO      ?= cargo
+PYTHON     ?= python3
+
+# Compilation flags for native optimizations (Targeting Zen 4 / Ryzen 9)
+CC = gcc
+CFLAGS = -O3 -march=native -Wall
 
 KERNEL_SRC ?= cuda/cuda_kernel.cu
 AMD_SRC    ?= cuda/amd_kernel.cu
@@ -28,7 +39,21 @@ ARCHS ?= sm_75 sm_80 sm_86 sm_89 sm_90 sm_100 sm_110 sm_120
 
 NVCC_GENCODES := $(foreach a,$(ARCHS),-gencode arch=compute_$(subst sm_,,$(a)),code=$(a))
 
-.PHONY: all kernel kernel-amd sign-check test test-all wheel clean
+.PHONY: all kernel kernel-amd sign-check test test-all test-sparse-zd zd-showcase wheel clean run-native-zd
+.PHONY: rust-install rust-check test-cpu
+
+# The optional CPU extension is packaged separately; ordinary Python/GPU
+# installations never need a Rust toolchain.
+rust-install:
+	$(PYTHON) -m pip install ./rust
+
+rust-check:
+	$(CARGO) fmt --manifest-path rust/Cargo.toml --check
+	$(CARGO) clippy --manifest-path rust/Cargo.toml --locked --all-targets --features python -- -D warnings
+	$(CARGO) test --manifest-path rust/Cargo.toml --locked
+
+test-cpu:
+	$(PYTHON) -m pytest -q -m cpu tests/
 
 all: kernel
 
@@ -54,16 +79,40 @@ sign-check:
 test:
 	python3 -m pytest -q tests/
 
+ZD_LEVELS  ?= 4,8,32,128,1024,4096
+ZD_SAMPLES ?= 128
+ZD_SEED    ?= 2026
+ZD_REPEATS ?= 3
+ZD_HUGE_LEVELS ?= 4096,65536,1000000
+#ZD_HUGE_LEVELS ?= 4096,65536,1000000,2147483647 #(2**31-1)
+ZD_WITNESSES ?= 10
+
+zd-showcase:
+	python3 scripts/zd_showcase.py --levels=$(ZD_HUGE_LEVELS) \
+	    --witnesses=$(ZD_WITNESSES) --seed=$(ZD_SEED)
+
+run-native-zd: native_tests/aux_zd_limits.c
+	$(CC) $(CFLAGS) native_tests/aux_zd_limits.c -o native_tests/aux_zd_limits
+	./native_tests/aux_zd_limits --levels=100000000000 --witnesses=3
+
+
+test-sparse-zd:
+	python3 -m pytest -q -s tests/test_sparse_zd.py --run-sparse-zd \
+	    --zd-levels=$(ZD_LEVELS) --zd-samples=$(ZD_SAMPLES) --zd-seed=$(ZD_SEED) \
+	    --zd-repeats=$(ZD_REPEATS)
+
 test-all:
 	python3 -m pytest -q tests/
 	python3 -m pytest -q -m slow tests/
 	python3 -m pytest -q -m benchmark tests/
 
 wheel:
-	bash scripts/build_wheel.sh
+	PYTHON="$(PYTHON)" bash scripts/build_wheel.sh
 
 clean:
 	rm -f $(LIB_NAME) $(SIGN_TOOL)
 	rm -rf build/ dist/ wheelhouse/ *.egg-info CayleyKernel/*.so
+	rm -rf rust/target/ rust/build/ rust/dist/ rust/wheelhouse/ rust/*.egg-info
+	rm -f native_tests/aux_zd_limits
 	find . -type d -name __pycache__ -prune -exec rm -rf {} +
 	rm -rf .pytest_cache/

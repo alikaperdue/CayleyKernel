@@ -12,7 +12,7 @@ The heavy lifting is performed by ``cuda_kernel.so`` (built from
 
   * validates that the algebra dimension is a power of two,
   * supports arbitrary batch shapes ``(B, ..., dim)`` and broadcasting,
-  * handles float32/float64/integer/boolean dtypes,
+  * handles float16/float32/float64/complex64/complex128/integer/boolean dtypes,
   * falls back gracefully when the shared object is missing or stale
     (no ``_nd`` symbols / no diagnostics), with an informative error.
 
@@ -48,6 +48,11 @@ __all__ = [
     "loaded",
     "abi_version",
     "__version__",
+    "twist",
+    "basis",
+    "twist_many",
+    "basis_many",
+    "cpu_backend",
 ]
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -142,9 +147,9 @@ _TYPE_SUFFIXES = (
     "int8",
     "uint8",
     "bool",
-    # "half",       # 16-bit float (FP16 / __half)
-    # "complex64",  # float2  / complex float
-    # "complex128", # double2 / complex double
+    "half",       # 16-bit float (FP16 / __half)
+    "complex64",  # float2  / complex float
+    "complex128", # double2 / complex double
 )
 
 _LEGACY_ARGTYPES = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
@@ -164,9 +169,9 @@ _DTYPE_TO_SUFFIX = {
     "uint8":   "uint8",
     "bool":    "bool",
     "bool_":   "bool",
-    # "float16":    "half",
-    # "complex64":  "complex64",
-    # "complex128": "complex128",
+    "float16":    "half",
+    "complex64":  "complex64",
+    "complex128": "complex128",
 }
 
 # dtype name -> (legacy_fn, nd_fn_or_None).  Populated below once the
@@ -219,8 +224,9 @@ def _select_kernel(dtype):
     key = dtype.name
     if key not in _KERNELS:
         raise TypeError(
-            "Unsupported precision: %s! Use standard float, double, integer, "
-            "or boolean variants." % dtype
+            "Unsupported precision: %s! Use float16, float32, float64, integer, "
+            "complex64, complex128, or boolean variants. Rebuild the kernel "
+            "if the requested type is missing." % dtype
         )
     return _KERNELS[key]
 
@@ -232,7 +238,15 @@ def _as_cupy(x, ref_dtype=None):
     if isinstance(x, np.ndarray):
         return cp.asarray(x)
     # lists, tuples, scalars
-    return cp.asarray(x, dtype=ref_dtype if ref_dtype is not None else cp.float32)
+    inferred = cp.asarray(x)
+    # Preserve complex coefficients, including when the other operand is real.
+    # Real Python lists retain the historical float32 / reference-dtype policy.
+    if inferred.dtype.kind == "c":
+        dtype = (cp.result_type(ref_dtype, inferred.dtype)
+                 if ref_dtype is not None else inferred.dtype)
+    else:
+        dtype = ref_dtype if ref_dtype is not None else cp.float32
+    return inferred.astype(dtype, copy=False)
 
 
 def _broadcast_shapes(shapes):
@@ -302,6 +316,10 @@ def multiply(a, b):
 
     The output has the broadcast shape and the promoted dtype, matching the
     input container type (list -> list, NumPy -> NumPy, CuPy -> CuPy).
+    Complex dtypes represent complex coefficients in the same basis; the
+    product is complex-bilinear and does not conjugate scalar coefficients.
+    Float16 inputs use float32 products and accumulation, then round to float16
+    on output. Mixed input dtypes follow CuPy result_type promotion.
     """
     _require_gpu_runtime()
     _require_kernel()
@@ -378,47 +396,43 @@ def multiply(a, b):
 def conjugate(x):
     """Standard Cayley-Dickson conjugation.
 
-    The conjugate of ``x`` is ``x* = (x0, -x1, ..., -x_{n-1})``: the real
-    component is kept, every other component is negated.  Works on CuPy
+    The conjugate of ``x`` is ``x* = (x0, -x1, ..., -x_{n-1})``: the first
+    coefficient is kept, every other coefficient is negated. Complex scalar
+    coefficients are not complex-conjugated. Works on CuPy
     arrays, NumPy arrays, and Python lists.
     """
     _require_gpu_runtime()
     if isinstance(x, cp.ndarray):
         xstar = -x
-        xstar[0] = x[0]
+        xstar[..., 0] = x[..., 0]
         return xstar
     if isinstance(x, np.ndarray):
         xstar = -x
-        xstar[0] = x[0]
+        xstar[..., 0] = x[..., 0]
         return xstar
     # list / tuple
     return [x[0]] + [-v for v in x[1:]]
 
-def _tz(x):
-    return (x & -x).bit_length() - 1
+def py_sign(r,c):
+    if r and c:
+        m = (v,h,d) = [-_&_ for _ in (r,c,r^c)]
+        if r == c or not ((r|c)//max(m) ^ ((r&h,~r&d)[h<d],~c&v)[v>h]).bit_count() & 1:
+        #m = (h,v,d) = [-_&_ for _ in (r,c,r^c)]
+        #if r == c or not ((r|c)//max(m) ^ ((r&v,~r&d)[v<d],~c&h)[h>v]).bit_count() & 1:
+            return -1
+    return 1
 
-def twist(r,c):
-    """Standard Cayley-Dickson twist or sign function
+def py_multiply(a,b):
+    dim = len(a)
+    c = np.zeros(dim, dtype=float)
+    for index in range(dim):
+        for row in range(dim):
+            col = index ^ row
+            c[index] += py_sign(row,col) * a[row] * b[col]
+    return c
 
-    Given row r and col c, return the sign of their product.
-    return +1,-1 for the sign at row and col...
-    """
-    if r and c and r != c:
-        tx,tr,tc = _tz(r^c), _tz(r), _tz(c)
-        s = ((r>>tc,~r>>tx)[tc<tx],~c>>tr)[tc<tr]
-        return +1 if (1 & (s^((r|c)>>max(tr,tc,tx)).bit_count())) else -1
-    return -1 if r & c else +1
 
-# LISTEN: use r, row=1 for e_0 or "1". Same for column. 
-# this means that this numbering of elements starts at 1, because...
-# zero has NO sign in the integer representations.
-# so, the inputs and output basis numbers are incremented by 1 vs what you might find in math text.
-def basis_product(r,c):
-    ru = abs(r) - 1
-    cu = abs(c) - 1
-    s = 1
-    if (r>0) ^ (c>0):
-        s = -1
-    x = (ru^cu) + 1
-    return twist(ru,cu) * s * x
+# CPU operations have an independent optional Rust backend. GPU entry points
+# and their CuPy/ctypes ABI remain unchanged.
+from ._cpu import basis, basis_many, cpu_backend, twist, twist_many
 

@@ -16,7 +16,7 @@ import pytest
 
 cp = pytest.importorskip("cupy")
 
-from CayleyKernel import multiply  # noqa: E402
+from CayleyKernel import multiply, _select_kernel  # noqa: E402
 from tests.reference import ref_mult, ref_sign  # noqa: E402
 
 
@@ -316,10 +316,8 @@ def test_rejects_scalar_inputs():
 
 def test_rejects_unsupported_dtype():
     with pytest.raises(TypeError):
-        multiply(
-            cp.zeros(4, dtype=cp.complex64),
-            cp.zeros(4, dtype=cp.complex64),
-        )
+        # Structured dtypes remain unsupported.
+        _select_kernel(np.dtype([("value", np.float32)]))
 
 
 # ---------------------------------------------------------------------------

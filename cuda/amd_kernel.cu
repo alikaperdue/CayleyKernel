@@ -23,83 +23,114 @@ const int threads_per_block = 1024;
 // Cap on the .y grid dimension; the batch axis uses a grid-stride loop.
 const int max_grid_y = 65535;
 
-template <typename T> struct accum_traits { typedef T type; };
-template <> struct accum_traits<bool>    { typedef int type; };
+template <typename T> struct accum_traits         { typedef     T type; };
+template <>           struct accum_traits<bool>   { typedef   int type; };
+// FP16 storage, FP32 products and accumulation; round once on output.
+template <>           struct accum_traits<__half> { typedef float type; };
 
-// Sign of the Cayley-Dickson basis product  e_row * e_col = sign * e_(row^col).
-//
-// Branch-free closed form; replaces the previous iterative loop that reduced
-// (row, col) modulo dim/2, dim/4, ...  It depends only on row and col, not on
-// dim (dim merely has to be a power of two large enough to contain them).
-//
-// Device-code notes:
-//   * __ffs()  is the native "find first set" (1-based, 0 for zero) and is
-//     exactly the __builtin_ctz()-based ffs32() helper used in the host-side
-//     equivalence test (compare_sign_tables.cpp).  HIP provides the same
-//     intrinsic as CUDA.
-//   * __popc() is the native population count, i.e. __builtin_popcount().
-//   * std::max is avoided; the three-way max is spelled out so this compiles
-//     cleanly as device code.
-//
-// Returns +1 or -1.
+// Keep scalar arithmetic unchanged; complex storage types use the vendor's
+// explicit arithmetic functions instead of C++ scalar operators.
+template <typename T> struct arithmetic_traits {
+    __device__ static __forceinline__ T zero() { return T(0); }
+    __device__ static __forceinline__ T mul(T a, T b) { return a * b; }
+    __device__ static __forceinline__ void add(T& acc, T term) { acc += term; }
+    __device__ static __forceinline__ void sub(T& acc, T term) { acc -= term; }
+};
+
+template <> struct arithmetic_traits<hipFloatComplex> {
+    __device__ static __forceinline__ hipFloatComplex zero() {
+        return make_hipFloatComplex(0, 0);
+    }
+    __device__ static __forceinline__ hipFloatComplex mul(hipFloatComplex a, hipFloatComplex b) {
+        return hipCmulf(a, b);
+    }
+    __device__ static __forceinline__ void add(hipFloatComplex& acc, hipFloatComplex term) {
+        acc = hipCaddf(acc, term);
+    }
+    __device__ static __forceinline__ void sub(hipFloatComplex& acc, hipFloatComplex term) {
+        acc = hipCsubf(acc, term);
+    }
+};
+
+template <> struct arithmetic_traits<hipDoubleComplex> {
+    __device__ static __forceinline__ hipDoubleComplex zero() {
+        return make_hipDoubleComplex(0, 0);
+    }
+    __device__ static __forceinline__ hipDoubleComplex mul(hipDoubleComplex a, hipDoubleComplex b) {
+        return hipCmul(a, b);
+    }
+    __device__ static __forceinline__ void add(hipDoubleComplex& acc, hipDoubleComplex term) {
+        acc = hipCadd(acc, term);
+    }
+    __device__ static __forceinline__ void sub(hipDoubleComplex& acc, hipDoubleComplex term) {
+        acc = hipCsub(acc, term);
+    }
+};
+
+
+// Sign of the Cayley-Dickson basis product of e_row * e_col = sign * e_(row^col)
+// Implements the recent O(1) sign formula discovery which is credited in the README
+// Return the sign portion as 1 or 0 for +1 or -1
 __device__ __forceinline__
 int cayley_sign(int row, int col) {
-    int r = row;
-    int c = row ^ col;
-    if (r == 0 || c == 0) return 1;
-    if (r == c) return -1;
 
-    const int ur = r;
-    const int uc = c;
-    const int tr = __ffs(ur) - 1;
-    const int tc = __ffs(uc) - 1;
-    const int tx = __ffs(ur ^ uc) - 1;
+    const int rec = row == col;
+    const int nac = row && col;
+    if (rec | !nac) return !nac;
 
-    const int s = (tc < tr) ? (~uc >> tr) :
-                  (tc < tx) ? (~ur >> tx) :
-                              ( ur >> tc);
+    const int roc = row | col;
+    const int rxc = row ^ col;
 
-    int m = tc;
-    if (tx > m) m = tx;
-    if (tr > m) m = tr;
+    const int vert = 1 << __ffs(row) - 1;
+    const int horz = 1 << __ffs(col) - 1;
+    const int diag = 1 << __ffs(rxc) - 1;
 
-    const int parity = s ^ __popc(static_cast<unsigned int>((ur | uc) >> m));
-    return (parity & 1) ? 1 : -1;
+    //const bool vmax = horz < vert && diag < vert;
+    const bool vmax = diag < vert && horz < vert;
+    const bool dlow = diag <         horz;
+
+    const  int sign = vmax ? ~col  & vert :
+                      dlow ?  row  & horz :
+                             ~row  & diag ;
+
+    const  int span = vmax ?         vert :
+                      dlow ?         horz :
+                                     diag ;
+
+    return __popc(static_cast<unsigned int>(sign ^ roc / rank)) & 1;
 }
 
-// 1. One template to rule them all
-//    x -> component (column) index inside one vector
-//    y -> batch index (grid-stride)
+// mult_kernel() - performs the Cayley Dickson multiplication using the GPU matrix acelleration
 template <typename T>
+
 __global__ void mult_kernel(const T* __restrict__ a,
                             const T* __restrict__ b,
-                            T* __restrict__ out,
+                                  T* __restrict__ out,
                             int dim,
                             long long batch) {
     typedef typename accum_traits<T>::type Acc;
+    typedef arithmetic_traits<Acc> Ops;
 
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
-    if (col >= dim) return;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    if (index >= dim) return;
 
     for (long long item = blockIdx.y; item < batch; item += gridDim.y) {
         const long long offset = item * (long long)dim;
-        const T* a_vec = a + offset;
-        const T* b_vec = b + offset;
+        const T* a_vec =   a + offset;
+        const T* b_vec =   b + offset;
         T* out_vec     = out + offset;
 
-        Acc acc = Acc(0);
+        Acc acc = Ops::zero();
 
         for (int row = 0; row < dim; row++) {
-            const int sign = cayley_sign(row, col);
-            const Acc term = Acc(a_vec[row]) * Acc(b_vec[row ^ col]);
-            if (sign == 1) {
-                acc += term;
-            } else {
-                acc -= term;
-            }
+            int col = index ^ row;
+            const Acc term = Ops::mul(Acc(a_vec[row]), Acc(b_vec[col]));
+            cayley_sign(row, col) ?
+                Ops::add(acc, term) :
+                Ops::sub(acc, term) ;
         }
 
-        out_vec[col] = static_cast<T>(acc);
+        out_vec[index] = static_cast<T>(acc);
     }
 }
 
@@ -133,7 +164,6 @@ static void launch_mult(const T* a, const T* b, T* o, int dim, long long batch) 
     }
 
 extern "C" {
-
     DEFINE_MULT_ENTRIES(float,  float)
     DEFINE_MULT_ENTRIES(double, double)
     DEFINE_MULT_ENTRIES(uint64, uint64_t)
@@ -145,12 +175,7 @@ extern "C" {
     DEFINE_MULT_ENTRIES(int8,   int8_t)
     DEFINE_MULT_ENTRIES(uint8,  uint8_t)
     DEFINE_MULT_ENTRIES(bool,   bool)
-
-/*
+    DEFINE_MULT_ENTRIES(half, __half)
     DEFINE_MULT_ENTRIES(complex64,  hipFloatComplex)
     DEFINE_MULT_ENTRIES(complex128, hipDoubleComplex)
-*/
-/*
-    DEFINE_MULT_ENTRIES(half, __half)
-*/
 }
