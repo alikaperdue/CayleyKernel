@@ -13,8 +13,9 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 PROTOCOL = {
-    "warmup": 1, "trials": 5, "statistic": "median",
-    "timer": "synchronized_wall_seconds", "seed": 2026,
+    "warmup": 3, "trials": 5, "statistic": "median",
+    "timer": "synchronized_batched_wall_seconds", "seed": 2026,
+    "target_sample_seconds": 0.1, "max_repetitions": 16384,
 }
 ENVIRONMENT_KEYS = (
     "gpu_name", "pci_bus_id", "compute_capability", "cuda_runtime_version",
@@ -40,7 +41,10 @@ def validate_baseline(report, environment):
     for name, shape in CASE_SHAPES.items():
         case = report["cases"][name]
         samples = case.get("samples_seconds", [])
+        repetitions = case.get("repetitions")
         if (case.get("shape") != shape or case.get("dtype") != "float32"
+                or type(repetitions) is not int
+                or not 1 <= repetitions <= PROTOCOL["max_repetitions"]
                 or len(samples) != PROTOCOL["trials"]
                 or any(not isinstance(s, (float, int)) or not math.isfinite(s) or s <= 0
                        for s in samples)):
@@ -112,6 +116,16 @@ class BenchmarkSession:
         if self.baseline is not None:
             validate_baseline(self.baseline, self.report["environment"])
 
+    @staticmethod
+    def _time_calls(multiply, x, y, stream, repetitions):
+        stream.synchronize()
+        start = time.perf_counter()
+        for _ in range(repetitions):
+            result = multiply(x, y)
+            del result
+        stream.synchronize()
+        return time.perf_counter() - start
+
     def measure(self, name, multiply, shape):
         cp = self.cp
         cp.random.seed(PROTOCOL["seed"])
@@ -122,18 +136,27 @@ class BenchmarkSession:
             result = multiply(x, y)
             stream.synchronize()
             del result
+        # Calibration also warms this workload under sustained GPU activity.
+        # Keep long operations at one call; amortize synchronization overhead
+        # across repeated calls for short operations. Recording and comparison
+        # both calibrate locally and use the same per-call timing statistic.
+        repetitions = 1
+        while True:
+            elapsed = self._time_calls(multiply, x, y, stream, repetitions)
+            if (elapsed >= PROTOCOL["target_sample_seconds"]
+                    or repetitions >= PROTOCOL["max_repetitions"]):
+                break
+            repetitions *= 2
         samples = []
         for _ in range(PROTOCOL["trials"]):
-            stream.synchronize()
-            start = time.perf_counter()
-            result = multiply(x, y)
-            stream.synchronize()
-            samples.append(time.perf_counter() - start)
-            del result
+            elapsed = self._time_calls(multiply, x, y, stream, repetitions)
+            samples.append(elapsed / repetitions)
         case = {"shape": list(shape), "dtype": "float32", "samples_seconds": samples,
+                "repetitions": repetitions,
                 "median_seconds": statistics.median(samples)}
         self.report["cases"][name] = case
-        print(f"\n{name}: {case['median_seconds']:.6f}s median; samples={samples}")
+        print(f"\n{name}: {case['median_seconds']:.6f}s median per call; "
+              f"{repetitions} calls/sample; samples={samples}")
         if self.baseline is not None:
             reference = self.baseline["cases"][name]
             limit = regression_limit(reference, self.max_regression)

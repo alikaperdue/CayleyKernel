@@ -86,6 +86,15 @@ def pytest_configure(config):
         raise pytest.UsageError("--run-benchmarks requires exactly one of --benchmark-record PATH or --benchmark-baseline PATH")
     if not enabled and (record or baseline):
         raise pytest.UsageError("Benchmark recording/comparison requires --run-benchmarks")
+    if baseline:
+        from pathlib import Path
+        if not Path(baseline).is_file():
+            raise pytest.UsageError(
+                "--benchmark-baseline requires an existing JSON file, "
+                "not a directory or missing path: " + str(baseline)
+                + ". To create a baseline, use --run-benchmarks "
+                "--benchmark-record PATH.json instead."
+            )
     allowance = config.getoption("--benchmark-max-regression")
     if not math.isfinite(allowance) or allowance < 0:
         raise pytest.UsageError("--benchmark-max-regression must be finite and nonnegative")

@@ -14,10 +14,14 @@ Compare on the same GPU/software environment:
     pytest tests/test_benchmark.py --run-benchmarks \
         --benchmark-baseline benchmark-results/gpu.json -s
 
-Each workload has one warmup and five independently synchronized wall-clock
-samples. The median includes Python wrapper/allocation overhead, but input
-creation is outside the timing. Comparisons permit 20% over the baseline by
-default, configurable with --benchmark-max-regression. This is a local
+Each workload has three warmups followed by calibration to at least 100 ms
+per sample (capped at 16384 calls). Five synchronized wall-clock samples
+report time per call, amortizing synchronization overhead for short workloads.
+Long workloads use one call per sample. The median includes Python wrapper,
+allocation and release overhead, but input creation is outside the timing.
+Old single-call timing baselines must be recorded again under this protocol,
+using a new filename to preserve the original. Comparisons permit 20% over
+the baseline by default, configurable with --benchmark-max-regression. This is a local
 regression policy, not a hardware-independent performance guarantee or a
 proof of asymptotic scaling. Baselines are never updated by comparison.
 """
