@@ -25,7 +25,9 @@ jobs:
         with:
           components: rustfmt, clippy
       - name: Install Python tests and package without GPU dependencies
-        run: python -m pip install pytest numpy && python -m pip install --no-deps -e .
+        run: |
+          python -m pip install pytest numpy scipy sympy tzdata
+          python -m pip install --no-deps -e .
       - name: Verify Python fallback before installing Rust
         env:
           CAYLEY_KERNEL_CPU_BACKEND: python

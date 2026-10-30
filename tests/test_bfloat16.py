@@ -8,9 +8,8 @@ import pytest
 
 import CayleyKernel as ck
 
-# GPU availability is checked locally before touching CuPy's RNG. CPU checks
-# remain runnable without CuPy, ml_dtypes, or an NVIDIA driver.
-pytestmark = pytest.mark.cpu
+# Mark CPU checks individually so CUDA execution tests are excluded by -m cpu.
+# CPU checks remain runnable without CuPy, ml_dtypes, or an NVIDIA driver.
 
 
 @pytest.fixture
@@ -52,6 +51,7 @@ def reference(a, b):
                            reference(v, x) + reference(y, conj(u))), axis=-1)
 
 
+@pytest.mark.cpu
 def test_registry_and_missing_library(monkeypatch):
     assert ck._DTYPE_TO_SUFFIX['bfloat16'] == 'bfloat16'
     assert 'bfloat16' in ck._TYPE_SUFFIXES
@@ -60,6 +60,7 @@ def test_registry_and_missing_library(monkeypatch):
         ck._select_kernel(SimpleNamespace(name='bfloat16'))
 
 
+@pytest.mark.cpu
 def test_library_abi_and_empty_launch():
     if not ck.loaded():
         pytest.skip('Build the shared library first: make kernel')
@@ -73,6 +74,7 @@ def test_library_abi_and_empty_launch():
     batched(None, None, None, 1, 0)
 
 
+@pytest.mark.cpu
 @pytest.mark.parametrize('other', [np.float16, np.float32, np.float64,
                                         np.int8, np.int64, np.complex64, np.bool_])
 @pytest.mark.parametrize('reverse', [False, True])
@@ -84,6 +86,7 @@ def test_mixed_promotion(monkeypatch, bf16, other, reverse):
     assert ck._result_dtype(a, b) == np.result_type(np.float32, other)
 
 
+@pytest.mark.cpu
 def test_same_dtype_and_lists(monkeypatch, bf16):
     monkeypatch.setattr(ck, 'cp', np)
     dtype = np.dtype(bf16)
@@ -95,6 +98,7 @@ def test_same_dtype_and_lists(monkeypatch, bf16):
     assert result[0] == 1 + 2j
 
 
+@pytest.mark.cpu
 def test_cupy_dtype_metadata(bf16):
     if ck.cp is None or int(ck.cp.__version__.split('.')[0]) < 14:
         pytest.skip('Requires CuPy 14+; no GPU is needed for dtype metadata')
@@ -104,6 +108,7 @@ def test_cupy_dtype_metadata(bf16):
         assert ck._result_dtype(dtype, ck.cp.dtype(other)) == ck.cp.result_type(np.float32, other)
 
 
+@pytest.mark.cpu
 def test_algebra_helpers(bf16):
     a = np.array([1, 2, 3, 4], dtype=bf16)
     np.testing.assert_array_equal(ck.conjugate(a).astype(np.float32), [1, -2, -3, -4])
