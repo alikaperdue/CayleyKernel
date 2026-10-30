@@ -72,32 +72,21 @@ template <> struct arithmetic_traits<hipDoubleComplex> {
 // Implements the recent O(1) sign formula discovery which is credited in the README
 // Return the sign portion as 1 or 0 for +1 or -1
 __device__ __forceinline__
-int cayley_sign(int row, int col) {
+int cayley_sign(int r, int c) {
 
-    const int rec = row == col;
-    const int nac = row && col;
-    if (rec | !nac) return !nac;
+    const int o = r | c;
+    const int x = r ^ c;
+    const int d = x & -x;
+    const int v = r & -r;
+    const int h = c & -c;
+    const int a = r && c;
 
-    const int roc = row | col;
-    const int rxc = row ^ col;
-
-    const int vert = 1 << __ffs(row) - 1;
-    const int horz = 1 << __ffs(col) - 1;
-    const int diag = 1 << __ffs(rxc) - 1;
-
-    //const bool vmax = horz < vert && diag < vert;
-    const bool vmax = diag < vert && horz < vert;
-    const bool dlow = diag <         horz;
-
-    const  int sign = vmax ? ~col  & vert :
-                      dlow ?  row  & horz :
-                             ~row  & diag ;
-
-    const  int span = vmax ?         vert :
-                      dlow ?         horz :
-                                     diag ;
-
-    return __popc(static_cast<unsigned int>(sign ^ roc / rank)) & 1;
+    return __popc( static_cast<unsigned int>(
+        !x | !a ? !a :
+         h <  v ? ~c & v ^ o & -v :
+         d <  h ?  r & h ^ o & -h :
+                   c & d ^ o & -d
+    ) & 1;
 }
 
 // mult_kernel() - performs the Cayley Dickson multiplication using the GPU matrix acelleration

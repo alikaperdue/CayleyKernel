@@ -1,0 +1,396 @@
+{
+  "input_results_sha256": "0a1f4314e99162af5afed15374bc9a4041e5030a0a6665297dc2ca0bf326e433",
+  "method": "Independent vectorized recursive doubling, both rows, tolerance 1e-8",
+  "cases": [
+    {
+      "level": 4,
+      "seed": 20265032,
+      "independent_residual": 8.768508111337081e-16,
+      "verified": true
+    },
+    {
+      "level": 4,
+      "seed": 20265036,
+      "independent_residual": 2.225815525542207e-12,
+      "verified": true
+    },
+    {
+      "level": 4,
+      "seed": 20265051,
+      "independent_residual": 8.630930038158046e-13,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266033,
+      "independent_residual": 8.551393421728802e-11,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266047,
+      "independent_residual": 7.626499853220415e-11,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266048,
+      "independent_residual": 7.966658867659748e-11,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266049,
+      "independent_residual": 6.023174120974543e-10,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266051,
+      "independent_residual": 7.430521635250322e-11,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266063,
+      "independent_residual": 1.1000469051059121e-14,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266082,
+      "independent_residual": 9.27511834484348e-11,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266086,
+      "independent_residual": 0.23148320572878667,
+      "verified": false
+    },
+    {
+      "level": 5,
+      "seed": 20266101,
+      "independent_residual": 7.616859883071719e-13,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266104,
+      "independent_residual": 7.900366467358506e-11,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266107,
+      "independent_residual": 6.713828086026765e-16,
+      "verified": true
+    },
+    {
+      "level": 5,
+      "seed": 20266122,
+      "independent_residual": 9.161083796294078e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267037,
+      "independent_residual": 9.654218850385526e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267049,
+      "independent_residual": 9.464863272762046e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267060,
+      "independent_residual": 4.024465408228378e-10,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267066,
+      "independent_residual": 8.626979680865932e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267072,
+      "independent_residual": 8.390290122279411e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267075,
+      "independent_residual": 7.496729385283751e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267078,
+      "independent_residual": 7.188766888874928e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267087,
+      "independent_residual": 8.600435513845052e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267088,
+      "independent_residual": 9.795084419597597e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267089,
+      "independent_residual": 6.131056346452291e-10,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267090,
+      "independent_residual": 8.591070658529687e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267092,
+      "independent_residual": 4.927024174547427e-10,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267095,
+      "independent_residual": 7.417480238069406e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267099,
+      "independent_residual": 7.795009456056419e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267105,
+      "independent_residual": 8.933016484022654e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267108,
+      "independent_residual": 8.323554332874708e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267112,
+      "independent_residual": 6.06031444372743e-11,
+      "verified": true
+    },
+    {
+      "level": 6,
+      "seed": 20267113,
+      "independent_residual": 8.524892796732429e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268033,
+      "independent_residual": 9.805753808336409e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268034,
+      "independent_residual": 9.753668248107452e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268035,
+      "independent_residual": 9.027156257663427e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268042,
+      "independent_residual": 9.344383750590768e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268055,
+      "independent_residual": 8.781446098939225e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268057,
+      "independent_residual": 9.168851303950333e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268069,
+      "independent_residual": 1.0140616605504076e-10,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268071,
+      "independent_residual": 0.25374934064650917,
+      "verified": false
+    },
+    {
+      "level": 7,
+      "seed": 20268080,
+      "independent_residual": 9.122247322988259e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268086,
+      "independent_residual": 1.8215741642008717e-10,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268090,
+      "independent_residual": 9.202789422157636e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268100,
+      "independent_residual": 9.411777119459388e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268106,
+      "independent_residual": 9.331474155077436e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268109,
+      "independent_residual": 1.155103267162663e-10,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268111,
+      "independent_residual": 9.238762046633271e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268112,
+      "independent_residual": 9.536826718314714e-11,
+      "verified": true
+    },
+    {
+      "level": 7,
+      "seed": 20268113,
+      "independent_residual": 9.139709152539988e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269030,
+      "independent_residual": 9.904309693463409e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269033,
+      "independent_residual": 8.738655780457527e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269043,
+      "independent_residual": 8.867757944306553e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269053,
+      "independent_residual": 9.038305294600643e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269076,
+      "independent_residual": 9.859642209506327e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269080,
+      "independent_residual": 9.572824754039873e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269083,
+      "independent_residual": 9.039027085393917e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269084,
+      "independent_residual": 1.304701151011881e-10,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269087,
+      "independent_residual": 9.594523883000954e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269101,
+      "independent_residual": 9.222189438116922e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269108,
+      "independent_residual": 9.63754343278257e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269109,
+      "independent_residual": 8.330107794392371e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269117,
+      "independent_residual": 9.603929686466503e-11,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269124,
+      "independent_residual": 1.1158846756685316e-10,
+      "verified": true
+    },
+    {
+      "level": 8,
+      "seed": 20269126,
+      "independent_residual": 9.126809312534648e-11,
+      "verified": true
+    }
+  ]
+}

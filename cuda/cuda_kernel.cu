@@ -25,6 +25,7 @@
 #include <device_launch_parameters.h>
 #include <cuComplex.h>
 #include <cuda_fp16.h>
+#include <cuda_bf16.h>
 
 //const int threads_per_block = 256;
 const int threads_per_block = 1024;
@@ -33,12 +34,14 @@ const int threads_per_block = 1024;
 // is walked with a grid-stride loop.
 const int max_grid_y = 65535;
 
-// Bool accumulates in int; FP16 uses float to avoid intermediate half
-// overflow and repeated half rounding. Other types accumulate in their own type.
+// Bool accumulates in int; FP16/BF16 use float to avoid repeated low-precision
+// rounding. Other types accumulate in their own type.
 template <typename T> struct accum_traits { typedef     T type; };
 template <> struct accum_traits<bool>     { typedef   int type; };
-// FP16 storage, FP32 products and accumulation; round once on output.
+// FP16/BF16 storage, FP32 products and accumulation; round once on output.
 template <> struct accum_traits<__half>   { typedef float type; };
+template <> struct accum_traits<__nv_bfloat16> { typedef float type; };
+static_assert(sizeof(__nv_bfloat16) == 2, "BF16 ABI requires 2-byte storage");
 
 // Keep scalar arithmetic unchanged; complex storage types use the vendor's
 // explicit arithmetic functions instead of C++ scalar operators.
@@ -83,8 +86,7 @@ template <> struct arithmetic_traits<cuDoubleComplex> {
 // Sign of the Cayley-Dickson basis product  e_row * e_col = sign * e_(row^col).
 //
 // Branch-free closed form; replaces the previous iterative loop that reduced
-// (row, col) modulo dim/2, dim/4, ...  It depends only on row and col, not on
-// dim (dim merely has to be a power of two large enough to contain them).
+// (row, col) modulo dim/2, dim/4, ...  It depends only on row and col bits
 //
 // Device-code notes:
 //   * __ffs()  is CUDA's native "find first set" (1-based, 0 for zero) and is
@@ -96,31 +98,21 @@ template <> struct arithmetic_traits<cuDoubleComplex> {
 //
 // Returns +1 or -1.
 __device__ __forceinline__
-int cayley_sign(int row, int col) {
+int cayley_sign(int r, int c) {
 
-    const int rec = row == col;
-    const int nac = row && col;
-    if (rec | !nac) return !nac;
+    const int o = r | c;
+    const int x = r ^ c;
+    const int d = x & -x;
+    const int v = r & -r;
+    const int h = c & -c;
+    const int a = r && c;
 
-    const int roc = row | col;
-    const int rxc = row ^ col;
-
-    const int vert = 1 << __ffs(row) - 1;
-    const int horz = 1 << __ffs(col) - 1;
-    const int diag = 1 << __ffs(rxc) - 1;
-
-    const bool vmax = diag < vert && horz < vert;
-    const bool dlow = diag < horz;
-
-    const  int sign = vmax ? ~col & vert :
-                      dlow ?  row & horz :
-                             ~row & diag ;
-
-    const  int span = vmax ? vert :
-                      dlow ? horz :
-                             diag ;
-
-    return __popc(sign ^ roc / span) & 1;
+    return __popc(
+        !x | !a ? !a :
+         h <  v ? ~c & v ^ o & -v :
+         d <  h ?  r & h ^ o & -h :
+                   c & d ^ o & -d
+    ) & 1;
 }
 
 // 1. One template to rule them all
@@ -149,8 +141,8 @@ __global__ void mult_kernel(const T* __restrict__ a,
         for (int row = 0; row < dim; row++) {
 	    int col = index ^ row;
             const Acc term = Ops::mul(Acc(a_vec[row]), Acc(b_vec[col]));
-            cayley_sign(row, col) ? 
-                Ops::add(acc, term) : 
+            cayley_sign(row, col) ?
+                Ops::add(acc, term) :
                 Ops::sub(acc, term) ;
         }
 
@@ -205,6 +197,7 @@ extern "C" {
     DEFINE_MULT_ENTRIES(uint8,  uint8_t)
     DEFINE_MULT_ENTRIES(bool,   bool)
     DEFINE_MULT_ENTRIES(half, __half)
+    DEFINE_MULT_ENTRIES(bfloat16, __nv_bfloat16)
     DEFINE_MULT_ENTRIES(complex64,  cuComplex)
     DEFINE_MULT_ENTRIES(complex128, cuDoubleComplex)
 }

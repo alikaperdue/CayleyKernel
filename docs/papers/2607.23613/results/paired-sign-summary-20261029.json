@@ -1,0 +1,1446 @@
+{
+  "date": "2026-10-29",
+  "scope": "Saved paired-sign diagnostics only; no algebra products recomputed.",
+  "sources": {
+    "results": {
+      "path": "/tmp/cayley-paired-signs.vHkxDP/results/results.json",
+      "sha256": "41a75df2e8878ff615169e6ec6fefda9f8e96db1db3377593ce4609d85d3212a",
+      "status": "complete",
+      "configuration": {
+        "backend": "gpu",
+        "levels": [
+          6,
+          8
+        ],
+        "matrices_per_level": 64,
+        "starts": 2,
+        "paired_signs": true,
+        "support": 16,
+        "seed": 20261102,
+        "batch_size": 64,
+        "maxiter": 20,
+        "gmres_restart": 20,
+        "gmres_cycles": 3,
+        "line_search": 12,
+        "tol": 1e-09,
+        "minutes": 5.0,
+        "progress_seconds": 30.0,
+        "output": "/tmp/cayley-paired-signs.vHkxDP/results"
+      },
+      "elapsed_seconds": 10.546909318014514,
+      "saved_matrices": 128,
+      "summary": {
+        "6": {
+          "matrices": 64,
+          "verified": 63,
+          "unresolved": 1,
+          "rescued_by_later_start": 6,
+          "verified_by_start": [
+            57,
+            59
+          ],
+          "termination_reasons": {
+            "residual tolerance": 116,
+            "iteration budget": 12
+          },
+          "stopped_searches": 0,
+          "paired_sign_outcomes": {
+            "both_verified": 53,
+            "positive_only": 4,
+            "negative_only": 6,
+            "neither_verified": 1,
+            "incomplete": 0
+          }
+        },
+        "8": {
+          "matrices": 64,
+          "verified": 62,
+          "unresolved": 2,
+          "rescued_by_later_start": 3,
+          "verified_by_start": [
+            59,
+            53
+          ],
+          "termination_reasons": {
+            "residual tolerance": 109,
+            "iteration budget": 19
+          },
+          "stopped_searches": 0,
+          "paired_sign_outcomes": {
+            "both_verified": 50,
+            "positive_only": 9,
+            "negative_only": 3,
+            "neither_verified": 2,
+            "incomplete": 0
+          }
+        }
+      }
+    },
+    "results2": {
+      "path": "/tmp/cayley-paired-signs.vHkxDP/results2/results.json",
+      "sha256": "da8c777e10928ad14d5965aa2da5857cd4b185134a9868cd2ab9e57fce96b8b1",
+      "status": "interrupted",
+      "configuration": {
+        "backend": "gpu",
+        "levels": [
+          6,
+          8,
+          10
+        ],
+        "matrices_per_level": 64,
+        "starts": 2,
+        "paired_signs": true,
+        "support": 16,
+        "seed": 20261102,
+        "batch_size": 64,
+        "maxiter": 20,
+        "gmres_restart": 20,
+        "gmres_cycles": 3,
+        "line_search": 12,
+        "tol": 1e-09,
+        "minutes": 5.0,
+        "progress_seconds": 30.0,
+        "output": "/tmp/cayley-paired-signs.vHkxDP/results2"
+      },
+      "elapsed_seconds": 7.772111042984761,
+      "saved_matrices": 96,
+      "summary": {
+        "6": {
+          "matrices": 32,
+          "verified": 32,
+          "unresolved": 0,
+          "rescued_by_later_start": 4,
+          "verified_by_start": [
+            28,
+            30
+          ],
+          "termination_reasons": {
+            "residual tolerance": 58,
+            "iteration budget": 6
+          },
+          "stopped_searches": 0,
+          "paired_sign_outcomes": {
+            "both_verified": 26,
+            "positive_only": 2,
+            "negative_only": 4,
+            "neither_verified": 0,
+            "incomplete": 0
+          }
+        },
+        "8": {
+          "matrices": 32,
+          "verified": 30,
+          "unresolved": 2,
+          "rescued_by_later_start": 1,
+          "verified_by_start": [
+            29,
+            29
+          ],
+          "termination_reasons": {
+            "residual tolerance": 58,
+            "iteration budget": 6
+          },
+          "stopped_searches": 0,
+          "paired_sign_outcomes": {
+            "both_verified": 28,
+            "positive_only": 1,
+            "negative_only": 1,
+            "neither_verified": 2,
+            "incomplete": 0
+          }
+        },
+        "10": {
+          "matrices": 32,
+          "verified": 0,
+          "unresolved": 32,
+          "rescued_by_later_start": 0,
+          "verified_by_start": [
+            0,
+            0
+          ],
+          "termination_reasons": {
+            "run stopped": 64
+          },
+          "stopped_searches": 64,
+          "paired_sign_outcomes": {
+            "both_verified": 0,
+            "positive_only": 0,
+            "negative_only": 0,
+            "neither_verified": 0,
+            "incomplete": 32
+          }
+        }
+      }
+    },
+    "results3": {
+      "path": "/tmp/cayley-paired-signs.vHkxDP/results3/results.json",
+      "sha256": "8449928b497c7f5fcd37ae1e69646ea7132006ba0e41ac8c50afb1cd43daa438",
+      "status": "complete",
+      "configuration": {
+        "backend": "gpu",
+        "levels": [
+          10
+        ],
+        "matrices_per_level": 64,
+        "starts": 2,
+        "paired_signs": true,
+        "support": 16,
+        "seed": 20261102,
+        "batch_size": 64,
+        "maxiter": 20,
+        "gmres_restart": 20,
+        "gmres_cycles": 3,
+        "line_search": 12,
+        "tol": 1e-09,
+        "minutes": 5.0,
+        "progress_seconds": 30.0,
+        "output": "/tmp/cayley-paired-signs.vHkxDP/results3"
+      },
+      "elapsed_seconds": 13.856350927002495,
+      "saved_matrices": 64,
+      "summary": {
+        "10": {
+          "matrices": 64,
+          "verified": 63,
+          "unresolved": 1,
+          "rescued_by_later_start": 5,
+          "verified_by_start": [
+            58,
+            53
+          ],
+          "termination_reasons": {
+            "residual tolerance": 110,
+            "iteration budget": 18
+          },
+          "stopped_searches": 0,
+          "paired_sign_outcomes": {
+            "both_verified": 48,
+            "positive_only": 10,
+            "negative_only": 5,
+            "neither_verified": 1,
+            "incomplete": 0
+          }
+        }
+      }
+    },
+    "results4": {
+      "path": "/tmp/cayley-paired-signs.vHkxDP/results4/results.json",
+      "sha256": "e782f721559cfda179723e404de1084e068d1c35b19a72eec59b62041cba7c4c",
+      "status": "complete",
+      "configuration": {
+        "backend": "gpu",
+        "levels": [
+          12
+        ],
+        "matrices_per_level": 64,
+        "starts": 2,
+        "paired_signs": true,
+        "support": 16,
+        "seed": 20261102,
+        "batch_size": 64,
+        "maxiter": 20,
+        "gmres_restart": 20,
+        "gmres_cycles": 3,
+        "line_search": 12,
+        "tol": 1e-09,
+        "minutes": 5.0,
+        "progress_seconds": 30.0,
+        "output": "/tmp/cayley-paired-signs.vHkxDP/results4"
+      },
+      "elapsed_seconds": 130.6551146430138,
+      "saved_matrices": 64,
+      "summary": {
+        "12": {
+          "matrices": 64,
+          "verified": 57,
+          "unresolved": 7,
+          "rescued_by_later_start": 4,
+          "verified_by_start": [
+            53,
+            48
+          ],
+          "termination_reasons": {
+            "residual tolerance": 95,
+            "iteration budget": 33
+          },
+          "stopped_searches": 0,
+          "paired_sign_outcomes": {
+            "both_verified": 44,
+            "positive_only": 9,
+            "negative_only": 4,
+            "neither_verified": 7,
+            "incomplete": 0
+          }
+        }
+      }
+    }
+  },
+  "levels": {
+    "6": {
+      "source": "results",
+      "dimension": 64,
+      "support_fraction": 0.25,
+      "matrices": 64,
+      "paired_sign_outcomes": {
+        "both_verified": 53,
+        "positive_only": 4,
+        "negative_only": 6,
+        "neither_verified": 1,
+        "incomplete": 0
+      },
+      "verified": 63,
+      "positive_verified": 57,
+      "negative_verified": 59,
+      "verified_percent": 98.4375,
+      "chunk_seconds": [
+        2.6353694860008545,
+        2.421511541993823
+      ],
+      "solver_chunk_seconds": 5.056881027994677,
+      "newton_steps": 1746,
+      "krylov_iterations": 101706,
+      "krylov_per_newton_step": 58.25085910652921,
+      "multiply_calls": 13462,
+      "multiply_rows": 547211,
+      "mean_product_batch_rows": 40.64856633486852,
+      "attempt_termination_reasons": {
+        "residual tolerance": 116,
+        "iteration budget": 12
+      },
+      "verified_at_iteration_budget": 0,
+      "maximum_verified_attempt_row_residual": 7.729099468377478e-10,
+      "jointly_verified_pairs": 53,
+      "root_and_eigenvalue_comparison_threshold": 1e-06,
+      "jointly_verified_distinct_root_candidates": 27,
+      "jointly_verified_distinct_eigenvalue_candidates": 27,
+      "remaining_cases": [
+        {
+          "matrix_id": "survey-20261102-level-6-sample-52",
+          "eigenpair_residual": 2.9289307235168724e-06,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.22645035364576677,
+              "row_residuals": [
+                0.0,
+                0.22645035364576677
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.206551759733345,
+                  1.7174837490304595,
+                  1.5263618215684285,
+                  1.4088177777495194,
+                  1.1463194164980233,
+                  1.1229339663398001,
+                  0.8203850404671091,
+                  0.819366561360344,
+                  0.8067938832804019,
+                  0.7985555501628088,
+                  0.7900691976309612,
+                  0.7718887869094215,
+                  0.7338466567700851,
+                  0.7087295800952931,
+                  0.7029542728294598,
+                  0.6837337135480297,
+                  0.6719524125950816,
+                  0.5545894210324681,
+                  0.477475244511814,
+                  0.44801303448157276,
+                  0.22645035364576674
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 67
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 2.9289307235168724e-06,
+              "row_residuals": [
+                0.0,
+                2.9289307235168724e-06
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.7419742603638304,
+                  1.9304448660698987,
+                  1.3203878086870664,
+                  0.9767341657002355,
+                  0.516203339716145,
+                  0.47461482535349636,
+                  0.4735663864378936,
+                  0.4345805599416313,
+                  0.3938421301449931,
+                  0.38619249960959834,
+                  0.37050938847725595,
+                  0.3332259613060508,
+                  0.3249053053203916,
+                  0.30624739386376293,
+                  0.2974485548912443,
+                  0.2885058921606928,
+                  0.2516683918785635,
+                  0.20061336086041595,
+                  0.038477004463263575,
+                  0.0018417877060108677,
+                  2.928930723545736e-06
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 40
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "8": {
+      "source": "results",
+      "dimension": 256,
+      "support_fraction": 0.0625,
+      "matrices": 64,
+      "paired_sign_outcomes": {
+        "both_verified": 50,
+        "positive_only": 9,
+        "negative_only": 3,
+        "neither_verified": 2,
+        "incomplete": 0
+      },
+      "verified": 62,
+      "positive_verified": 59,
+      "negative_verified": 53,
+      "verified_percent": 96.875,
+      "chunk_seconds": [
+        2.6931898629991338,
+        2.6977566089772154
+      ],
+      "solver_chunk_seconds": 5.390946471976349,
+      "newton_steps": 1893,
+      "krylov_iterations": 112087,
+      "krylov_per_newton_step": 59.21130480718436,
+      "multiply_calls": 13374,
+      "multiply_rows": 600472,
+      "mean_product_batch_rows": 44.89845969792134,
+      "attempt_termination_reasons": {
+        "residual tolerance": 109,
+        "iteration budget": 19
+      },
+      "verified_at_iteration_budget": 3,
+      "maximum_verified_attempt_row_residual": 2.6006627972483358e-09,
+      "jointly_verified_pairs": 50,
+      "root_and_eigenvalue_comparison_threshold": 1e-06,
+      "jointly_verified_distinct_root_candidates": 32,
+      "jointly_verified_distinct_eigenvalue_candidates": 32,
+      "remaining_cases": [
+        {
+          "matrix_id": "survey-20261102-level-8-sample-20",
+          "eigenpair_residual": 1.0244326942812322e-05,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.037628331560454184,
+              "row_residuals": [
+                0.0,
+                0.037628331560454184
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.3489255027684,
+                  1.6200554714667041,
+                  1.1460075757906045,
+                  0.7771973367698788,
+                  0.7162456618220672,
+                  0.715195327996066,
+                  0.6608282678432723,
+                  0.6171519817371968,
+                  0.5876140979778707,
+                  0.43781738402329295,
+                  0.2997018269142365,
+                  0.2468107485140883,
+                  0.14166782288201216,
+                  0.08324504800607606,
+                  0.07007463148535999,
+                  0.06477743283899039,
+                  0.05634935895409065,
+                  0.055179735160069,
+                  0.0402696563812462,
+                  0.03903533222422115,
+                  0.03762833156045422
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 39
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 1.0244326942812322e-05,
+              "row_residuals": [
+                0.0,
+                1.0244326942812322e-05
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.2699747835495514,
+                  1.6546246790364383,
+                  1.2470572588047364,
+                  1.1569654454677962,
+                  0.6102555364601481,
+                  0.5786044261248026,
+                  0.2166203553348697,
+                  0.1449712196612945,
+                  0.11731976462971024,
+                  0.06270646005673217,
+                  0.0625366463155847,
+                  0.03451133644385665,
+                  0.033419398945587916,
+                  0.03336706788734425,
+                  0.0332027771993597,
+                  0.033177881796865885,
+                  0.0328659580082358,
+                  0.03184629771216255,
+                  0.02398273768581359,
+                  0.001825194131326393,
+                  1.0244326942824873e-05
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 51
+              }
+            }
+          ]
+        },
+        {
+          "matrix_id": "survey-20261102-level-8-sample-25",
+          "eigenpair_residual": 0.043619819839790006,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.0652271982198612,
+              "row_residuals": [
+                0.0,
+                0.0652271982198612
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.3317593988801777,
+                  1.2327405321481386,
+                  0.933030247145981,
+                  0.7241236433910565,
+                  0.5407232850890803,
+                  0.5382121364787377,
+                  0.40982481521320124,
+                  0.3331505248660391,
+                  0.3308832448767714,
+                  0.3157613177503735,
+                  0.2983898802443922,
+                  0.25434112617225635,
+                  0.23674916947626648,
+                  0.23510620188259249,
+                  0.23265564649041337,
+                  0.2300780176872532,
+                  0.16659323242291696,
+                  0.14882196274871481,
+                  0.09265093354382169,
+                  0.06707456388687685,
+                  0.06522719821986114
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 51
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.043619819839790006,
+              "row_residuals": [
+                0.0,
+                0.043619819839790006
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  1.8890685439059494,
+                  1.1737674592186016,
+                  1.0084827736294766,
+                  0.942697565489493,
+                  0.7881415238757531,
+                  0.5418489256899535,
+                  0.31992892729268796,
+                  0.12691656302075197,
+                  0.11200800656108456,
+                  0.08633264032427163,
+                  0.08556847048593855,
+                  0.08204154337009333,
+                  0.07712386516554105,
+                  0.06608385359260488,
+                  0.06309600479629535,
+                  0.04643825131522593,
+                  0.046289656926202155,
+                  0.04528859770131419,
+                  0.0446671839244594,
+                  0.044316462825129244,
+                  0.043619819839790006
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 44
+              }
+            }
+          ]
+        }
+      ],
+      "time_ratio_to_previous_sampled_level": 1.0660615589198756
+    },
+    "10": {
+      "source": "results3",
+      "dimension": 1024,
+      "support_fraction": 0.015625,
+      "matrices": 64,
+      "paired_sign_outcomes": {
+        "both_verified": 48,
+        "positive_only": 10,
+        "negative_only": 5,
+        "neither_verified": 1,
+        "incomplete": 0
+      },
+      "verified": 63,
+      "positive_verified": 58,
+      "negative_verified": 53,
+      "verified_percent": 98.4375,
+      "chunk_seconds": [
+        6.963985012989724,
+        6.774605699989479
+      ],
+      "solver_chunk_seconds": 13.738590712979203,
+      "newton_steps": 2027,
+      "krylov_iterations": 120438,
+      "krylov_per_newton_step": 59.416872224963,
+      "multiply_calls": 13266,
+      "multiply_rows": 643468,
+      "mean_product_batch_rows": 48.505050505050505,
+      "attempt_termination_reasons": {
+        "residual tolerance": 110,
+        "iteration budget": 18
+      },
+      "verified_at_iteration_budget": 1,
+      "maximum_verified_attempt_row_residual": 3.683694462280586e-09,
+      "jointly_verified_pairs": 48,
+      "root_and_eigenvalue_comparison_threshold": 1e-06,
+      "jointly_verified_distinct_root_candidates": 28,
+      "jointly_verified_distinct_eigenvalue_candidates": 28,
+      "remaining_cases": [
+        {
+          "matrix_id": "survey-20261102-level-10-sample-19",
+          "eigenpair_residual": 1.458130491944669e-07,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.05148027867626773,
+              "row_residuals": [
+                0.0,
+                0.05148027867626773
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.4133977974251537,
+                  1.4109233434196833,
+                  0.8844437762429764,
+                  0.7845853301097467,
+                  0.6330657666910161,
+                  0.575415962916214,
+                  0.37291409018343935,
+                  0.35187676543893387,
+                  0.34026104971675786,
+                  0.3044734922250036,
+                  0.2184427295819388,
+                  0.1746616565338518,
+                  0.15797515246314586,
+                  0.11830534866255674,
+                  0.11342572439155427,
+                  0.056104486604851025,
+                  0.055393270504582245,
+                  0.05436618837666434,
+                  0.053479358056825126,
+                  0.053022392775324986,
+                  0.051480278676267685
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 52
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 1.458130491944669e-07,
+              "row_residuals": [
+                0.0,
+                1.458130491944669e-07
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.2795555142210997,
+                  1.2590572373070978,
+                  0.899470796130773,
+                  0.6874775694202706,
+                  0.5980651329219775,
+                  0.521510291425171,
+                  0.47741434275108,
+                  0.37620567951375683,
+                  0.2719950627781099,
+                  0.15255911789107685,
+                  0.06380043349842972,
+                  0.025241164124890268,
+                  0.014910917504619634,
+                  0.003914073522941958,
+                  0.003769535652751259,
+                  0.003764879299618173,
+                  0.00338372124943324,
+                  0.001360100277897452,
+                  0.00012331624939103237,
+                  2.47244434913423e-06,
+                  1.458130491729947e-07
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 30
+              }
+            }
+          ]
+        }
+      ],
+      "time_ratio_to_previous_sampled_level": 2.5484561541087913
+    },
+    "12": {
+      "source": "results4",
+      "dimension": 4096,
+      "support_fraction": 0.00390625,
+      "matrices": 64,
+      "paired_sign_outcomes": {
+        "both_verified": 44,
+        "positive_only": 9,
+        "negative_only": 4,
+        "neither_verified": 7,
+        "incomplete": 0
+      },
+      "verified": 57,
+      "positive_verified": 53,
+      "negative_verified": 48,
+      "verified_percent": 89.0625,
+      "chunk_seconds": [
+        65.2137627589982,
+        65.03536576402257
+      ],
+      "solver_chunk_seconds": 130.24912852302077,
+      "newton_steps": 2302,
+      "krylov_iterations": 137784,
+      "krylov_per_newton_step": 59.85403996524761,
+      "multiply_calls": 13162,
+      "multiply_rows": 734460,
+      "mean_product_batch_rows": 55.801549916426076,
+      "attempt_termination_reasons": {
+        "residual tolerance": 95,
+        "iteration budget": 33
+      },
+      "verified_at_iteration_budget": 6,
+      "maximum_verified_attempt_row_residual": 2.3856799208652173e-09,
+      "jointly_verified_pairs": 44,
+      "root_and_eigenvalue_comparison_threshold": 1e-06,
+      "jointly_verified_distinct_root_candidates": 28,
+      "jointly_verified_distinct_eigenvalue_candidates": 28,
+      "remaining_cases": [
+        {
+          "matrix_id": "survey-20261102-level-12-sample-3",
+          "eigenpair_residual": 0.00013624513124358426,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.021525670266432987,
+              "row_residuals": [
+                0.0,
+                0.021525670266432987
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.1648576622481754,
+                  1.1021379965026845,
+                  0.7970377536988932,
+                  0.665040064113875,
+                  0.6003018504319861,
+                  0.5739880908191519,
+                  0.502207373368828,
+                  0.4803846545944785,
+                  0.32512265644102173,
+                  0.22567467345609066,
+                  0.09961634041101977,
+                  0.0917713974892088,
+                  0.041626620957383446,
+                  0.03297065491609479,
+                  0.0274399304886872,
+                  0.02700390591109637,
+                  0.024400733462871724,
+                  0.02410456726735726,
+                  0.023483871978248517,
+                  0.022249324799032247,
+                  0.021525670266432977
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 44
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.00013624513124358426,
+              "row_residuals": [
+                0.0,
+                0.00013624513124358426
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.2739173608969074,
+                  1.1547001624046043,
+                  0.8382179255840537,
+                  0.6783201712991448,
+                  0.6122943209790315,
+                  0.5837306725416666,
+                  0.5172176138928283,
+                  0.40309113298690546,
+                  0.1932218982561899,
+                  0.12417430640600848,
+                  0.08961536031236975,
+                  0.05699222796135971,
+                  0.01414430667020948,
+                  0.0020794821250396853,
+                  0.00017173705918502349,
+                  0.00014886665672568416,
+                  0.00014269411024484766,
+                  0.0001369658378679701,
+                  0.0001366078346583884,
+                  0.00013641217711367332,
+                  0.0001362451312435353
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 24
+              }
+            }
+          ]
+        },
+        {
+          "matrix_id": "survey-20261102-level-12-sample-6",
+          "eigenpair_residual": 1.5205908371781111e-06,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 1.5205908371781111e-06,
+              "row_residuals": [
+                0.0,
+                1.5205908371781111e-06
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.251599234795568,
+                  1.158934794778612,
+                  0.7985960434378679,
+                  0.7252607342189081,
+                  0.6414643531590832,
+                  0.5585670430427206,
+                  0.49661590843514736,
+                  0.3515101841022403,
+                  0.26730565421986624,
+                  0.2141862389427506,
+                  0.13943824675412228,
+                  0.08875166190655222,
+                  0.06640106746119126,
+                  0.01773316825301107,
+                  0.00510197663664128,
+                  0.0009538159665642269,
+                  0.00016242034533822612,
+                  3.8682787428966385e-05,
+                  1.2112758153007966e-05,
+                  4.2415784537752925e-06,
+                  1.5205908372569235e-06
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 24
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 2.4395857120022965e-06,
+              "row_residuals": [
+                0.0,
+                2.4395857120022965e-06
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.262173315600424,
+                  1.1449323128349143,
+                  0.8428278644102504,
+                  0.6730926515776963,
+                  0.6298119404641669,
+                  0.6129821282378495,
+                  0.5732918557308325,
+                  0.5028153627762372,
+                  0.3562197545523551,
+                  0.19280518975990762,
+                  0.08694186830331764,
+                  0.05245018860224833,
+                  0.025063598127625843,
+                  0.021154104838646555,
+                  0.020579362806478776,
+                  0.020569397487494267,
+                  0.020127937307689872,
+                  0.01925760562185327,
+                  0.0022735774390945,
+                  9.061932200436635e-05,
+                  2.4395857120045496e-06
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 32
+              }
+            }
+          ]
+        },
+        {
+          "matrix_id": "survey-20261102-level-12-sample-17",
+          "eigenpair_residual": 0.002628330400779258,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.002628330400779258,
+              "row_residuals": [
+                0.0,
+                0.002628330400779258
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.2148421864293986,
+                  1.207186147997226,
+                  0.8814492936289584,
+                  0.6635553419436807,
+                  0.5849871062469434,
+                  0.4693628323703829,
+                  0.30976405448442224,
+                  0.1538951644532951,
+                  0.0631216061057203,
+                  0.0206150404790699,
+                  0.004224509430208541,
+                  0.004060466252816136,
+                  0.003908740347418787,
+                  0.003594838694451046,
+                  0.0026597538267584208,
+                  0.002633949398947403,
+                  0.002632337522970801,
+                  0.0026306300939933354,
+                  0.0026296798853944897,
+                  0.002629127476599847,
+                  0.0026283304007792847
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 42
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.0028710622703326666,
+              "row_residuals": [
+                0.0,
+                0.0028710622703326666
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.240707804121816,
+                  1.2413766396252617,
+                  0.8386578247188075,
+                  0.7155135615210555,
+                  0.6391254147908404,
+                  0.5978077696064427,
+                  0.5179765959947176,
+                  0.4060645832803529,
+                  0.35303459162898465,
+                  0.21911646940657065,
+                  0.06198487466135525,
+                  0.012568028115882665,
+                  0.010838060195031154,
+                  0.009495879628472403,
+                  0.00712730567676424,
+                  0.006696346872913683,
+                  0.004023791414218442,
+                  0.0038283335103785473,
+                  0.0037772136399193113,
+                  0.0035670220088998674,
+                  0.002871062270332616
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 36
+              }
+            }
+          ]
+        },
+        {
+          "matrix_id": "survey-20261102-level-12-sample-28",
+          "eigenpair_residual": 5.039556221111766e-07,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 1.2028520948303788e-06,
+              "row_residuals": [
+                0.0,
+                1.2028520948303788e-06
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.2520992097953334,
+                  1.1481401960915891,
+                  0.8056104909544196,
+                  0.7060478490887535,
+                  0.6457761797928593,
+                  0.6121445592509243,
+                  0.5672657087228407,
+                  0.5333989487337151,
+                  0.49154249048717935,
+                  0.2179113215382263,
+                  0.1491378213668307,
+                  0.04327296616453072,
+                  0.00740349234734818,
+                  0.000452077145146508,
+                  0.00010243180983393664,
+                  5.048025063501413e-05,
+                  2.164430201211528e-05,
+                  1.0537366321258416e-05,
+                  5.178659083702436e-06,
+                  2.504457176203947e-06,
+                  1.2028520948172117e-06
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 22
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 5.039556221111766e-07,
+              "row_residuals": [
+                0.0,
+                5.039556221111766e-07
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.2821834026133505,
+                  1.1614162312704932,
+                  0.8360685672086048,
+                  0.7166415756450226,
+                  0.6398853785631123,
+                  0.5833955647154878,
+                  0.5116317905002952,
+                  0.3535517923220904,
+                  0.33360078732650134,
+                  0.16886002475880119,
+                  0.08126213979076292,
+                  0.027676700950322358,
+                  0.004173558824463589,
+                  0.0002327768372072678,
+                  3.7704639170937745e-05,
+                  1.782575269405858e-05,
+                  8.156285442539679e-06,
+                  4.1245431768505684e-06,
+                  2.0724842217847725e-06,
+                  1.0163003774256155e-06,
+                  5.039556220399136e-07
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 24
+              }
+            }
+          ]
+        },
+        {
+          "matrix_id": "survey-20261102-level-12-sample-38",
+          "eigenpair_residual": 1.5835787407962267e-08,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.0014727565643477742,
+              "row_residuals": [
+                0.0,
+                0.0014727565643477742
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.20178540203296,
+                  1.1676021278946191,
+                  0.8667805049857578,
+                  0.7012414206675588,
+                  0.6373690664322557,
+                  0.6127347982454381,
+                  0.512704652347794,
+                  0.4298837000507991,
+                  0.2972265997491327,
+                  0.14436011889334135,
+                  0.07592509907750865,
+                  0.04095854985476696,
+                  0.02960063103112528,
+                  0.01793434662801615,
+                  0.017471010770933038,
+                  0.017462836547602167,
+                  0.01745628361810791,
+                  0.017006890816087684,
+                  0.014820897528360764,
+                  0.011634199807942126,
+                  0.0014727565643477848
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 25
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 1.5835787407962267e-08,
+              "row_residuals": [
+                0.0,
+                1.5835787407962267e-08
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.1735451516616204,
+                  1.1125161629830815,
+                  0.8402696135141554,
+                  0.6870508845569399,
+                  0.6137286219689798,
+                  0.5579926691366581,
+                  0.4650585345163001,
+                  0.4337143724379748,
+                  0.37286968398682313,
+                  0.19930973912365896,
+                  0.07396968330970823,
+                  0.026051957298048895,
+                  0.020293490700359833,
+                  0.004479848742415925,
+                  0.0006301863116800152,
+                  8.064824283213045e-05,
+                  1.845447623774491e-05,
+                  2.422316880708106e-06,
+                  5.444641250242786e-07,
+                  8.518685300222336e-08,
+                  1.5835787401324338e-08
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 23
+              }
+            }
+          ]
+        },
+        {
+          "matrix_id": "survey-20261102-level-12-sample-48",
+          "eigenpair_residual": 1.5329240415484823e-08,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 1.5329240415484823e-08,
+              "row_residuals": [
+                0.0,
+                1.5329240415484823e-08
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.308001908853307,
+                  1.1134004295725346,
+                  0.8872628783860198,
+                  0.6880610165347915,
+                  0.6329037531798101,
+                  0.6006954149771258,
+                  0.4675569723249914,
+                  0.3487674326699275,
+                  0.20556041601068964,
+                  0.062182532110524324,
+                  0.025051067357177676,
+                  0.006240148380201152,
+                  0.0008962010134953494,
+                  0.0002940459490833277,
+                  2.7538461169690028e-05,
+                  6.869530370230791e-06,
+                  1.8796605301211481e-06,
+                  5.260556302702231e-07,
+                  1.6109389384234524e-07,
+                  4.913361111739684e-08,
+                  1.532924048679162e-08
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 22
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 3.3740592769063715e-07,
+              "row_residuals": [
+                0.0,
+                3.3740592769063715e-07
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.3385213917329373,
+                  1.1377300661055634,
+                  0.9288293926177031,
+                  0.6914463853303447,
+                  0.6321661246757809,
+                  0.5957646849132496,
+                  0.5222350084539644,
+                  0.5187687803409203,
+                  0.3752693760410784,
+                  0.28370957695455157,
+                  0.2039603420897011,
+                  0.08048478472337008,
+                  0.017109367709191577,
+                  0.004145528504177117,
+                  0.0024666675351510225,
+                  0.00047297912766490366,
+                  0.00038026492038178424,
+                  3.3159363418630596e-05,
+                  3.737325403846681e-06,
+                  1.0586517483943294e-06,
+                  3.3740592762523557e-07
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 24
+              }
+            }
+          ]
+        },
+        {
+          "matrix_id": "survey-20261102-level-12-sample-53",
+          "eigenpair_residual": 1.1108440475509409e-07,
+          "attempts": [
+            {
+              "start": 0,
+              "kind": "positive_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 1.1108440475509409e-07,
+              "row_residuals": [
+                0.0,
+                1.1108440475509409e-07
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.2198708738400805,
+                  1.1664882420041167,
+                  0.8647969103836144,
+                  0.7247962640707293,
+                  0.6288081668155805,
+                  0.5851775886314182,
+                  0.46322947481302074,
+                  0.20647747287568144,
+                  0.14429553279321405,
+                  0.13196194499624142,
+                  0.12195621285421306,
+                  0.12020884922162245,
+                  0.08530539915609651,
+                  0.07423707916374751,
+                  0.07341777427022268,
+                  0.07188525932000535,
+                  0.06795678044653897,
+                  0.023278789580612382,
+                  0.003669855174066322,
+                  9.928845226971727e-05,
+                  1.11084404649257e-07
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 35
+              }
+            },
+            {
+              "start": 1,
+              "kind": "negative_random_normal",
+              "status": "unresolved",
+              "eigenpair_residual": 0.007109910328986597,
+              "row_residuals": [
+                0.0,
+                0.007109910328986597
+              ],
+              "solver": {
+                "converged": false,
+                "reason": "iteration budget",
+                "residuals": [
+                  2.2592779571187918,
+                  1.1487012810982171,
+                  0.8582295239747153,
+                  0.7012339889192306,
+                  0.6293752793700301,
+                  0.565790988312343,
+                  0.5289168812403604,
+                  0.364069498481896,
+                  0.26550369564864196,
+                  0.14475670213334574,
+                  0.11373691613260623,
+                  0.11263822269376869,
+                  0.10421291442721879,
+                  0.0829590369262234,
+                  0.07788675621536015,
+                  0.07589921509527495,
+                  0.05574317270328017,
+                  0.04616245093360293,
+                  0.043956915937815595,
+                  0.03257598164970736,
+                  0.007109910328986709
+                ],
+                "iterations": 20,
+                "newton_steps": 20,
+                "krylov_iterations": 1200,
+                "line_search_evaluations": 34
+              }
+            }
+          ]
+        }
+      ],
+      "time_ratio_to_previous_sampled_level": 9.480530517585843
+    }
+  },
+  "independent_complete_matrices": 256,
+  "independent_searches": 512,
+  "total_paired_outcomes": {
+    "both_verified": 195,
+    "positive_only": 32,
+    "negative_only": 18,
+    "neither_verified": 11
+  },
+  "verified": 245,
+  "overlap_audit": {
+    "interrupted_saved_matrices": 96,
+    "all_interrupted_matrix_ids_already_in_complete_runs": true,
+    "repeated_completed_level_6_and_8_attempts_identical": true,
+    "repeated_chunk_inputs_identical": true,
+    "level_10_incomplete_pairs_excluded": 32
+  },
+  "provenance_checks": {
+    "source_hashes_match": true,
+    "all_input_and_output_vector_hashes_match": true,
+    "chunk_manifests_match_aggregate": true,
+    "exact_opposite_nonzero_starts": true,
+    "same_coefficients_within_each_pair": true,
+    "encoded_coefficients_match_input_arrays": true,
+    "selected_vectors_match_full_search_archives": true,
+    "both_recorded_row_acceptance_checked_for_every_attempt": true
+  },
+  "total_complete_run_elapsed_seconds": 155.0583748880308,
+  "root_distance_definition": "norm(x_plus-x_minus)/max(1,norm(x_plus),norm(x_minus)); same for lambda",
+  "interpretation_limits": [
+    "Different matrices at each level; one seed family; 64 matrices per level.",
+    "Support fixed at 16 while its fraction of dimension decreases.",
+    "Timings are observed chunk times, not repeated controlled performance benchmarks.",
+    "Opposite starts change position and direction; radius is held equal.",
+    "Numerical eigenpairs and distinct candidates are not exact existence or multiplicity certificates."
+  ]
+}

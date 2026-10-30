@@ -1,0 +1,3 @@
+# Preserve the recorded CSV bytes so SHA-256 evidence stays valid on every checkout.
+# Python's csv writer uses CRLF, which is valid CSV rather than trailing whitespace.
+docs/papers/physletb-2026-141078/extensions/results/*.csv -text whitespace=cr-at-eol

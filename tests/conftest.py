@@ -27,6 +27,15 @@ import CayleyKernel
 
 
 def pytest_addoption(parser):
+    timing = parser.getgroup("GPU performance baselines")
+    timing.addoption("--run-benchmarks", action="store_true",
+                     help="Enable GPU timing tests (also choose record or baseline).")
+    timing.addoption("--benchmark-record", metavar="PATH",
+                     help="Record a new local GPU baseline; never overwrite an existing file.")
+    timing.addoption("--benchmark-baseline", metavar="PATH",
+                     help="Compare timings against an existing GPU baseline.")
+    timing.addoption("--benchmark-max-regression", type=float, default=0.20,
+                     help="Allowed median slowdown as a fraction of baseline (default: 0.20).")
     group = parser.getgroup("sparse zero divisors")
     group.addoption("--run-sparse-zd", action="store_true",
                     help="Enable CPU-only sparse zero-divisor validation.")
@@ -56,6 +65,11 @@ def pytest_generate_tests(metafunc):
 
 
 def pytest_collection_modifyitems(config, items):
+    if not config.getoption("--run-benchmarks"):
+        skip = pytest.mark.skip(reason="opt-in: --run-benchmarks plus --benchmark-record or --benchmark-baseline")
+        for item in items:
+            if item.get_closest_marker("benchmark"):
+                item.add_marker(skip)
     if not config.getoption("--run-sparse-zd"):
         skip = pytest.mark.skip(reason="opt-in: use make test-sparse-zd")
         for item in items:
@@ -64,12 +78,23 @@ def pytest_collection_modifyitems(config, items):
 
 
 def pytest_configure(config):
+    import math
+    enabled = config.getoption("--run-benchmarks")
+    record = config.getoption("--benchmark-record")
+    baseline = config.getoption("--benchmark-baseline")
+    if enabled and bool(record) == bool(baseline):
+        raise pytest.UsageError("--run-benchmarks requires exactly one of --benchmark-record PATH or --benchmark-baseline PATH")
+    if not enabled and (record or baseline):
+        raise pytest.UsageError("Benchmark recording/comparison requires --run-benchmarks")
+    allowance = config.getoption("--benchmark-max-regression")
+    if not math.isfinite(allowance) or allowance < 0:
+        raise pytest.UsageError("--benchmark-max-regression must be finite and nonnegative")
     # Register custom markers (also declared in pyproject.toml).
     config.addinivalue_line(
         "markers", "slow: heavy 2^20+ identity/batch tests (pytest -m slow)"
     )
     config.addinivalue_line(
-        "markers", "benchmark: timing gates and scaling (pytest -m benchmark)"
+        "markers", "benchmark: GPU timing checks (opt-in: --run-benchmarks with a local baseline)"
     )
     config.addinivalue_line("markers", "sparse_zd: opt-in CPU sparse zero-divisor checks")
     config.addinivalue_line("markers", "cpu: CPU-only checks without a CUDA runtime")
@@ -77,12 +102,33 @@ def pytest_configure(config):
 
 @pytest.fixture(autouse=True)
 def _seed(request):
-    if request.node.get_closest_marker("sparse_zd") or request.node.get_closest_marker("cpu"):
+    if (request.node.get_closest_marker("sparse_zd")
+            or request.node.get_closest_marker("cpu")
+            or request.node.get_closest_marker("benchmark")):
         return
     if np is not None:
         np.random.seed(0)
     if cp is not None:
         cp.random.seed(0)
+
+
+@pytest.fixture(scope="session")
+def gpu_benchmark(request):
+    from tests.benchmark_support import BenchmarkSession
+    if cp is None or not CayleyKernel.loaded():
+        pytest.skip("Benchmark requires CuPy and the compiled kernel")
+    try:
+        if cp.cuda.runtime.getDeviceCount() < 1:
+            pytest.skip("Benchmark requires a CUDA device")
+    except cp.cuda.runtime.CUDARuntimeError as exc:
+        pytest.skip("CUDA device unavailable: " + str(exc))
+    session = BenchmarkSession(
+        cp, baseline=request.config.getoption("--benchmark-baseline"),
+        record=request.config.getoption("--benchmark-record"),
+        max_regression=request.config.getoption("--benchmark-max-regression"),
+    )
+    yield session
+    session.finish()
 
 
 @pytest.fixture(autouse=True)

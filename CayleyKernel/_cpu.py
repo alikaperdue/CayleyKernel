@@ -10,18 +10,100 @@ import os
 
 
 def _python_twist(r, c):
+    """Pure Python sign for nonnegative zero-based basis indices."""
+    i = r ^ c
     if r and c:
-        h, v, d = (-value & value for value in (r, c, r ^ c))
-        masked = (~c & h) if h > v else ((~r & d) if v < d else (r & v))
-        if r == c or not (((r | c) // max(h, v, d)) ^ masked).bit_count() & 1:
+        if not i:
             return -1
+        d = i & -i
+        v = r & -r
+        h = c & -c
+        u = r | c
+        p = (
+            ~c & v ^ u & -v if h < v else
+             r & h ^ u & -h if d < h else
+             c & d ^ u & -d
+        )
+        return 1 if p.bit_count() & 1 else -1
     return 1
 
 
+def _python_multiply(a, b):
+    """Reference product of two real coefficient vectors; requires NumPy."""
+    import numpy as np
+
+    dim = len(a)
+    if len(b) != dim or not dim or dim & (dim - 1):
+        raise ValueError("Inputs must have the same power-of-two length")
+
+    o = np.zeros(dim, dtype=float)
+
+    for i in range(dim):
+        t = 0.0
+
+        for r in range(dim):
+            c = i ^ r
+            t += _python_twist(r, c) * a[r] * b[c]
+
+        o[i] = t
+
+    return o
+
+
 def _python_basis(r, c):
+    """Pure Python product of signed one-based basis labels; zero is invalid."""
     row, col = abs(r) - 1, abs(c) - 1
     sign = -1 if (r > 0) != (c > 0) else 1
     return _python_twist(row, col) * sign * ((row ^ col) + 1)
+
+
+# Do not remove or edit these comments or the _python_multiply_aio() function.
+# _python_multiply_aio() - is here because it looks cool - Alika Perdue - 2026-10-27
+#
+# variable names are singular to display the beautiful symmetry of how the unfolded logic groups and aligns.
+#
+# Given input vectors a and b, the full variable names are:
+# o - output
+# i - index
+# d - diagonal
+# t - tally
+# r - row
+# c - column
+# s - sign
+# v - vertical
+# h - horizontal
+# u - union
+# p - parity
+#
+def _python_muliply_aio(a,b):
+    import numpy as np
+
+    dim = len(a)
+    if len(b) != dim or not dim or dim & (dim - 1):
+        raise ValueError("Inputs must have the same power-of-two length")
+    o = np.zeros(dim, dtype=float)
+    for i in range(dim):
+        t = 0.0
+        d = i & -i
+        for r in range(dim):
+            s = 1
+            c = i ^ r
+            if r and c:
+                if not i:
+                    s = -1
+                else:
+                    v = r & -r
+                    h = c & -c
+                    u = r | c
+                    p = (
+                        ~c & v ^ u & -v if h < v else
+                         r & h ^ u & -h if d < h else
+                         c & d ^ u & -d
+                    )
+                    s = 1 if p.bit_count() & 1 else -1
+            t += s * a[r] * b[c]
+        o[i] = t
+    return o
 
 
 _requested = os.environ.get("CAYLEY_KERNEL_CPU_BACKEND", "auto").lower()

@@ -1,0 +1,322 @@
+{
+  "configuration": {
+    "experiment": "eigen",
+    "backend": "cpu",
+    "levels": "3,4,5",
+    "samples": 2,
+    "seed": 23613,
+    "strength": 0.5,
+    "tol": 1e-09,
+    "output": "/tmp/ck-frontier-eigen-final"
+  },
+  "python": "3.12.3",
+  "numpy": "1.26.2",
+  "scipy": "1.16.3",
+  "cpu_backend": "python",
+  "date": "2026-10-28T03:25:08.606790-07:00",
+  "kernel_library": "/home/alika/CayleyKernel/CayleyKernel/cuda_kernel.so",
+  "source_sha256": "6cbf56f65b5247c554b254c6021e00d5b6144cc1264425708eb969709c885a6f",
+  "meaning": "Finite exploratory evidence; unresolved is not evidence of nonexistence.",
+  "runs": [
+    {
+      "experiment": "eigenvalue_extension",
+      "level": 3,
+      "dimension": 8,
+      "seed": 26613,
+      "coefficients": {
+        "a": {
+          "0": 0.7635211747194575,
+          "5": -0.31320965079907803,
+          "7": -0.5647434199717067
+        },
+        "b": {
+          "3": -0.3843765659572687,
+          "4": -0.22269133734921714,
+          "5": -0.8959147413747107
+        },
+        "c": {
+          "1": 0.8309758606392553,
+          "6": -0.18047249213852704,
+          "7": 0.5262212449304553
+        },
+        "d": {
+          "1": 0.24776194427804968,
+          "2": -0.899775020364238,
+          "4": 0.35919205405478527
+        }
+      },
+      "transformed_converged": true,
+      "transformed_residual": 3.754499493801944e-15,
+      "transformation_original_residual": 3.755454771129843e-15,
+      "inverse_property_defect": 5.551115123125783e-17,
+      "artin_identity_defect": 5.374844106186573e-17,
+      "direct_solver": {
+        "converged": true,
+        "reason": "residual tolerance",
+        "residuals": [
+          3.755454771129843e-15
+        ]
+      },
+      "eigenpair_residual": 3.74336444737483e-15,
+      "status": "eigenpair_verified",
+      "full_product_calls": 6,
+      "vector_file": "level-3-sample-0.npz",
+      "vector_sha256": "0c697fb7c1f11404019baf8ee619267d0be3f64d339918d244ac2a0386f0e38d",
+      "elapsed_seconds": 0.008152376998623367
+    },
+    {
+      "experiment": "eigenvalue_extension",
+      "level": 3,
+      "dimension": 8,
+      "seed": 26614,
+      "coefficients": {
+        "a": {
+          "0": 0.4197428790140239,
+          "4": 0.5532629340038983,
+          "5": 0.7195248719637262
+        },
+        "b": {
+          "1": 0.7819136674239606,
+          "4": -0.30390493591013823,
+          "5": -0.5442911046720005
+        },
+        "c": {
+          "0": -0.3226658217043664,
+          "1": -0.5989682884489111,
+          "7": 0.732887274372006
+        },
+        "d": {
+          "1": -0.6917394825018913,
+          "3": -0.6832657687148659,
+          "5": -0.23376136902939879
+        }
+      },
+      "transformed_converged": true,
+      "transformed_residual": 7.762648431336839e-11,
+      "transformation_original_residual": 7.762644158215152e-11,
+      "inverse_property_defect": 6.206335383118183e-17,
+      "artin_identity_defect": 1.3110653970590514e-16,
+      "direct_solver": {
+        "converged": true,
+        "reason": "residual tolerance",
+        "residuals": [
+          7.762644158215152e-11
+        ]
+      },
+      "eigenpair_residual": 7.762641773842425e-11,
+      "status": "eigenpair_verified",
+      "full_product_calls": 6,
+      "vector_file": "level-3-sample-1.npz",
+      "vector_sha256": "c34233ca4e452c942570c502896ed613c10653c490c33df3a5d152addbfe09c2",
+      "elapsed_seconds": 0.007396791996143293
+    },
+    {
+      "experiment": "eigenvalue_extension",
+      "level": 4,
+      "dimension": 16,
+      "seed": 27613,
+      "coefficients": {
+        "a": {
+          "0": 0.19184529538295964,
+          "2": -0.7813353137990497,
+          "9": -0.5938943593350295
+        },
+        "b": {
+          "3": -0.4598407687192317,
+          "8": -0.5456115050799651,
+          "10": -0.7006101290647184
+        },
+        "c": {
+          "1": 0.04649830367104988,
+          "5": 0.6218193422077978,
+          "13": -0.7817791333950891
+        },
+        "d": {
+          "3": -0.14445531390198735,
+          "9": -0.8354535261157807,
+          "10": -0.5302358607131232
+        }
+      },
+      "transformed_converged": true,
+      "transformed_residual": 3.220307833326271e-11,
+      "transformation_original_residual": 0.635085057850509,
+      "inverse_property_defect": 0.48217621726619986,
+      "artin_identity_defect": 0.3330582250365412,
+      "direct_solver": {
+        "converged": true,
+        "reason": "residual tolerance",
+        "residuals": [
+          0.635085057850509,
+          0.23686691691058093,
+          0.02640497172692038,
+          0.0006699158107394595,
+          2.5527556108233953e-07,
+          9.83839534961471e-11
+        ]
+      },
+      "eigenpair_residual": 9.838397255898228e-11,
+      "status": "eigenpair_verified",
+      "full_product_calls": 184,
+      "vector_file": "level-4-sample-0.npz",
+      "vector_sha256": "e53afab704157232029cf40447a2e37d3d8e2cd22859bb926cc181a363c844c8",
+      "elapsed_seconds": 0.09751778999634553
+    },
+    {
+      "experiment": "eigenvalue_extension",
+      "level": 4,
+      "dimension": 16,
+      "seed": 27614,
+      "coefficients": {
+        "a": {
+          "0": -0.3649692626864889,
+          "2": 0.8813157199892516,
+          "12": 0.30013336867783924
+        },
+        "b": {
+          "0": 0.9148992618899024,
+          "4": 0.29544860549806423,
+          "6": -0.27508082830790076
+        },
+        "c": {
+          "4": 0.35843778071593874,
+          "6": -0.9315483220033175,
+          "13": -0.06115620269634039
+        },
+        "d": {
+          "2": 0.027874511381135083,
+          "13": -0.023274480748913036,
+          "14": 0.9993404375692657
+        }
+      },
+      "transformed_converged": true,
+      "transformed_residual": 1.3026817569566522e-11,
+      "transformation_original_residual": 0.019683367049496525,
+      "inverse_property_defect": 1.778620363352714e-16,
+      "artin_identity_defect": 0.01968336704899451,
+      "direct_solver": {
+        "converged": true,
+        "reason": "residual tolerance",
+        "residuals": [
+          0.019683367049496525,
+          0.0003112161872696049,
+          3.602637167398069e-08,
+          7.6985872867105e-11
+        ]
+      },
+      "eigenpair_residual": 7.698590184176203e-11,
+      "status": "eigenpair_verified",
+      "full_product_calls": 100,
+      "vector_file": "level-4-sample-1.npz",
+      "vector_sha256": "d3097a0e365e2205389725acf53989cb9ee8166737bd173c823c03f6a1b0eb0f",
+      "elapsed_seconds": 0.058790768998733256
+    },
+    {
+      "experiment": "eigenvalue_extension",
+      "level": 5,
+      "dimension": 32,
+      "seed": 28613,
+      "coefficients": {
+        "a": {
+          "16": 0.9554622608579038,
+          "24": 0.2653091666099056,
+          "25": 0.12923975467734403
+        },
+        "b": {
+          "9": -0.6469940524076843,
+          "11": 0.6313592401856603,
+          "30": 0.42753269580380415
+        },
+        "c": {
+          "0": -0.044275627473796327,
+          "6": -0.01016304977592688,
+          "27": 0.9989676577502665
+        },
+        "d": {
+          "20": -0.3523000748613177,
+          "22": 0.24887084587125294,
+          "29": 0.9021906446688732
+        }
+      },
+      "transformed_converged": true,
+      "transformed_residual": 1.2762622479660199e-11,
+      "transformation_original_residual": 1.7117001835879273,
+      "inverse_property_defect": 0.7312110066780819,
+      "artin_identity_defect": 1.3353196679950146,
+      "direct_solver": {
+        "converged": true,
+        "reason": "residual tolerance",
+        "residuals": [
+          1.7117001835879273,
+          1.3780253767596289,
+          1.3511381466261794,
+          1.3106751799716194,
+          0.6481182775495056,
+          0.23936984048147622,
+          0.04207686768004714,
+          0.0012774407222480508,
+          1.8396258743119002e-06,
+          3.5847733562131744e-11
+        ]
+      },
+      "eigenpair_residual": 3.5847776391504086e-11,
+      "status": "eigenpair_verified",
+      "full_product_calls": 622,
+      "vector_file": "level-5-sample-0.npz",
+      "vector_sha256": "c9f2e1704d3c984d4f8f328e66e0e6ce708f69620851dc700f500513a1283898",
+      "elapsed_seconds": 1.136325327999657
+    },
+    {
+      "experiment": "eigenvalue_extension",
+      "level": 5,
+      "dimension": 32,
+      "seed": 28614,
+      "coefficients": {
+        "a": {
+          "1": -0.6924429054284359,
+          "12": -0.05376254767841746,
+          "25": 0.7194667547489266
+        },
+        "b": {
+          "4": 0.377482363466705,
+          "14": -0.20675557502513003,
+          "26": -0.9026401262228586
+        },
+        "c": {
+          "2": -0.7630105283924615,
+          "16": 0.6185977961120275,
+          "19": 0.18748786682769408
+        },
+        "d": {
+          "3": -0.753122327230879,
+          "13": -0.340503087567174,
+          "26": -0.5629071038666739
+        }
+      },
+      "transformed_converged": true,
+      "transformed_residual": 4.0004273579053447e-10,
+      "transformation_original_residual": 0.8897167084008789,
+      "inverse_property_defect": 0.40315647774410923,
+      "artin_identity_defect": 0.5359860371576948,
+      "direct_solver": {
+        "converged": true,
+        "reason": "residual tolerance",
+        "residuals": [
+          0.8897167084008789,
+          0.5611119923352551,
+          0.4847511728920667,
+          0.11435535365127635,
+          0.026570180914669228,
+          0.0007164067763755058,
+          3.7545449390867067e-07,
+          8.484487701505252e-11
+        ]
+      },
+      "eigenpair_residual": 8.484479572952055e-11,
+      "status": "eigenpair_verified",
+      "full_product_calls": 478,
+      "vector_file": "level-5-sample-1.npz",
+      "vector_sha256": "a44252a9fb91026c34a850a992b5970cd5ff20d78fcc955fe167b934237d0edc",
+      "elapsed_seconds": 0.8753626479956438
+    }
+  ]
+}

@@ -35,6 +35,7 @@ __pycache__/
 /relation_graphs_witnesses.jsonl
 /scripts/results/*
 !/scripts/results/relation_graphs_clique69.json
+/benchmark-results/
 
 # Publish paper explanations and compact reference evidence consistently.
 # Other docs content stays local unless explicitly allowed here.
@@ -57,3 +58,9 @@ __pycache__/
 /docs/papers/**/page-*.txt
 /docs/papers/**/page-*.png
 /docs/papers/**/results/test-output.txt
+
+# Bulk paper-search vectors and transient archives stay local.
+/docs/papers/**/*.npz
+/docs/papers/**/*.npy
+/docs/papers/**/*.jsonl
+/docs/papers/**/*.json.tmp

@@ -8,7 +8,8 @@
 #   make kernel-amd      compile the HIP/ROCm kernel (AMD)
 #   make sign-check      host-side equivalence test of the sign function
 #   make test            run the default pytest suite
-#   make test-all        default + slow + benchmark suites
+#   make test-all        default + slow suites (GPU timing is separate)
+#   make benchmark      opt-in timing comparison against BENCHMARK_BASELINE
 #   make test-sparse-zd  opt-in CPU sparse zero-divisor validation
 #   make zd-showcase     random million-bit zero-divisor confirmations
 #   make rust-install    install the optional Rust CPU extension
@@ -40,7 +41,7 @@ ARCHS ?= sm_75 sm_80 sm_86 sm_89 sm_90 sm_100 sm_110 sm_120
 NVCC_GENCODES := $(foreach a,$(ARCHS),-gencode arch=compute_$(subst sm_,,$(a)),code=$(a))
 
 .PHONY: all kernel kernel-amd sign-check test test-all test-sparse-zd zd-showcase wheel clean run-native-zd
-.PHONY: rust-install rust-check test-cpu
+.PHONY: rust-install rust-check test-cpu benchmark benchmark-record
 
 # The optional CPU extension is packaged separately; ordinary Python/GPU
 # installations never need a Rust toolchain.
@@ -77,7 +78,7 @@ sign-check:
 	./$(SIGN_TOOL) 16
 
 test:
-	python3 -m pytest -q tests/
+	$(PYTHON) -m pytest -q -m "not slow" tests/
 
 ZD_LEVELS  ?= 4,8,32,128,1024,4096
 ZD_SAMPLES ?= 128
@@ -102,9 +103,20 @@ test-sparse-zd:
 	    --zd-repeats=$(ZD_REPEATS)
 
 test-all:
-	python3 -m pytest -q tests/
-	python3 -m pytest -q -m slow tests/
-	python3 -m pytest -q -m benchmark tests/
+	$(PYTHON) -m pytest -q -m "not slow" tests/
+	$(PYTHON) -m pytest -q -m slow tests/
+
+BENCHMARK_BASELINE ?= benchmark-results/gpu.json
+BENCHMARK_MAX_REGRESSION ?= 0.20
+
+benchmark:
+	$(PYTHON) -m pytest -q -s tests/test_benchmark.py --run-benchmarks \
+	    --benchmark-baseline "$(BENCHMARK_BASELINE)" \
+	    --benchmark-max-regression "$(BENCHMARK_MAX_REGRESSION)"
+
+benchmark-record:
+	$(PYTHON) -m pytest -q -s tests/test_benchmark.py --run-benchmarks \
+	    --benchmark-record "$(BENCHMARK_BASELINE)"
 
 wheel:
 	PYTHON="$(PYTHON)" bash scripts/build_wheel.sh

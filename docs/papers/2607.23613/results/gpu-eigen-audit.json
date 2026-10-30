@@ -1,0 +1,426 @@
+{
+  "source_results_sha256": "e3457b21fee7bd7a6b29aa76816a3ad500a18e281b8c3ca9180edcf93dd0e2c8",
+  "method": "Independent NumPy recursive doubling; both eigenvector rows, absolute Euclidean tolerance 1e-8",
+  "audits": [
+    {
+      "level": 3,
+      "seed": 26613,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 3.842659581753765e-15,
+      "independently_verified": true
+    },
+    {
+      "level": 3,
+      "seed": 26614,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 7.762643612706226e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 3,
+      "seed": 26615,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 6.036438896220727e-16,
+      "independently_verified": true
+    },
+    {
+      "level": 3,
+      "seed": 26616,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 3.3891369399289566e-15,
+      "independently_verified": true
+    },
+    {
+      "level": 3,
+      "seed": 26617,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 1.2647781740575268e-12,
+      "independently_verified": true
+    },
+    {
+      "level": 3,
+      "seed": 26618,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 1.3466849393897898e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 3,
+      "seed": 26619,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 8.681710033492841e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 3,
+      "seed": 26620,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 1.3644516213837472e-13,
+      "independently_verified": true
+    },
+    {
+      "level": 3,
+      "seed": 26621,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.80834957177204e-14,
+      "independently_verified": true
+    },
+    {
+      "level": 3,
+      "seed": 26622,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 6.306317210329655e-14,
+      "independently_verified": true
+    },
+    {
+      "level": 4,
+      "seed": 27613,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.838402743333683e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 4,
+      "seed": 27614,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 7.698591828301387e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 4,
+      "seed": 27615,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 8.929890075155407e-15,
+      "independently_verified": true
+    },
+    {
+      "level": 4,
+      "seed": 27616,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.201537629610184e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 4,
+      "seed": 27617,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 2.941126420427936e-10,
+      "independently_verified": true
+    },
+    {
+      "level": 4,
+      "seed": 27618,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 6.696270034528552e-12,
+      "independently_verified": true
+    },
+    {
+      "level": 4,
+      "seed": 27619,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 2.5882280531186178e-12,
+      "independently_verified": true
+    },
+    {
+      "level": 4,
+      "seed": 27620,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 2.0542455815620404e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 4,
+      "seed": 27621,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 6.83037096331951e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 4,
+      "seed": 27622,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 7.23983026195544e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 5,
+      "seed": 28613,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 3.584782017071203e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 5,
+      "seed": 28614,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 8.484483224958135e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 5,
+      "seed": 28615,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 1.8214301549932573e-10,
+      "independently_verified": true
+    },
+    {
+      "level": 5,
+      "seed": 28616,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 5.496850454780024e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 5,
+      "seed": 28617,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.172429418427496e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 5,
+      "seed": 28618,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 1.4801891606456526e-10,
+      "independently_verified": true
+    },
+    {
+      "level": 5,
+      "seed": 28619,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.386207372815341e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 5,
+      "seed": 28620,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 1.1317313918106084e-10,
+      "independently_verified": true
+    },
+    {
+      "level": 5,
+      "seed": 28621,
+      "reported_status": "unresolved",
+      "independent_residual": 1.7201189279771218,
+      "independently_verified": false
+    },
+    {
+      "level": 5,
+      "seed": 28622,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 3.177759334549824e-10,
+      "independently_verified": true
+    },
+    {
+      "level": 6,
+      "seed": 29613,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.401958287160711e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 6,
+      "seed": 29614,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 7.99988123875557e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 6,
+      "seed": 29615,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 1.0051412963860381e-10,
+      "independently_verified": true
+    },
+    {
+      "level": 6,
+      "seed": 29616,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.633736561769603e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 6,
+      "seed": 29617,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.965041308775497e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 6,
+      "seed": 29618,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 6.255445520960699e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 6,
+      "seed": 29619,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.509184661031111e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 6,
+      "seed": 29620,
+      "reported_status": "unresolved",
+      "independent_residual": 0.03705018722217583,
+      "independently_verified": false
+    },
+    {
+      "level": 6,
+      "seed": 29621,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.265003848249583e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 6,
+      "seed": 29622,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 6.636666463006016e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 7,
+      "seed": 30613,
+      "reported_status": "unresolved",
+      "independent_residual": 0.2732413777584654,
+      "independently_verified": false
+    },
+    {
+      "level": 7,
+      "seed": 30614,
+      "reported_status": "unresolved",
+      "independent_residual": 0.25407341830730357,
+      "independently_verified": false
+    },
+    {
+      "level": 7,
+      "seed": 30615,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.575910546565585e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 7,
+      "seed": 30616,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.430461942064776e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 7,
+      "seed": 30617,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.117548256432822e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 7,
+      "seed": 30618,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.620970315273117e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 7,
+      "seed": 30619,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.120519769396522e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 7,
+      "seed": 30620,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.688264065062698e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 7,
+      "seed": 30621,
+      "reported_status": "unresolved",
+      "independent_residual": 0.44834967539211285,
+      "independently_verified": false
+    },
+    {
+      "level": 7,
+      "seed": 30622,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 8.451361220724689e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 8,
+      "seed": 31613,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 8.706067743473032e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 8,
+      "seed": 31614,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 1.0491852022372873e-10,
+      "independently_verified": true
+    },
+    {
+      "level": 8,
+      "seed": 31615,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 8.535641624900112e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 8,
+      "seed": 31616,
+      "reported_status": "unresolved",
+      "independent_residual": 0.6868522097149354,
+      "independently_verified": false
+    },
+    {
+      "level": 8,
+      "seed": 31617,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 8.80024784102573e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 8,
+      "seed": 31618,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 8.604951111433258e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 8,
+      "seed": 31619,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.789162506054976e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 8,
+      "seed": 31620,
+      "reported_status": "unresolved",
+      "independent_residual": 0.03843089343251918,
+      "independently_verified": false
+    },
+    {
+      "level": 8,
+      "seed": 31621,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.717793299036051e-11,
+      "independently_verified": true
+    },
+    {
+      "level": 8,
+      "seed": 31622,
+      "reported_status": "eigenpair_verified",
+      "independent_residual": 9.622149155895423e-11,
+      "independently_verified": true
+    }
+  ]
+}

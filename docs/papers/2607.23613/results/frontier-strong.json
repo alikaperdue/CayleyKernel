@@ -1,0 +1,307 @@
+{
+  "configuration": {
+    "experiment": "roots",
+    "backend": "cpu",
+    "levels": "4,5,6",
+    "samples": 1,
+    "seed": 23613,
+    "strength": 2.0,
+    "tol": 1e-09,
+    "output": "/tmp/ck-frontier-strong-final"
+  },
+  "python": "3.12.3",
+  "numpy": "1.26.2",
+  "scipy": "1.16.3",
+  "cpu_backend": "python",
+  "date": "2026-10-28T03:25:37.758372-07:00",
+  "kernel_library": "/home/alika/CayleyKernel/CayleyKernel/cuda_kernel.so",
+  "source_sha256": "6cbf56f65b5247c554b254c6021e00d5b6144cc1264425708eb969709c885a6f",
+  "meaning": "Finite exploratory evidence; unresolved is not evidence of nonexistence.",
+  "runs": [
+    {
+      "experiment": "general_quadratic",
+      "level": 4,
+      "dimension": 16,
+      "seed": 27613,
+      "strength": 2.0,
+      "coefficients": {
+        "a": {
+          "0": 0.19184529538295964,
+          "2": -0.7813353137990497,
+          "9": -0.5938943593350295
+        },
+        "b": {
+          "3": -0.4598407687192317,
+          "8": -0.5456115050799651,
+          "10": -0.7006101290647184
+        },
+        "c": {
+          "1": 0.04649830367104988,
+          "5": 0.6218193422077978,
+          "13": -0.7817791333950891
+        }
+      },
+      "root_separation": 2.852557837331862,
+      "branches": [
+        {
+          "initial_sign": 1,
+          "status": "root_verified",
+          "residual": 8.946384211657003e-11,
+          "direct_product_residual": 8.946384638823084e-11,
+          "root_norm": 1.9248569212193174,
+          "root_real_part": 1.2781700153962452,
+          "continuation": {
+            "reached_parameter": 1.0,
+            "converged": true,
+            "trace": [
+              {
+                "parameter": 0.25,
+                "accepted": true,
+                "iterations": 5,
+                "residual": 9.804463648463543e-11
+              },
+              {
+                "parameter": 0.625,
+                "accepted": true,
+                "iterations": 5,
+                "residual": 7.362577140787002e-11
+              },
+              {
+                "parameter": 1.0,
+                "accepted": true,
+                "iterations": 5,
+                "residual": 8.946384211657003e-11
+              }
+            ]
+          }
+        },
+        {
+          "initial_sign": -1,
+          "status": "root_verified",
+          "residual": 9.265644956166222e-11,
+          "direct_product_residual": 9.26565739260599e-11,
+          "root_norm": 1.8897495987679853,
+          "root_real_part": -1.2419994908051653,
+          "continuation": {
+            "reached_parameter": 1.0,
+            "converged": true,
+            "trace": [
+              {
+                "parameter": 0.25,
+                "accepted": true,
+                "iterations": 5,
+                "residual": 7.141251267289592e-11
+              },
+              {
+                "parameter": 0.625,
+                "accepted": true,
+                "iterations": 6,
+                "residual": 7.570193017130616e-11
+              },
+              {
+                "parameter": 1.0,
+                "accepted": true,
+                "iterations": 5,
+                "residual": 9.265644956166222e-11
+              }
+            ]
+          }
+        }
+      ],
+      "full_product_calls": 2,
+      "vector_file": "level-4-sample-0.npz",
+      "vector_sha256": "df9e862944f9ba480ea688dbd6fc6ad683bccc5db5793129bd5aedb6f7522c5d",
+      "elapsed_seconds": 0.03667737299838336
+    },
+    {
+      "experiment": "general_quadratic",
+      "level": 5,
+      "dimension": 32,
+      "seed": 28613,
+      "strength": 2.0,
+      "coefficients": {
+        "a": {
+          "16": 0.9554622608579038,
+          "24": 0.2653091666099056,
+          "25": 0.12923975467734403
+        },
+        "b": {
+          "9": -0.6469940524076843,
+          "11": 0.6313592401856603,
+          "30": 0.42753269580380415
+        },
+        "c": {
+          "0": -0.044275627473796327,
+          "6": -0.01016304977592688,
+          "27": 0.9989676577502665
+        }
+      },
+      "root_separation": 1.9969802337948277,
+      "branches": [
+        {
+          "initial_sign": 1,
+          "status": "root_verified",
+          "residual": 6.421402787989431e-11,
+          "direct_product_residual": 6.421403401552679e-11,
+          "root_norm": 1.291397297163274,
+          "root_real_part": 0.821134821185946,
+          "continuation": {
+            "reached_parameter": 1.0,
+            "converged": true,
+            "trace": [
+              {
+                "parameter": 0.25,
+                "accepted": true,
+                "iterations": 5,
+                "residual": 3.068266789250302e-11
+              },
+              {
+                "parameter": 0.625,
+                "accepted": true,
+                "iterations": 6,
+                "residual": 3.71379096880036e-10
+              },
+              {
+                "parameter": 1.0,
+                "accepted": true,
+                "iterations": 5,
+                "residual": 6.421402787989431e-11
+              }
+            ]
+          }
+        },
+        {
+          "initial_sign": -1,
+          "status": "root_verified",
+          "residual": 8.745835821724204e-11,
+          "direct_product_residual": 8.745840552077325e-11,
+          "root_norm": 1.5049420652244208,
+          "root_real_part": -1.045872415665969,
+          "continuation": {
+            "reached_parameter": 1.0,
+            "converged": true,
+            "trace": [
+              {
+                "parameter": 0.25,
+                "accepted": true,
+                "iterations": 4,
+                "residual": 3.4804496521170414e-11
+              },
+              {
+                "parameter": 0.625,
+                "accepted": true,
+                "iterations": 4,
+                "residual": 1.04710734080435e-10
+              },
+              {
+                "parameter": 1.0,
+                "accepted": true,
+                "iterations": 4,
+                "residual": 8.745835821724204e-11
+              }
+            ]
+          }
+        }
+      ],
+      "full_product_calls": 2,
+      "vector_file": "level-5-sample-0.npz",
+      "vector_sha256": "c5aef528c0bc011c1ca74b929299876633f371ecf53eaa683f0df58bd95f0b93",
+      "elapsed_seconds": 0.049220237000554334
+    },
+    {
+      "experiment": "general_quadratic",
+      "level": 6,
+      "dimension": 64,
+      "seed": 29613,
+      "strength": 2.0,
+      "coefficients": {
+        "a": {
+          "12": -0.9651572300661662,
+          "24": 0.26010810497624137,
+          "35": -0.028553370670977324
+        },
+        "b": {
+          "29": -0.59931621309114,
+          "47": 0.49716892963093257,
+          "57": 0.6274098597692963
+        },
+        "c": {
+          "3": -0.4933242841428923,
+          "24": 0.4705361360437278,
+          "48": 0.7315920279444966
+        }
+      },
+      "root_separation": 3.4486806171905466,
+      "branches": [
+        {
+          "initial_sign": 1,
+          "status": "root_verified",
+          "residual": 1.249494037818054e-10,
+          "direct_product_residual": 1.2494974625543972e-10,
+          "root_norm": 2.189914225919664,
+          "root_real_part": 1.269545115325973,
+          "continuation": {
+            "reached_parameter": 1.0,
+            "converged": true,
+            "trace": [
+              {
+                "parameter": 0.25,
+                "accepted": true,
+                "iterations": 5,
+                "residual": 9.145625839526294e-11
+              },
+              {
+                "parameter": 0.625,
+                "accepted": true,
+                "iterations": 6,
+                "residual": 9.296045502829318e-11
+              },
+              {
+                "parameter": 1.0,
+                "accepted": true,
+                "iterations": 6,
+                "residual": 1.249494037818054e-10
+              }
+            ]
+          }
+        },
+        {
+          "initial_sign": -1,
+          "status": "root_verified",
+          "residual": 8.201038899972183e-11,
+          "direct_product_residual": 8.201046591524276e-11,
+          "root_norm": 2.3023389176168876,
+          "root_real_part": -1.3638661594395056,
+          "continuation": {
+            "reached_parameter": 1.0,
+            "converged": true,
+            "trace": [
+              {
+                "parameter": 0.25,
+                "accepted": true,
+                "iterations": 5,
+                "residual": 8.256319881168188e-11
+              },
+              {
+                "parameter": 0.625,
+                "accepted": true,
+                "iterations": 6,
+                "residual": 7.410675633286608e-11
+              },
+              {
+                "parameter": 1.0,
+                "accepted": true,
+                "iterations": 6,
+                "residual": 8.201038899972183e-11
+              }
+            ]
+          }
+        }
+      ],
+      "full_product_calls": 2,
+      "vector_file": "level-6-sample-0.npz",
+      "vector_sha256": "0aa842eea77d44bb8f4d79bc515fd2cbc991c232718d075a6b95eefdd4a3191c",
+      "elapsed_seconds": 0.14401929499581456
+    }
+  ]
+}

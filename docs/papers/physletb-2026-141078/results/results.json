@@ -1,0 +1,895 @@
+{
+  "date": "2026-10-29T16:33:26.711305-07:00",
+  "paper_title": "Standard model symmetries and the nested embeddings of R subset C subset H subset O",
+  "doi": "10.1016/j.physletb.2026.141078",
+  "paper_sha256": "edb6827bddf686b609d459495ce44e9faa2b8549b31ce55f677b03971583a40c",
+  "python": "3.12.3",
+  "numpy": "2.2.6",
+  "sympy": "1.14.0",
+  "cupy": "13.6.0",
+  "cpu_backend": "python",
+  "kernel_loaded": true,
+  "kernel_sha256": "976e126bb11b796a3a07757e431e5ab5dc2e4697415a72322ceabaab91340732",
+  "elapsed_seconds": 2.515459034999367,
+  "git_head": "43232ed4bb0a88a131cc13dbb6553fc01c217706",
+  "git_status": [
+    " M .gitignore",
+    " M CayleyKernel/__init__.py",
+    " M CayleyKernel/_cpu.py",
+    " M Makefile",
+    " M README.md",
+    " M cuda/amd_kernel.cu",
+    " M cuda/cuda_kernel.cu",
+    " M docs/papers/README.md",
+    " M pyproject.toml",
+    " M tests/conftest.py",
+    " M tests/test_benchmark.py",
+    "?? CayleyKernel/_algebra.py",
+    "?? docs/papers/2607.23613/",
+    "?? docs/papers/physletb-2026-141078/",
+    "?? scripts/audit_eigen_benchmarks.py",
+    "?? scripts/batched_eigen_frontier.py",
+    "?? scripts/benchmark_eigen_frontier.py",
+    "?? scripts/paper_quadratic_frontier.py",
+    "?? scripts/retry_eigen_frontier.py",
+    "?? scripts/survey_eigen_frontier.py",
+    "?? tests/benchmark_support.py",
+    "?? tests/papers/arxiv_2607_23613/",
+    "?? tests/papers/physletb_141078/",
+    "?? tests/test_algebra.py",
+    "?? tests/test_benchmark_support.py"
+  ],
+  "source_sha256": {
+    "tests/papers/physletb_141078/test_sections.py": "a61878f68f941a96611a753e3d34a19ce8a084a293f4e7b7f42852a3d5446a80",
+    "tests/papers/physletb_141078/algebra.py": "797c57981425f31192981e7a959566a39f39285c25aa52388954c0a03bf9e11e",
+    "tests/papers/physletb_141078/__init__.py": "b922d12401f78bb6107df7d56a797a3ca08a98df48837b495a2e2788efadd60e",
+    "tests/papers/physletb_141078/run.py": "25420db29e62c01eac7164005ab0cf77fde89fd15c6435e76cd0662fa69391b7",
+    "CayleyKernel/__init__.py": "f6f3a4cd51c4223d69d2dc98b7722875cca87f919c99f2db3808911e239ecd33",
+    "CayleyKernel/_cpu.py": "31c184d78dc2d638de1c015de506229ea5adc5c538c6c3efe2f2067e4b24d7d7",
+    "CayleyKernel/_algebra.py": "decae2435f528676b0b34578750a76b5e346f43d25655cf9668cf9917b434013",
+    "tests/papers/desktop_batch/common.py": "93018ae50a4c974271ce4f82d115b1f43e4440950d400f3eaf8d6f67ea1ce12b",
+    "tests/papers/type_replay.py": "fc57c4c29098a253fdb58690cbad0e6e67bf222d546fc6e365b8b63ff244ab90",
+    "tests/papers/arxiv_2608_28176/algebra.py": "d73ef36dba33123c4a0eb363482048049058696dd735ee455cd635de802a66fd"
+  },
+  "tests_run": 31,
+  "passed": 29,
+  "skipped": 2,
+  "failures": 0,
+  "errors": 0,
+  "tests": [
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_01_section1_clifford_0_8_and_bott_dimensions",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_02_section3_1_left_right_maps_and_nonassociativity",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_03_section3_1_equation8_su3_derivations",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_04_section3_2_fano_table_and_api_oracle",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_05_section3_2_direct_sum_componentwise",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_06_section3_3_multiplication_algebra_dimensions",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_07_section3_3_equation12_all_seven_units",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_08_section4_clifford_signatures_and_volumes",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_09_section5_centralizers_and_even_words",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_10_section6_second_quaternion_centralizer",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_11_section7_lie_jordan_splitting",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_12_section8_1_xor_grading",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_13_section8_2_full_symmetry_constraints",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_14_section8_3_projectors",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_15_sections8_4_8_5_trace_constraints_and_charges",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_16_sections8_6_8_7_scalar_shift_spectra_and_entropy",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_16b_section8_6_left_right_complex_structures",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_16c_section9_1_other_vector_space_embeddings",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_17_section9_2_embedding_and_nested_subalgebras",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_18_section9_2_equivariance_global_complex_structure",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_19_section9_3_peirce_blocks_and_grading",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_20_section9_4_tensor_clifford_and9_5_e8_dimensions",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_21_section9_6_hopf_norm_identity",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_21b_section9_6_symbolic_norm_composition",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_22_section9_6_hopf_north_pole_derivative",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_23_extension_higher_hopf_obstruction",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_24_extension_high_bit_twists_and_embedded_model",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_25_extension_basis_projectors_up_to_level12",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.Sections.test_25b_extension_high_bit_quaternion_subalgebras",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.GPUVerification.test_26_multiply_all_paper_basis_pairs_and_nested_operators",
+      "status": "skipped",
+      "reason": "multiply(): cudaErrorNoDevice: no CUDA-capable device is detected"
+    },
+    {
+      "test": "tests.papers.physletb_141078.test_sections.GPUVerification.test_27_multiply_sparse_witness_dense_arrays_through_level20",
+      "status": "skipped",
+      "reason": "multiply(): cudaErrorNoDevice: no CUDA-capable device is detected"
+    }
+  ],
+  "experiments": {
+    "clifford_0_8": {
+      "generators": 8,
+      "independent_words": 256,
+      "matrix_size": 16
+    },
+    "paper_basis": [
+      [
+        [
+          0,
+          1
+        ]
+      ],
+      [
+        [
+          1,
+          1
+        ]
+      ],
+      [
+        [
+          2,
+          1
+        ]
+      ],
+      [
+        [
+          4,
+          1
+        ]
+      ],
+      [
+        [
+          3,
+          1
+        ]
+      ],
+      [
+        [
+          6,
+          1
+        ]
+      ],
+      [
+        [
+          7,
+          -1
+        ]
+      ],
+      [
+        [
+          5,
+          1
+        ]
+      ]
+    ],
+    "multiplication_algebras": [
+      {
+        "dimension": 1,
+        "left_right_full": [
+          1,
+          1,
+          1
+        ],
+        "intersection": 1
+      },
+      {
+        "dimension": 2,
+        "left_right_full": [
+          2,
+          2,
+          2
+        ],
+        "intersection": 2
+      },
+      {
+        "dimension": 4,
+        "left_right_full": [
+          4,
+          4,
+          16
+        ],
+        "intersection": 1
+      },
+      {
+        "dimension": 8,
+        "left_right_full": [
+          64,
+          64,
+          64
+        ],
+        "intersection": 64
+      }
+    ],
+    "centralizer_real_dimensions": {
+      "(2, False)": 2,
+      "(4, False)": 8,
+      "(8, False)": 32,
+      "(8, True)": 20
+    },
+    "lie_dimensions_before_conditions": {
+      "SM": 15,
+      "LE": 13
+    },
+    "constrained_lie_dimensions": {
+      "SM": 12,
+      "LE": 9,
+      "derived_SM": 11,
+      "derived_LE": 8
+    },
+    "charges": {
+      "Y_complex_eigenvalues": [
+        "0",
+        "1/3",
+        "1/2",
+        "1"
+      ],
+      "Q_complex_eigenvalues": [
+        "0",
+        "1/3",
+        "1"
+      ],
+      "real_trace": 6
+    },
+    "Y_real_spectrum": {
+      "0": 4,
+      "1/3": 6,
+      "1/2": 4,
+      "1": 2
+    },
+    "Q_real_spectrum": {
+      "0": 6,
+      "1/3": 6,
+      "1": 4
+    },
+    "embedding_columns": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "commutator_charge_spectra_complex_multiplicities": {
+      "Y": {
+        "-1": 2,
+        "-2/3": 3,
+        "-1/2": 6,
+        "-1/3": 6,
+        "-1/6": 6,
+        "0": 18,
+        "1/6": 6,
+        "1/3": 6,
+        "1/2": 6,
+        "2/3": 3,
+        "1": 2
+      },
+      "Q": {
+        "-1": 6,
+        "-2/3": 6,
+        "-1/3": 9,
+        "0": 22,
+        "1/3": 9,
+        "2/3": 6,
+        "1": 6
+      }
+    },
+    "hopf_norm_samples": {
+      "per_dimension": 40,
+      "dimensions": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "exact": true
+    },
+    "symbolic_norm_composition_dimensions": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "hopf_obstruction": {
+      "a": {
+        "1": 1,
+        "10": 1
+      },
+      "conjugated_partner": {
+        "4": -1,
+        "15": 1
+      },
+      "levels": [
+        {
+          "level": 4,
+          "input_norm_sq": 1,
+          "image_norm_sq": 0
+        },
+        {
+          "level": 5,
+          "input_norm_sq": 1,
+          "image_norm_sq": 0
+        },
+        {
+          "level": 8,
+          "input_norm_sq": 1,
+          "image_norm_sq": 0
+        },
+        {
+          "level": 16,
+          "input_norm_sq": 1,
+          "image_norm_sq": 0
+        },
+        {
+          "level": 20,
+          "input_norm_sq": 1,
+          "image_norm_sq": 0
+        },
+        {
+          "level": 32,
+          "input_norm_sq": 1,
+          "image_norm_sq": 0
+        },
+        {
+          "level": 128,
+          "input_norm_sq": 1,
+          "image_norm_sq": 0
+        },
+        {
+          "level": 1024,
+          "input_norm_sq": 1,
+          "image_norm_sq": 0
+        }
+      ]
+    },
+    "sparse_high_levels": [
+      {
+        "level": 4,
+        "high_bit_samples": 64,
+        "embedded_pairs": 256
+      },
+      {
+        "level": 8,
+        "high_bit_samples": 64,
+        "embedded_pairs": 256
+      },
+      {
+        "level": 16,
+        "high_bit_samples": 64,
+        "embedded_pairs": 256
+      },
+      {
+        "level": 20,
+        "high_bit_samples": 64,
+        "embedded_pairs": 256
+      },
+      {
+        "level": 32,
+        "high_bit_samples": 64,
+        "embedded_pairs": 256
+      },
+      {
+        "level": 64,
+        "high_bit_samples": 64,
+        "embedded_pairs": 256
+      },
+      {
+        "level": 128,
+        "high_bit_samples": 64,
+        "embedded_pairs": 256
+      },
+      {
+        "level": 256,
+        "high_bit_samples": 64,
+        "embedded_pairs": 256
+      },
+      {
+        "level": 1024,
+        "high_bit_samples": 64,
+        "embedded_pairs": 256
+      }
+    ],
+    "higher_projector_ranks": [
+      {
+        "level": 1,
+        "dimension": 2,
+        "projector_ranks": [
+          2,
+          0
+        ],
+        "predicted_joint_centralizer_real_dim": 2
+      },
+      {
+        "level": 2,
+        "dimension": 4,
+        "projector_ranks": [
+          2,
+          2
+        ],
+        "predicted_joint_centralizer_real_dim": 4
+      },
+      {
+        "level": 3,
+        "dimension": 8,
+        "projector_ranks": [
+          2,
+          6
+        ],
+        "predicted_joint_centralizer_real_dim": 20
+      },
+      {
+        "level": 4,
+        "dimension": 16,
+        "projector_ranks": [
+          2,
+          14
+        ],
+        "predicted_joint_centralizer_real_dim": 100
+      },
+      {
+        "level": 5,
+        "dimension": 32,
+        "projector_ranks": [
+          2,
+          30
+        ],
+        "predicted_joint_centralizer_real_dim": 452
+      },
+      {
+        "level": 6,
+        "dimension": 64,
+        "projector_ranks": [
+          2,
+          62
+        ],
+        "predicted_joint_centralizer_real_dim": 1924
+      },
+      {
+        "level": 7,
+        "dimension": 128,
+        "projector_ranks": [
+          2,
+          126
+        ],
+        "predicted_joint_centralizer_real_dim": 7940
+      },
+      {
+        "level": 8,
+        "dimension": 256,
+        "projector_ranks": [
+          2,
+          254
+        ],
+        "predicted_joint_centralizer_real_dim": 32260
+      },
+      {
+        "level": 9,
+        "dimension": 512,
+        "projector_ranks": [
+          2,
+          510
+        ],
+        "predicted_joint_centralizer_real_dim": 130052
+      },
+      {
+        "level": 10,
+        "dimension": 1024,
+        "projector_ranks": [
+          2,
+          1022
+        ],
+        "predicted_joint_centralizer_real_dim": 522244
+      },
+      {
+        "level": 11,
+        "dimension": 2048,
+        "projector_ranks": [
+          2,
+          2046
+        ],
+        "predicted_joint_centralizer_real_dim": 2093060
+      },
+      {
+        "level": 12,
+        "dimension": 4096,
+        "projector_ranks": [
+          2,
+          4094
+        ],
+        "predicted_joint_centralizer_real_dim": 8380420
+      }
+    ],
+    "high_bit_quaternion_subalgebras": [
+      {
+        "level": 4,
+        "quaternion_subalgebras": 32,
+        "associators_per_algebra": 64
+      },
+      {
+        "level": 8,
+        "quaternion_subalgebras": 32,
+        "associators_per_algebra": 64
+      },
+      {
+        "level": 20,
+        "quaternion_subalgebras": 32,
+        "associators_per_algebra": 64
+      },
+      {
+        "level": 64,
+        "quaternion_subalgebras": 32,
+        "associators_per_algebra": 64
+      },
+      {
+        "level": 128,
+        "quaternion_subalgebras": 32,
+        "associators_per_algebra": 64
+      },
+      {
+        "level": 1024,
+        "quaternion_subalgebras": 32,
+        "associators_per_algebra": 64
+      }
+    ]
+  },
+  "scope": "Exact operator calculations at fixed dimensions and finite sparse high-index checks. High sparse levels are not full dense GPU execution. This does not verify particle physics phenomenology."
+}

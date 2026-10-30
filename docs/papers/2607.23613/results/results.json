@@ -1,0 +1,295 @@
+{
+  "date": "2026-10-28T02:36:30.140050-07:00",
+  "elapsed_seconds": 7.156704810993688,
+  "python": "3.12.3",
+  "numpy": "2.2.6",
+  "sympy": "1.14.0",
+  "cpu_backend": "python",
+  "kernel_loaded": true,
+  "git_head": "43232ed4bb0a88a131cc13dbb6553fc01c217706",
+  "paper_sha256": "8c5e66558f6d72f6206305b31cb3dcc18598dcf7e4e995b5b9a52a8d6ce6d9b7",
+  "source_sha256": {
+    "tests/papers/arxiv_2607_23613/test_sections.py": "479c7bca2949b1bfdaaa25ee2f9ab649f90793ba0f252854def5f30bd1d172c6",
+    "tests/papers/arxiv_2607_23613/__init__.py": "2f36b943b091add60582a3d4f374504af95cfe87d79b37dea06c0b049c959f6e",
+    "tests/papers/arxiv_2607_23613/method.py": "b7543fc12c690a58a4224d04a7e1d0cf02abb5a6d82996a11303ef0f7415f2a9",
+    "tests/papers/arxiv_2607_23613/run.py": "0304f4bd79dc8455727deebd5b2fe7c94f0c69113a67ac0e97551397348f0ca5",
+    "CayleyKernel/__init__.py": "7b64cd474139e27c24bd21106bf51a19da6e39121b6f586ae75de9541b9901da",
+    "CayleyKernel/_cpu.py": "321acdcdfa96306eb698d208b9db78ba52e37497027b3e764aa79e347af0834d",
+    "tests/papers/desktop_batch/common.py": "93018ae50a4c974271ce4f82d115b1f43e4440950d400f3eaf8d6f67ea1ce12b",
+    "tests/papers/type_replay.py": "fc57c4c29098a253fdb58690cbad0e6e67bf222d546fc6e365b8b63ff244ab90",
+    "tests/papers/arxiv_2608_28176/algebra.py": "d73ef36dba33123c4a0eb363482048049058696dd735ee455cd635de802a66fd"
+  },
+  "tests_run": 22,
+  "passed": 20,
+  "skipped": 2,
+  "failures": 0,
+  "errors": 0,
+  "tests": [
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_01_section1_nonmonic_rootless_commutator",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_02_section2_basis_convention",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_03_section2_quadratic_flexibility_powers",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_04_section2_structure_losses",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_05_section3_left_evaluation_not_homomorphism",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_06_section3_brackets_and_linear_map",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_07_section4_coordinate_reduction",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_08_section4_claim41_and_lemma42",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_09_section4_inconsistent_singular_trace",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_10_section41_spheres_empty_point_and_pair",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_11_section41_unplanted_quadratics",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_12_section41_remark47_real_exception",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_13_section5_example53",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_14_section5_general_matrices_and_b_zero",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_15_section6_sylvester_and_back_substitution",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_16_section6_standard_vector_is_not_enough",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_17_extension_high_level_quadratic_families",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_18_extension_octonion_proof_fails_in_sedenions",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_19_extension_unplanted_deep_roots",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_20_section4_finite_field_signature_supplement",
+      "status": "passed"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_21_gpu_multiply_replay",
+      "status": "skipped",
+      "reason": "CUDA device unavailable: cudaErrorNoDevice: no CUDA-capable device is detected"
+    },
+    {
+      "test": "tests.papers.arxiv_2607_23613.test_sections.Sections.test_22_gpu_paper_equations_and_deep_quadratic",
+      "status": "skipped",
+      "reason": "CUDA device unavailable: cudaErrorNoDevice: no CUDA-capable device is detected"
+    }
+  ],
+  "experiments": {
+    "example_5_3": {
+      "y": {
+        "5": 1,
+        "7": 1
+      },
+      "x": {
+        "4": 1,
+        "6": -1
+      },
+      "lambda": {
+        "0": 1,
+        "5": 1,
+        "7": 1
+      }
+    },
+    "sedenion_artin_witness": {
+      "b": {
+        "8": 1,
+        "0": 2,
+        "11": -2,
+        "15": -1,
+        "7": -1
+      },
+      "x": {
+        "13": -2,
+        "15": -2,
+        "2": 2,
+        "5": 2,
+        "7": -2
+      },
+      "lhs_minus_rhs": {
+        "15": -32,
+        "10": -64,
+        "3": -16,
+        "12": 16,
+        "9": 48,
+        "13": 32,
+        "14": 16,
+        "11": 16,
+        "4": -32,
+        "1": -80
+      }
+    },
+    "sedenion_zero_divisor": {
+      "a": {
+        "1": 1,
+        "10": -1
+      },
+      "x": {
+        "4": 1,
+        "15": 1
+      }
+    },
+    "sedenion_artin_identity_failures_of_100": 95,
+    "unplanted_deep_scalar_linear_quadratics": [
+      {
+        "level": 4,
+        "cases": 32,
+        "max_absolute_residual": 5.329070518200751e-15
+      },
+      {
+        "level": 8,
+        "cases": 32,
+        "max_absolute_residual": 7.105427357601002e-15
+      },
+      {
+        "level": 16,
+        "cases": 32,
+        "max_absolute_residual": 7.105427357601002e-15
+      },
+      {
+        "level": 32,
+        "cases": 32,
+        "max_absolute_residual": 3.552713678800501e-15
+      },
+      {
+        "level": 64,
+        "cases": 32,
+        "max_absolute_residual": 5.329070518200751e-15
+      },
+      {
+        "level": 128,
+        "cases": 32,
+        "max_absolute_residual": 3.552713678800501e-15
+      },
+      {
+        "level": 1024,
+        "cases": 32,
+        "max_absolute_residual": 6.217248937900877e-15
+      }
+    ],
+    "finite_field_reference": [
+      {
+        "p": 3,
+        "gammas": [
+          -1,
+          -1
+        ],
+        "vectors": 81,
+        "roots": 4,
+        "distinct_traces": 1
+      },
+      {
+        "p": 3,
+        "gammas": [
+          -1,
+          1
+        ],
+        "vectors": 81,
+        "roots": 6,
+        "distinct_traces": 3
+      },
+      {
+        "p": 3,
+        "gammas": [
+          1,
+          -1
+        ],
+        "vectors": 81,
+        "roots": 4,
+        "distinct_traces": 3
+      },
+      {
+        "p": 3,
+        "gammas": [
+          1,
+          1
+        ],
+        "vectors": 81,
+        "roots": 2,
+        "distinct_traces": 1
+      },
+      {
+        "p": 5,
+        "gammas": [
+          -1,
+          -1
+        ],
+        "vectors": 625,
+        "roots": 4,
+        "distinct_traces": 1
+      },
+      {
+        "p": 5,
+        "gammas": [
+          -1,
+          1
+        ],
+        "vectors": 625,
+        "roots": 4,
+        "distinct_traces": 1
+      },
+      {
+        "p": 5,
+        "gammas": [
+          1,
+          -1
+        ],
+        "vectors": 625,
+        "roots": 4,
+        "distinct_traces": 1
+      },
+      {
+        "p": 5,
+        "gammas": [
+          1,
+          1
+        ],
+        "vectors": 625,
+        "roots": 4,
+        "distinct_traces": 1
+      }
+    ]
+  },
+  "scope": "Finite verification; sparse high levels are not dense GPU execution. Numerical roots are not certified complete root sets."
+}

@@ -42,6 +42,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+bfloat16 = ["ml_dtypes>=0.5", "numpy>=2.1.2", "cupy>=14"]
 test = [
     "pytest",
 ]
@@ -63,7 +64,7 @@ CayleyKernel = ["*.so"]
 markers = [
     "sparse_zd: CPU-only sparse zero-divisor validation (opt-in: --run-sparse-zd)",
     "slow: heavy identity/batch tests at 2^20 and above (opt-in: pytest -m slow)",
-    "benchmark: timing gates and scaling checks (opt-in: pytest -m benchmark)",
+    "benchmark: GPU timing checks (opt-in: --run-benchmarks with a local baseline)",
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",

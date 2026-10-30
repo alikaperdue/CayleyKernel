@@ -1,0 +1,635 @@
+{
+  "date": "2026-10-29",
+  "scope": "Saved solver diagnostics and provenance; no algebra products recomputed.",
+  "sources": {
+    "sparse": {
+      "path": "/tmp/cayley-large-survey.mIv6eg/results/results.json",
+      "sha256": "427b0985b7d1a0e752ae7b95949df1b3b385ba160248e921a16c367e28061049",
+      "configuration": {
+        "backend": "gpu",
+        "levels": [
+          6,
+          8
+        ],
+        "matrices_per_level": 4096,
+        "starts": 2,
+        "support": 3,
+        "seed": 20261031,
+        "batch_size": 64,
+        "maxiter": 20,
+        "gmres_restart": 20,
+        "gmres_cycles": 3,
+        "line_search": 12,
+        "tol": 1e-09,
+        "minutes": 30.0,
+        "progress_seconds": 30.0,
+        "output": "/tmp/cayley-large-survey.mIv6eg/results"
+      },
+      "elapsed_seconds": 830.8476991529751,
+      "levels": {
+        "6": {
+          "matrices": 4096,
+          "verified": 3811,
+          "unresolved": 285,
+          "verified_percent": 93.0419921875,
+          "maximum_verified_row_residual": 7.92273865502832e-09,
+          "unresolved_attempt_termination_reasons": {
+            "iteration budget": 525,
+            "line search stalled": 45
+          },
+          "summary": {
+            "matrices": 4096,
+            "verified": 3811,
+            "unresolved": 285,
+            "rescued_by_later_start": 686,
+            "verified_by_start": [
+              3125,
+              3480
+            ],
+            "termination_reasons": {
+              "residual tolerance": 6582,
+              "iteration budget": 1328,
+              "line search stalled": 282
+            },
+            "stopped_searches": 0
+          }
+        },
+        "8": {
+          "matrices": 4096,
+          "verified": 3809,
+          "unresolved": 287,
+          "verified_percent": 92.9931640625,
+          "maximum_verified_row_residual": 7.638696667668469e-09,
+          "unresolved_attempt_termination_reasons": {
+            "iteration budget": 571,
+            "line search stalled": 3
+          },
+          "summary": {
+            "matrices": 4096,
+            "verified": 3809,
+            "unresolved": 287,
+            "rescued_by_later_start": 901,
+            "verified_by_start": [
+              2908,
+              3636
+            ],
+            "termination_reasons": {
+              "residual tolerance": 6513,
+              "iteration budget": 1658,
+              "line search stalled": 21
+            },
+            "stopped_searches": 0
+          }
+        }
+      }
+    },
+    "continuation": {
+      "path": "/tmp/cayley-followup.86dicp/continued/results.json",
+      "sha256": "e34ebc7099f357a264ee6a40bcbc202883bc6c29221700d7f766958a7d998968",
+      "configuration": {
+        "input": "/tmp/cayley-large-survey.mIv6eg/results",
+        "output": "/tmp/cayley-followup.86dicp/continued",
+        "backend": "gpu",
+        "starts": 0,
+        "seed": 20261028,
+        "maxiter": 30,
+        "tol": 1e-09,
+        "solver": "batched",
+        "batch_size": 64,
+        "gmres_restart": 20,
+        "gmres_cycles": 6,
+        "line_search": 12,
+        "resume_saved": true,
+        "progress_seconds": 30.0,
+        "minutes": 15.0
+      },
+      "elapsed_seconds": 76.73594806200708,
+      "levels": {
+        "6": {
+          "matrices": 285,
+          "verified": 123,
+          "unresolved": 162,
+          "verified_percent": 43.1578947368421,
+          "maximum_verified_row_residual": 9.886293994873742e-10,
+          "unresolved_attempt_termination_reasons": {
+            "iteration budget": 109,
+            "line search stalled": 53
+          },
+          "summary": null
+        },
+        "8": {
+          "matrices": 287,
+          "verified": 147,
+          "unresolved": 140,
+          "verified_percent": 51.21951219512195,
+          "maximum_verified_row_residual": 9.15201651473753e-10,
+          "unresolved_attempt_termination_reasons": {
+            "iteration budget": 105,
+            "line search stalled": 35
+          },
+          "summary": null
+        }
+      }
+    },
+    "denser": {
+      "path": "/tmp/cayley-dense-survey.04kBPb/results/results.json",
+      "sha256": "fabb940f1d017dcd6f2a07898abf4fb1b2910a3feb69a2d5fba4d785714151c4",
+      "configuration": {
+        "backend": "gpu",
+        "levels": [
+          6,
+          8
+        ],
+        "matrices_per_level": 512,
+        "starts": 2,
+        "support": 16,
+        "seed": 20261101,
+        "batch_size": 64,
+        "maxiter": 20,
+        "gmres_restart": 20,
+        "gmres_cycles": 3,
+        "line_search": 12,
+        "tol": 1e-09,
+        "minutes": 15.0,
+        "progress_seconds": 30.0,
+        "output": "/tmp/cayley-dense-survey.04kBPb/results"
+      },
+      "elapsed_seconds": 82.49225798397674,
+      "levels": {
+        "6": {
+          "matrices": 512,
+          "verified": 502,
+          "unresolved": 10,
+          "verified_percent": 98.046875,
+          "maximum_verified_row_residual": 9.619995129310958e-10,
+          "unresolved_attempt_termination_reasons": {
+            "iteration budget": 20
+          },
+          "summary": {
+            "matrices": 512,
+            "verified": 502,
+            "unresolved": 10,
+            "rescued_by_later_start": 34,
+            "verified_by_start": [
+              468,
+              463
+            ],
+            "termination_reasons": {
+              "residual tolerance": 930,
+              "iteration budget": 94
+            },
+            "stopped_searches": 0
+          }
+        },
+        "8": {
+          "matrices": 512,
+          "verified": 505,
+          "unresolved": 7,
+          "verified_percent": 98.6328125,
+          "maximum_verified_row_residual": 9.400448112046637e-09,
+          "unresolved_attempt_termination_reasons": {
+            "iteration budget": 14
+          },
+          "summary": {
+            "matrices": 512,
+            "verified": 505,
+            "unresolved": 7,
+            "rescued_by_later_start": 24,
+            "verified_by_start": [
+              481,
+              464
+            ],
+            "termination_reasons": {
+              "residual tolerance": 941,
+              "iteration budget": 83
+            },
+            "stopped_searches": 0
+          }
+        }
+      }
+    },
+    "denser_continuation": {
+      "path": "/tmp/cayley-dense-continuation.VM7tKo/continued/results.json",
+      "sha256": "53eefc2f6965b3881593b788df15477b5cf56fdd1102c54f4a52356dbb3590f0",
+      "configuration": {
+        "input": "/tmp/cayley-dense-survey.04kBPb/results",
+        "output": "/tmp/cayley-dense-continuation.VM7tKo/continued",
+        "backend": "gpu",
+        "starts": 0,
+        "seed": 20261028,
+        "maxiter": 30,
+        "tol": 1e-09,
+        "solver": "batched",
+        "batch_size": 64,
+        "gmres_restart": 20,
+        "gmres_cycles": 6,
+        "line_search": 12,
+        "resume_saved": true,
+        "progress_seconds": 30.0,
+        "minutes": 15.0
+      },
+      "elapsed_seconds": 15.12906445999397,
+      "status": "complete",
+      "levels": {
+        "6": {
+          "matrices": 10,
+          "verified": 5,
+          "unresolved": 5,
+          "verified_percent": 50.0,
+          "maximum_verified_row_residual": 9.492783056650667e-11,
+          "unresolved_attempt_termination_reasons": {
+            "iteration budget": 2,
+            "line search stalled": 3
+          },
+          "summary": null,
+          "cumulative_verified": 507,
+          "original_matrices": 512,
+          "cumulative_verified_percent": 99.0234375,
+          "recovered_matrix_ids": [
+            "survey-20261101-level-6-sample-1",
+            "survey-20261101-level-6-sample-6",
+            "survey-20261101-level-6-sample-292",
+            "survey-20261101-level-6-sample-423",
+            "survey-20261101-level-6-sample-449"
+          ],
+          "remaining_cases": [
+            {
+              "matrix_id": "survey-20261101-level-6-sample-208",
+              "previous_eigenpair_residual": 0.07814788880207017,
+              "row_residuals": [
+                0.0,
+                0.07801144829112977
+              ],
+              "reason": "iteration budget",
+              "newton_steps": 30,
+              "krylov_iterations": 3600,
+              "initial_residual": 0.07814788880207015,
+              "final_residual": 0.0780114482911297
+            },
+            {
+              "matrix_id": "survey-20261101-level-6-sample-259",
+              "previous_eigenpair_residual": 0.21231799479305677,
+              "row_residuals": [
+                0.0,
+                0.21231779022144429
+              ],
+              "reason": "line search stalled",
+              "newton_steps": 29,
+              "krylov_iterations": 3480,
+              "initial_residual": 0.21231799479305685,
+              "final_residual": 0.2123177902214443
+            },
+            {
+              "matrix_id": "survey-20261101-level-6-sample-439",
+              "previous_eigenpair_residual": 0.10766421239674503,
+              "row_residuals": [
+                0.0,
+                0.10766408181563394
+              ],
+              "reason": "line search stalled",
+              "newton_steps": 28,
+              "krylov_iterations": 3360,
+              "initial_residual": 0.10766421239674502,
+              "final_residual": 0.10766408181563386
+            },
+            {
+              "matrix_id": "survey-20261101-level-6-sample-445",
+              "previous_eigenpair_residual": 0.020181669618643396,
+              "row_residuals": [
+                0.0,
+                0.018544970990968003
+              ],
+              "reason": "iteration budget",
+              "newton_steps": 30,
+              "krylov_iterations": 3600,
+              "initial_residual": 0.020181669618643466,
+              "final_residual": 0.018544970990968048
+            },
+            {
+              "matrix_id": "survey-20261101-level-6-sample-459",
+              "previous_eigenpair_residual": 0.097922381479743,
+              "row_residuals": [
+                0.0,
+                0.09792238087538092
+              ],
+              "reason": "line search stalled",
+              "newton_steps": 11,
+              "krylov_iterations": 1320,
+              "initial_residual": 0.09792238147974311,
+              "final_residual": 0.09792238087538092
+            }
+          ]
+        },
+        "8": {
+          "matrices": 7,
+          "verified": 3,
+          "unresolved": 4,
+          "verified_percent": 42.857142857142854,
+          "maximum_verified_row_residual": 2.555111787056081e-10,
+          "unresolved_attempt_termination_reasons": {
+            "iteration budget": 3,
+            "line search stalled": 1
+          },
+          "summary": null,
+          "cumulative_verified": 508,
+          "original_matrices": 512,
+          "cumulative_verified_percent": 99.21875,
+          "recovered_matrix_ids": [
+            "survey-20261101-level-8-sample-80",
+            "survey-20261101-level-8-sample-131",
+            "survey-20261101-level-8-sample-483"
+          ],
+          "remaining_cases": [
+            {
+              "matrix_id": "survey-20261101-level-8-sample-9",
+              "previous_eigenpair_residual": 0.012193804321627241,
+              "row_residuals": [
+                0.0,
+                0.011731152687789485
+              ],
+              "reason": "iteration budget",
+              "newton_steps": 30,
+              "krylov_iterations": 3600,
+              "initial_residual": 0.012193804321627406,
+              "final_residual": 0.01173115268778946
+            },
+            {
+              "matrix_id": "survey-20261101-level-8-sample-79",
+              "previous_eigenpair_residual": 0.0004542206194361828,
+              "row_residuals": [
+                0.0,
+                0.0003389893552261277
+              ],
+              "reason": "line search stalled",
+              "newton_steps": 10,
+              "krylov_iterations": 1200,
+              "initial_residual": 0.000454220619436181,
+              "final_residual": 0.0003389893552260726
+            },
+            {
+              "matrix_id": "survey-20261101-level-8-sample-87",
+              "previous_eigenpair_residual": 0.08046166456259782,
+              "row_residuals": [
+                0.0,
+                0.0804409778392773
+              ],
+              "reason": "iteration budget",
+              "newton_steps": 30,
+              "krylov_iterations": 3600,
+              "initial_residual": 0.08046166456259785,
+              "final_residual": 0.0804409778392773
+            },
+            {
+              "matrix_id": "survey-20261101-level-8-sample-134",
+              "previous_eigenpair_residual": 0.019919416289539058,
+              "row_residuals": [
+                0.0,
+                0.0199031309519198
+              ],
+              "reason": "iteration budget",
+              "newton_steps": 30,
+              "krylov_iterations": 3600,
+              "initial_residual": 0.01991941628953906,
+              "final_residual": 0.01990313095191982
+            }
+          ]
+        }
+      }
+    },
+    "denser_fresh_starts": {
+      "path": "/tmp/cayley-dense-fresh-starts.ihiOi1/retried/results.json",
+      "sha256": "28cf2016cacd3bdfc2689b53d4a2c553d7c742c70f694216fcfded402e21a907",
+      "configuration": {
+        "input": "/tmp/cayley-dense-continuation.VM7tKo/continued",
+        "output": "/tmp/cayley-dense-fresh-starts.ihiOi1/retried",
+        "backend": "gpu",
+        "starts": 4,
+        "seed": 20261029,
+        "maxiter": 30,
+        "tol": 1e-09,
+        "solver": "batched",
+        "batch_size": 64,
+        "gmres_restart": 20,
+        "gmres_cycles": 6,
+        "line_search": 12,
+        "resume_saved": false,
+        "progress_seconds": 30.0,
+        "minutes": 5.0
+      },
+      "elapsed_seconds": 8.569211332011037,
+      "status": "complete",
+      "levels": {
+        "6": {
+          "matrices": 5,
+          "verified": 5,
+          "unresolved": 0,
+          "verified_percent": 100.0,
+          "maximum_verified_row_residual": 1.9115905659891709e-10,
+          "unresolved_attempt_termination_reasons": {},
+          "attempt_termination_reasons": {
+            "residual tolerance": 5
+          },
+          "attempt_start_kinds": {
+            "negative_saved_candidate": 5
+          },
+          "summary": null,
+          "cumulative_verified": 512,
+          "original_matrices": 512,
+          "cumulative_verified_percent": 100.0,
+          "recovered_cases": [
+            {
+              "matrix_id": "survey-20261101-level-6-sample-208",
+              "row_residuals": [
+                0.0,
+                8.944353336060342e-11
+              ],
+              "newton_steps": 12,
+              "krylov_iterations": 1266
+            },
+            {
+              "matrix_id": "survey-20261101-level-6-sample-259",
+              "row_residuals": [
+                0.0,
+                9.899295376130417e-11
+              ],
+              "newton_steps": 21,
+              "krylov_iterations": 2495
+            },
+            {
+              "matrix_id": "survey-20261101-level-6-sample-439",
+              "row_residuals": [
+                0.0,
+                1.0596590715522884e-10
+              ],
+              "newton_steps": 10,
+              "krylov_iterations": 1160
+            },
+            {
+              "matrix_id": "survey-20261101-level-6-sample-445",
+              "row_residuals": [
+                0.0,
+                1.9115905659891709e-10
+              ],
+              "newton_steps": 12,
+              "krylov_iterations": 1440
+            },
+            {
+              "matrix_id": "survey-20261101-level-6-sample-459",
+              "row_residuals": [
+                0.0,
+                9.008980724700676e-11
+              ],
+              "newton_steps": 11,
+              "krylov_iterations": 1259
+            }
+          ]
+        },
+        "8": {
+          "matrices": 4,
+          "verified": 4,
+          "unresolved": 0,
+          "verified_percent": 100.0,
+          "maximum_verified_row_residual": 9.555575156176588e-11,
+          "unresolved_attempt_termination_reasons": {},
+          "attempt_termination_reasons": {
+            "residual tolerance": 4
+          },
+          "attempt_start_kinds": {
+            "negative_saved_candidate": 4
+          },
+          "summary": null,
+          "cumulative_verified": 512,
+          "original_matrices": 512,
+          "cumulative_verified_percent": 100.0,
+          "recovered_cases": [
+            {
+              "matrix_id": "survey-20261101-level-8-sample-9",
+              "row_residuals": [
+                0.0,
+                9.405337640989343e-11
+              ],
+              "newton_steps": 12,
+              "krylov_iterations": 1353
+            },
+            {
+              "matrix_id": "survey-20261101-level-8-sample-79",
+              "row_residuals": [
+                0.0,
+                9.495508764973861e-11
+              ],
+              "newton_steps": 11,
+              "krylov_iterations": 1300
+            },
+            {
+              "matrix_id": "survey-20261101-level-8-sample-87",
+              "row_residuals": [
+                0.0,
+                8.762730261751057e-11
+              ],
+              "newton_steps": 13,
+              "krylov_iterations": 1434
+            },
+            {
+              "matrix_id": "survey-20261101-level-8-sample-134",
+              "row_residuals": [
+                0.0,
+                9.555575156176588e-11
+              ],
+              "newton_steps": 11,
+              "krylov_iterations": 1250
+            }
+          ]
+        }
+      }
+    }
+  },
+  "benchmarks": {
+    "6": {
+      "path": "/tmp/cayley-eigen-screen.xkI9Ai/level-6-batch-64-repeat-4/results.json",
+      "sha256": "cda1f779c1cca796d3a9f9de224b1ac4f4fa8d1e35cee9d7846122919de41edd",
+      "median_seconds": {
+        "individual": 19.71076223399723,
+        "batched": 1.839330789502128
+      },
+      "speedup": 10.71626830067503,
+      "steady_repeats": 4,
+      "measurements": [
+        {
+          "solver": "individual",
+          "verified_starts": 45,
+          "newton_steps": 765,
+          "krylov_iterations": 44095,
+          "multiply_calls": 288130
+        },
+        {
+          "solver": "batched",
+          "verified_starts": 45,
+          "newton_steps": 764,
+          "krylov_iterations": 44061,
+          "multiply_calls": 5169
+        }
+      ]
+    },
+    "8": {
+      "path": "/tmp/cayley-eigen-screen.xkI9Ai/level-6-batch-64-level-8/results.json",
+      "sha256": "b2a5ea6f2507c179e32837cb54f79c9cd12253f43e9d7db4eb17d5f526f31ee8",
+      "median_seconds": {
+        "individual": 35.913041152991354,
+        "batched": 2.0073972109821625
+      },
+      "speedup": 17.89035122521672,
+      "steady_repeats": 1,
+      "measurements": [
+        {
+          "solver": "individual",
+          "verified_starts": 47,
+          "newton_steps": 851,
+          "krylov_iterations": 50061,
+          "multiply_calls": 325680
+        },
+        {
+          "solver": "batched",
+          "verified_starts": 47,
+          "newton_steps": 851,
+          "krylov_iterations": 50061,
+          "multiply_calls": 5029
+        }
+      ]
+    }
+  },
+  "continuation_selection_matches_all_sparse_unresolved": true,
+  "denser_continuation_selection_matches_all_denser_unresolved": true,
+  "denser_continuation_provenance_checks": {
+    "original_manifest_backup_byte_identical": true,
+    "coefficients_and_previous_residuals_match_by_matrix_id": true,
+    "output_vector_hashes_match": true,
+    "one_saved_candidate_continuation_per_matrix_no_fresh_starts": true,
+    "recorded_both_row_acceptance_checked": true
+  },
+  "denser_after_continuation": {
+    "matrices": 1024,
+    "verified": 1015,
+    "unresolved": 9,
+    "verified_percent": 99.12109375,
+    "newly_verified": 8,
+    "recovery_percent_of_unresolved_subset": 47.05882352941177
+  },
+  "denser_fresh_starts_selection_matches_all_continuation_unresolved": true,
+  "denser_fresh_starts_provenance_checks": {
+    "original_manifest_backup_byte_identical": true,
+    "coefficients_and_previous_residuals_match_by_matrix_id": true,
+    "output_vector_hashes_match": true,
+    "recorded_both_row_acceptance_checked": true,
+    "all_nine_solved_on_first_negative_saved_candidate_start": true
+  },
+  "denser_after_fresh_starts": {
+    "matrices": 1024,
+    "verified": 1024,
+    "unresolved": 0,
+    "verified_percent": 100.0,
+    "newly_verified": 9,
+    "attempts_executed": 9,
+    "maximum_attempts_allowed": 36,
+    "total_recorded_elapsed_seconds": 106.19053377598175
+  }
+}

@@ -1,22 +1,23 @@
 # CayleyKernel
 
-**O(1)-order GPU Cayley-Dickson doubling products.**
+**GPU Cayley-Dickson doubling products with O(1) basis-sign determination.**
 
 CayleyKernel computes the Cayley-Dickson doubling product of arbitrary
 `2^n`-dimensional hypercomplex algebras (complex numbers, quaternions,
-octonions, sedenions, and beyond) on NVIDIA GPUs with **constant-order
-per-element speed**: every output component is produced by its own thread
-using a branch-free, closed-form basis-sign function, and arbitrarily many
-independent products are batched in a single kernel launch via a
-grid-stride loop.
+octonions, sedenions, and beyond) on NVIDIA GPUs. For a given row and column
+of the Cayley-Dickson sign table, a closed-form function determines the sign
+in **O(1) time** using a fixed number of bitwise operations and a population
+count on fixed-width GPU integers, without traversing the doubling levels
+or storing the sign table. Each output component is computed by its own
+thread, and independent products are batched in a single kernel launch via
+a grid-stride loop. Each thread sums `dim` signed terms for its output;
+a full dense product therefore requires `O(dim^2)` work.
 
-* Kernel source: [`cuda/kernel.cu`](cuda/cuda_kernel.cu) (NVIDIA CUDA) and
+* Kernel source: [`cuda/cuda_kernel.cu`](cuda/cuda_kernel.cu) (NVIDIA CUDA) and
   [`cuda/amd_kernel.cu`](cuda/amd_kernel.cu) (AMD HIP/ROCm port).
-* Python package: [`CayleyKernel`](CayleyKernel/__init__.py) — a thin,
-  dependency-light CuPy/ctypes wrapper.
-* First public release of a high-dimensional Cayley-Dickson product
-  running at O(1) thread-order complexity, in parallel, with NVIDIA CUDA
-  hardware acceleration based on the paper by [`Maher Ben Abdessalem`](https://figshare.com/articles/preprint/A_Proven_Sign_Law_for_Cayley-Dickson_Algebras_Ordinary_and_Split_Constructions/33705022)
+* Python package: [`CayleyKernel`](CayleyKernel/__init__.py) — the CuPy/ctypes GPU wrapper
+  and CPU basis operations.
+* The O(1) basis-sign method is based on the paper by [`Maher Ben Abdessalem`](https://figshare.com/articles/preprint/A_Proven_Sign_Law_for_Cayley-Dickson_Algebras_Ordinary_and_Split_Constructions/33705022)
 
 ---
 
@@ -33,65 +34,54 @@ with `conj(x) = (x0, −x1, …, −x_{n−1})`.  This construction yields the
 complex numbers from the reals, the quaternions from the complex numbers,
 the octonions, sedenions, and so on.
 
-This repository implements exactly that product — including the full
-non-commutative, non-associative sign structure at every level — but
-evaluates it on the GPU in one parallel pass:
+This repository implements that product at each doubling level. The algebras
+become noncommutative from the quaternions and nonassociative from the
+octonions onward. The GPU evaluates the product in a single kernel launch:
 
 * each of the `2^n` output components is computed by an independent thread;
-* the basis sign `e_row · e_col = ± e_{row⊕col}` is obtained from a
-  branch-free closed form using `__ffs()` and `__popc()`;
+* the basis sign `e_row · e_col = ± e_{row⊕col}` is determined in O(1)
+  time for fixed-width GPU indices using bitwise operations and `__popc()`;
 * a `(B, …, dim)` input is treated as `prod(B, …)` independent products
   in a single launch (grid-stride over the batch axis).
 
 ## Installation
 
-### build from source
+### Build from source
 
-Requires an NVIDIA GPU, the CUDA toolkit (`nvcc` on PATH), and Python ≥ 3.8
-with `numpy`, `cupy`, and `build`.
+Dense CUDA multiplication requires an NVIDIA GPU, the CUDA toolkit (`nvcc`
+on PATH), and a Python environment with NumPy and a compatible CuPy build.
+The package metadata declares Python ≥ 3.8; dependency versions must also
+support the selected interpreter. Tests need pytest; research suites also use
+SciPy and SymPy.
 
 ```bash
-git clone git@github.com:alikaperdue/CayleyKernel.git
+git clone https://github.com/alikaperdue/CayleyKernel.git
 cd CayleyKernel
 
+python3 -m pip install -e '.[test]' scipy sympy
 make kernel                 # compile cuda/cuda_kernel.cu -> CayleyKernel/cuda_kernel.so
-make test                   # run the pytest suite
-
-pip install -e .            # optional: editable install of the wrapper
+make test                   # run the default suite, excluding slow tests
 ```
-Build a redistributable wheel (compiles the kernel, bundles it, and runs
-`auditwheel repair` when available):
+
+The Makefile targets several GPU architectures by default. If your CUDA
+toolkit does not support every target, select an architecture supported by
+both your GPU and toolkit, for example:
 
 ```bash
-pip install build auditwheel
+make kernel ARCHS="sm_80"  # example for an sm_80 GPU
+```
+
+For AMD HIP/ROCm, use a ROCm-compatible CuPy environment and `make kernel-amd`.
+
+To build a wheel containing the compiled kernel:
+
+```bash
+python3 -m pip install build
 make wheel
 ```
 
-The kernel is built directly into `CayleyKernel/cuda_kernel.so` and bundled in
-the wheel in `dist/`. The wheel is tagged for the build platform (for example,
-`py3-none-linux_x86_64`), because its native library uses `ctypes` rather than
-the Python extension ABI. To select GPU architectures explicitly, run
-`ARCHS="sm_80 sm_89" make wheel`; otherwise the Makefile's defaults apply.
-Use `make wheel PYTHON=/path/to/python` to select the build interpreter.
-
-When `auditwheel` is available, repaired wheels are written to `wheelhouse/`.
-Repair can fail if required shared libraries or system tools are unavailable;
-a platform tag alone does not guarantee manylinux portability or CUDA driver
-and GPU compatibility. Validate release wheels on the environments you support.
-Publish wheels as release assets or on a package index; keep generated binaries
-out of Git.
-
-To run the wheel-build regression tests, install the test's build tools in your
-virtual environment and run:
-
-```bash
-python -m pip install build 'setuptools>=70.1.0' wheel
-python tests/test_wheel_build.py -v
-```
-
-The metadata tests run offline without build isolation and skip with an
-explanation when build tools are missing. Normal `make wheel` builds use
-isolation and install their build dependencies automatically.
+See [wheel building and portability](docs/building.md) for architecture
+selection, optional `auditwheel` repair, and wheel-build regression tests.
 
 ## Quick start
 
@@ -113,54 +103,37 @@ C = multiply(A, B)                       # shape (1024, 16)
 C = multiply(A, cp.random.rand(16, dtype=cp.float32))
 ```
 
-Supported dtypes: `float16`, `float32`, `float64`, `int8/16/32/64`, `uint8/16/32/64`,
-`bool`, `complex64`, and `complex128`. Inputs may be CuPy arrays, NumPy arrays,
-or plain Python lists; the output container type matches the inputs.
+Supported dtypes: `float16`, `float32`, `float64`, `int8/16/32/64`,
+`uint8/16/32/64`, `bool`, `complex64`, `complex128`, and CUDA `bfloat16`.
+Inputs may be CuPy arrays, NumPy arrays, or Python lists. If either input is a
+CuPy array, the output is CuPy; otherwise a NumPy input produces a NumPy
+output, and two lists produce a list. Dense multiplication requires a GPU
+regardless of input container.
 
-`float16` (FP16 / `__half`) uses 2-byte input/output coefficients with **float32
-multiplication and accumulation**, then rounds to float16 on output. This avoids
-intermediate FP16 overflow and repeated FP16 rounding, but the final result can
-still overflow the float16 range (maximum finite magnitude 65,504). Mixed dtypes
-follow CuPy's `result_type` promotion, for example float16 + float32 inputs produce
-float32 output. Plain real Python lists still default to float32; pass typed
-NumPy or CuPy arrays to request float16 explicitly.
+FP16 and BF16 use float32 products and accumulation before rounding to the
+output type. BF16 requires CuPy 14+, NumPy 2.1.2+, `ml_dtypes`, and a CUDA
+build; HIP does not export BF16 entry points. Complex dtypes represent
+complex coefficients in the existing basis; multiplication is bilinear and
+basis conjugation does not complex-conjugate those coefficients.
 
-```python
-a = cp.array([1, 2, 3, 4], dtype=cp.float16)
-b = cp.array([4, 3, 2, 1], dtype=cp.float16)
-c = multiply(a, b)  # float16 output, float32 arithmetic inside the kernel
-```
-
-Run `python -m pytest -q tests/test_half.py` after rebuilding to check FP16
-products against a recursive reference, batching, dtype promotion, both C entry
-points, subnormals, output rounding, and cancellation of terms that exceed the
-FP16 range. GPU tests require CuPy and a working GPU runtime; wrapper and ABI
-checks can run on the CPU with a loadable compiled library.
-
-Complex dtypes supply **complex coefficients** for the existing Cayley–Dickson
-basis (for example, complexified quaternions at `dim=4`). They do not pack a
-real vector into half as many complex elements: `dim` still counts coefficients.
-Multiplication is complex-bilinear, using the same basis signs as real inputs.
-`conjugate(x)` negates all coefficients except the first along the last axis;
-it does not complex-conjugate the coefficients. Real norm/positivity identities
-should not be assumed for complex coefficients.
-
-```python
-a = cp.array([1 + 2j, 3 - 1j], dtype=cp.complex64)
-b = cp.array([2 - 1j, 1 + 4j], dtype=cp.complex64)
-c = multiply(a, b)  # [a[0]*b[0] - a[1]*b[1], a[0]*b[1] + a[1]*b[0]]
-```
-
-Both CUDA and HIP builds export `mult_half`, `mult_complex64`, `mult_complex128`, and their
-batched `_nd` entry points. Rebuild the shared library after updating the source
-(`make kernel`, or `make kernel-amd` for HIP), then restart Python.
+See [coefficient types and precision](docs/precision.md) for promotion rules,
+examples, overflow behavior, prerequisites, and validation commands.
 
 ### API
 
 | Function | Description |
 | --- | --- |
 | `multiply(a, b)` | Cayley-Dickson product; last axis = algebra dimension `2^n`, leading axes batched + broadcast |
-| `conjugate(x)` | Standard conjugation `(x0, −x1, …, −x_{n−1})` |
+| `conjugate(a)` | Standard basis conjugation `(a0, −a1, …, −a_{n−1})` |
+| `norm_sq(a)` | Sum of coefficient squares over the last axis |
+| `inverse(a)` | `conjugate(a) / norm_sq(a)`; raises on zero norm, warns at dimensions ≥ 16 |
+| `right_div(a, b)` | `multiply(a, inverse(b))` |
+| `left_div(a, b)` | `multiply(inverse(a), b)` |
+| `power(a, n)` | Integer powers by binary exponentiation; negative exponents use `inverse` |
+| `exp(a)` | Exponential via scalar exponential and imaginary-part sine/cosine |
+| `inner(a, b)` | Scalar coefficient of `a * conjugate(b)`; dot product for real coefficients |
+| `real(a)` | Extract `e0`, removing the algebra axis |
+| `imag(a)` | Copy with `e0` set to zero, preserving the algebra axis |
 | `library_path()` | Path of the loaded `cuda_kernel.so` |
 | `loaded()` | `True` once the kernel library has been found |
 | `abi_version()` | Kernel ABI version (current builds report `2`) |
@@ -169,6 +142,66 @@ batched `_nd` entry points. Rebuild the shared library after updating the source
 | `twist_many(pairs)`, `basis_many(pairs)` | Ordered CPU batch operations for iterables of pairs |
 | `cpu_backend()` | Active CPU implementation: `python` or `rust` |
 
+The algebra helpers accept lists, NumPy arrays, and CuPy arrays, with the last
+axis as the power-of-two algebra dimension. Results preserve the container
+family (tuples return lists); scalar helpers return Python scalars for lists
+and array scalars for array inputs. `imag` retains the full coefficient vector.
+Coefficient-only helpers work without CUDA. Division and nontrivial powers use
+the GPU `multiply` backend. Integer norm, inverse, power, exponential, and inner
+product inputs promote to float64; float16 inputs promote to float32 for these
+operations. Unsigned/boolean conjugation promotes to float64 to allow negation.
+
+For complex coefficients, `norm_sq` and `inner` are **bilinear**, matching basis
+conjugation, rather than Hermitian; `real` extracts the possibly complex `e0`
+coefficient. A nonzero complex vector can have zero `norm_sq` and cannot then be
+inverted by this formula. Any zero-norm member makes a batched inverse fail.
+
+At dimensions ≥ 16, `inverse` emits `RuntimeWarning` because positive norm does
+not exclude zero divisors. The formula gives a two-sided element inverse for
+nonzero real vectors, but cancellation and unique division solutions need not
+hold. The warning applies to all inputs at these dimensions; it is not a
+zero-divisor detector. Division computes the stated ordered products.
+
+```python
+from CayleyKernel import conjugate, norm_sq, inverse, exp, real, imag
+
+q = [1.0, 2.0, 3.0, 4.0]
+assert norm_sq(q) == 30.0
+assert conjugate(q) == [1.0, -2.0, -3.0, -4.0]
+assert imag(q) == [0.0, 2.0, 3.0, 4.0]
+q_inverse = inverse(q)
+q_exponential = exp(q)
+```
+
+### CPU basis operations
+
+`twist` and `basis` work without CUDA, NumPy, or CuPy. From a source checkout,
+install the package without its GPU dependencies if only these operations
+are needed:
+
+```bash
+python3 -m pip install --no-deps -e .
+```
+
+```python
+from CayleyKernel import twist, basis
+
+assert twist(1, 1) == -1  # zero-based indices: e1 * e1 = -e0
+assert basis(2, 2) == -1  # signed one-based labels: e1 is 2, -e0 is -1
+assert basis(-2, 2) == 1  # (-e1) * e1 = e0
+```
+
+`twist(r, c)` returns the sign at row `r`, column `c`; the output basis index
+is `r ^ c`. `basis(r, c)` encodes both the sign and output basis unit in one
+signed label. Zero is a valid `twist` index and an invalid `basis` label.
+
+For the CPU test collection, install its dependencies and run:
+
+```bash
+python3 -m pip install numpy pytest scipy sympy
+make test-cpu
+```
+
 ### Optional Rust CPU acceleration
 
 The sparse CPU operations used by the research scripts can use a Rust extension
@@ -176,8 +209,8 @@ while retaining arbitrary-size integer indices. Dense CUDA/HIP products keep
 their existing implementation. With a stable Rust toolchain installed:
 
 ```bash
-python -m pip install ./rust
-python -c "from CayleyKernel import cpu_backend; print(cpu_backend())"
+python3 -m pip install ./rust
+python3 -c "from CayleyKernel import cpu_backend; print(cpu_backend())"
 ```
 
 Rust is selected automatically when installed; Python remains the fallback.
@@ -192,14 +225,14 @@ for CPU-only installation, input conventions, and reproducible benchmarks.
 CayleyKernel/
 ├── CayleyKernel/           Python package (ctypes wrapper, CuPy glue)
 ├── cuda/
-│   ├── kernel.cu            NVIDIA CUDA kernel (primary target)
-│   ├── amd_kernel.cu        AMD HIP/ROCm port of the same kernel
-│   └── tools/
-│       └── compare_sign_tables.cpp   host-side sign-function equivalence test
+│   ├── cuda_kernel.cu       NVIDIA CUDA kernel (primary target)
+│   └── amd_kernel.cu        AMD HIP/ROCm port of the same kernel
 ├── tests/                   pytest suite (reference impl + identities)
+├── docs/                    build, precision, validation, and research docs
+├── rust/                    optional CPU basis-operation accelerator
 ├── scripts/build_wheel.sh   kernel -> package -> wheel -> auditwheel
 ├── Makefile                 kernel / test / wheel / clean targets
-├── pyproject.toml           PEP 621 metadata (name: cuda_kernel)
+├── pyproject.toml           PEP 621 metadata (name: cayley_kernel)
 └── LICENSE                  Apache-2.0
 ```
 
@@ -209,115 +242,30 @@ download a wheel from Releases.
 ## Testing
 
 ```bash
-make test          # default suite: correctness + algebraic identities
-make test-all      # adds: pytest -m slow and pytest -m benchmark
+make test          # default suite, excluding slow tests
+make test-cpu      # CPU-marked checks
+make test-all      # default suite followed by slow tests
 ```
 
-* Default suite: correctness against the recursive reference and algebraic
-  identities (norm multiplicativity, conjugation laws, `x·x* = |x|²`,
-  zero-divisor checks, basis sign table) up to `2^16`, plus spot checks at
-  `2^20` — target well under ~2 minutes.
-* `slow`: identities and batched tests at `2^20`–`2^22`, opt-in via
-  `pytest -m slow`.
-* `benchmark`: timing gates and batch-scaling checks, opt-in via
-  `pytest -m benchmark`.
+The default suite covers small dense products against a recursive reference,
+batching, broadcasting, dtypes, and algebraic identities. Norm multiplicativity
+is checked only in dimensions 1, 2, 4, and 8. Higher-dimensional checks cover
+other identities and sparse CPU operations; they do not establish norm
+multiplicativity beyond the octonions.
 
-### Huge-index zero-divisor showcase
+Some experimental correctness functions are currently named `FAILStest_...`
+and are not collected by pytest. They are excluded from this coverage summary.
+Runtime depends on the selected tests, hardware, and installed dependencies.
 
-```bash
-make zd-showcase
-# Push to 100-million-bit indices, with three witnesses:
-make zd-showcase ZD_HUGE_LEVELS=100000000 ZD_WITNESSES=3 ZD_SEED=42
-# Save complete witnesses as hexadecimal integers for replay:
-python3 scripts/zd_showcase.py --levels=1000000 --witnesses=10 \
-    --seed=42 --output=huge-zero-divisors.json
-```
+* `slow`: large dense products at dimensions `2^20`–`2^22`, selected with
+  `python3 -m pytest -q -m slow tests/`. Dense work is quadratic in dimension.
+* `benchmark`: GPU timings require `--run-benchmarks` and an explicit baseline
+  recording or comparison path. Selecting `-m benchmark` alone does not enable them.
+* `sparse_zd`: additional CPU sparse validation requires `--run-sparse-zd`.
 
-The default showcase finds ten random zero-divisor pairs at each of levels
-4,096, 65,536, and **1,000,000**. At the last level, all four support indices
-are million-bit integers, in an algebra of dimension `2^1000000`.
-It runs on the CPU using only `twist` and `basis`: no old doubling
-reference, GPU, pytest, or dense arrays. This target is separate from all
-test targets. Larger indices require more memory and computation time.
-
-For each candidate, three indices are drawn uniformly from the n-bit integers;
-the fourth is fixed by `a XOR b XOR c`. Four distinct indices are required.
-The formula selects compatible signs for `(e_a + s e_b)(e_c + t e_d)`.
-Each accepted pair is then re-evaluated through four signed `basis`
-calls: the two pairs of terms must cancel exactly and the accumulated result
-must be zero. Flipping `t` must give a nonzero result. Both factors have
-squared Euclidean norm 2, so neither is zero.
-
-The display reports confirmations, attempted candidates, search time, and
-confirmation time (including the negative control). It previews the first
-witness at each level without printing millions of digits. The seed reproduces
-the search, and `--output` saves all full indices in hexadecimal, avoiding
-Python's large decimal conversion limit. Saved and displayed indices are
-zero-based. These are exact checks using the new formulas, rather than an
-independent verification of those formulas or a search for previously unknown
-types of zero divisor.
-
-### Optional sparse zero-divisor validation and timings (CPU only)
-
-```bash
-python3 -m pip install pytest
-make test-sparse-zd
-# Customize doubling levels n (dimension = 2^n), candidates per level, and seed:
-make test-sparse-zd ZD_LEVELS=4,32,256,4096 ZD_SAMPLES=1000 ZD_SEED=42 ZD_REPEATS=5
-# Equivalent direct invocation:
-python3 -m pytest -q -s tests/test_sparse_zd.py --run-sparse-zd \
-    --zd-levels=4,32,256,4096 --zd-samples=1000 --zd-seed=42 --zd-repeats=5
-```
-
-These tests are skipped unless `--run-sparse-zd` is supplied, including during
-`make test` and `make test-all`. They need no GPU or compiled kernel. The default
-levels are 4, 8, 32, 128, 1024, and 4096, with 128 candidates per level. Only
-sparse terms and integer indices are stored; no dimension-sized arrays are
-allocated. Increasing the level or sample count increases reference-check time.
-
-The suite checks:
-
-* All signed basis products on the first 64 basis units against an independent
-  reference derived from the recursive doubling definition.
-* All two-term support pairs in the sedenions, with all four relative sign
-  choices, using exact integer cancellation.
-* The known `(e_3 + e_10)(e_6 - e_15) = 0` witness embedded at each requested level.
-* Structured and seeded random candidates that actually use the highest bit
-  at each level, plus controls guaranteed to have nonzero products.
-
-For `(e_a + s e_b)(e_c + t e_d)`, with distinct indices within each factor,
-cancellation requires `a XOR b = c XOR d`. Candidates therefore choose `a,b,c`
-and derive `d`; all signs are checked against the independent reference, which
-uses doubling branches rather than the implementation's popcount formula.
-The high-level reference is iterative to avoid Python's recursion limit.
-
-Printed counts distinguish XOR-compatible products from guaranteed nonzero
-controls and include the level and seed. Counts describe this sampling scheme,
-not the density of all zero divisors. Failures include reproducible support
-indices and signs. Indices in test reports use mathematical **zero-based**
-notation; the adapter calls `basis` with its signed **one-based** labels.
-These checks validate the Python basis-product path, not GPU dense multiplication;
-finite testing supplies evidence of correctness, not an all-level proof.
-
-The same command also prints a speed comparison at each level for three
-workloads: sign calculation, signed basis multiplication, and complete
-two-term sparse multiplication (four basis products and coefficient
-cancellation). The new path uses `twist` / `basis`; the baseline is
-the independent Python doubling reference in `tests/test_sparse_zd.py`.
-This baseline follows the older level-by-level approach; it is not a
-reproduction of a particular author's optimized implementation.
-
-Both paths receive identical pre-generated inputs, and their results are
-checked before timing. Each path is warmed up, batch counts are calibrated
-to at least 20 ms where practical (capped at 65,536 batches), and execution
-order alternates across rounds. The table reports median microseconds per
-operation and speedup (`doubling time / new time`). `ZD_REPEATS` defaults to 3.
-Input generation, correctness assertions, and printing are excluded from
-timings; sparse timings include sign calculation and output accumulation
-without cached signs. Machine architecture, Python version, seed, and workload
-sizes accompany the results. Timings are informational, with no required
-speedup threshold. These CPU measurements do not measure dense GPU products
-or establish asymptotic complexity; Python integer costs grow with bit length.
+Details and commands for [GPU performance baselines, huge-index showcases,
+and sparse zero-divisor validation](docs/testing.md) are documented separately.
+For research-specific checks, see the [paper verification index](docs/papers/README.md).
 
 ## Naming
 
@@ -325,35 +273,26 @@ or establish asymptotic complexity; Python integer costs grow with bit length.
 | --- | --- |
 | GitHub repository / branding | `CayleyKernel` |
 | Python package / import | `CayleyKernel` |
-| Wheel / PyPI project name | `cuda_kernel` |
+| Wheel / PyPI project name | `cayley_kernel` |
 | Compiled kernel binary | `cuda_kernel.so` |
 | C ABI symbols | `mult_<type>`, `mult_<type>_nd` (stable) |
 
-This project is the **O(1) (constant-order)** generation of this work: the
-doubling product's per-element complexity is constant, independent of the
-algebra dimension, thanks to the closed-form sign function and fully
-parallel evaluation.
+The **O(1) (constant-order)** designation refers to determining the sign at
+a given row and column of the Cayley-Dickson sign table. For fixed-width GPU
+indices, this uses a fixed number of operations independent of the doubling
+level. Dense multiplication uses this sign function for every term and
+requires `O(batch * dim^2)` total work. Python's arbitrary-size integer
+operations additionally depend on the indices' bit lengths.
+
+## Development and AI assistance
+
+CayleyKernel was initially authored by hand and is developed with AI
+assistance for implementation, refactoring, and analysis. The maintainer
+directs the work and is responsible for reviewing changes and assessing
+test results before integration.
 
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE).
 
 © 2026 Yotta Space Corp
-
-
-
-## Paper verification: arXiv:2608.28176v1
-
-A section-by-section review of Zhilina's *Orthogonality graphs of real
-Cayley–Dickson algebras. Part I* is in
-[docs/papers/2608.28176](docs/papers/2608.28176/README.md), including the
-coded test inventory, finite coverage limits, saved results, and two
-reproducible discrepancies in the version 1 statements.
-
-```bash
-python3 -m tests.papers.arxiv_2608_28176.run
-```
-
-The CPU checks use `twist()` and `basis()` with exact arithmetic
-and an independent doubling oracle. Optional `multiply()` checks run when
-the CUDA prerequisites are available and otherwise report explicit skips.

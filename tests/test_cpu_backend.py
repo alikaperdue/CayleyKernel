@@ -124,6 +124,40 @@ assert ck.basis_many([(1, 1)]) == [1]
         assert "must be auto, python, or rust" in result.stderr
 
 
+def test_python_reference_exports():
+    import CayleyKernel as ck
+    from CayleyKernel import _cpu
+
+    assert ck.py_sign is _cpu._python_twist
+    assert ck.py_multiply is _cpu._python_multiply
+    assert ck.py_sign(0, 0) == 1
+    assert ck.py_sign(1, 1) == -1
+    assert ck.py_multiply([3, 4], [1, 2]).tolist() == [-5, 10]
+
+
+@pytest.mark.parametrize("dim", [1, 2, 4, 8, 16, 32])
+def test_python_multiply_against_doubling(cpu, dim):
+    np = pytest.importorskip("numpy")
+    rng = random.Random(81 + dim)
+    a = [rng.randrange(-5, 6) for _ in range(dim)]
+    b = [rng.randrange(-5, 6) for _ in range(dim)]
+    expected = [0] * dim
+    for r, c in itertools.product(range(dim), repeat=2):
+        expected[r ^ c] += doubling_sign(r, c) * a[r] * b[c]
+    for multiply in (cpu._python_multiply, cpu._python_muliply_aio):
+        result = multiply(a, b)
+        assert isinstance(result, np.ndarray)
+        assert result.dtype == np.float64
+        np.testing.assert_array_equal(result, expected)
+
+
+@pytest.mark.parametrize("a, b", [([], []), ([1, 2], [1]), ([1, 2, 3], [4, 5, 6])])
+def test_python_multiply_invalid_dimensions(cpu, a, b):
+    pytest.importorskip("numpy")
+    with pytest.raises(ValueError, match="same power-of-two length"):
+        cpu._python_multiply(a, b)
+
+
 def test_native_rejects_invalid_labels():
     native = pytest.importorskip("cayley_kernel_rust")
     with pytest.raises(ValueError, match="nonzero"):

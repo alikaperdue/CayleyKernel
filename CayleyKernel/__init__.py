@@ -12,13 +12,15 @@ The heavy lifting is performed by ``cuda_kernel.so`` (built from
 
   * validates that the algebra dimension is a power of two,
   * supports arbitrary batch shapes ``(B, ..., dim)`` and broadcasting,
-  * handles float16/float32/float64/complex64/complex128/integer/boolean dtypes,
+  * handles float16/bfloat16/float32/float64/complex64/complex128/integer/boolean dtypes,
   * falls back gracefully when the shared object is missing or stale
     (no ``_nd`` symbols / no diagnostics), with an informative error.
 
 Public API:
     multiply(a, b)       -- Cayley-Dickson product, O(1) per element on GPU
-    conjugate(x)         -- standard Cayley-Dickson conjugation
+    conjugate(a)         -- standard Cayley-Dickson conjugation
+    norm_sq(a), inverse(a), right_div(a, b), left_div(a, b)
+    power(a, n), exp(a), inner(a, b), real(a), imag(a)
     library_path()       -- resolved path of the loaded shared object
     loaded()             -- True once the kernel library has been found
     abi_version()        -- ABI version reported by the kernel (>= 2), or 0
@@ -44,6 +46,15 @@ __version__ = "0.2.0"
 __all__ = [
     "multiply",
     "conjugate",
+    "norm_sq",
+    "inverse",
+    "right_div",
+    "left_div",
+    "power",
+    "exp",
+    "inner",
+    "real",
+    "imag",
     "library_path",
     "loaded",
     "abi_version",
@@ -148,6 +159,7 @@ _TYPE_SUFFIXES = (
     "uint8",
     "bool",
     "half",       # 16-bit float (FP16 / __half)
+    "bfloat16",   # 16-bit brain float (CUDA / __nv_bfloat16)
     "complex64",  # float2  / complex float
     "complex128", # double2 / complex double
 )
@@ -170,6 +182,7 @@ _DTYPE_TO_SUFFIX = {
     "bool":    "bool",
     "bool_":   "bool",
     "float16":    "half",
+    "bfloat16":   "bfloat16",
     "complex64":  "complex64",
     "complex128": "complex128",
 }
@@ -224,11 +237,26 @@ def _select_kernel(dtype):
     key = dtype.name
     if key not in _KERNELS:
         raise TypeError(
-            "Unsupported precision: %s! Use float16, float32, float64, integer, "
+            "Unsupported precision: %s! Use float16, bfloat16 (CUDA), float32, float64, integer, "
             "complex64, complex128, or boolean variants. Rebuild the kernel "
             "if the requested type is missing." % dtype
         )
     return _KERNELS[key]
+
+
+def _result_dtype(a, b):
+    """Preserve BF16 pairs; widen mixed BF16 inputs before normal promotion.
+
+    ml_dtypes does not define a common dtype for every BF16/NumPy pair
+    (notably FP16 and integers). FP32 can represent every BF16 value.
+    """
+    if a == b:
+        return a
+    if a.name == "bfloat16":
+        a = cp.dtype(cp.float32)
+    if b.name == "bfloat16":
+        b = cp.dtype(cp.float32)
+    return cp.result_type(a, b)
 
 
 def _as_cupy(x, ref_dtype=None):
@@ -242,7 +270,7 @@ def _as_cupy(x, ref_dtype=None):
     # Preserve complex coefficients, including when the other operand is real.
     # Real Python lists retain the historical float32 / reference-dtype policy.
     if inferred.dtype.kind == "c":
-        dtype = (cp.result_type(ref_dtype, inferred.dtype)
+        dtype = (_result_dtype(cp.dtype(ref_dtype), inferred.dtype)
                  if ref_dtype is not None else inferred.dtype)
     else:
         dtype = ref_dtype if ref_dtype is not None else cp.float32
@@ -318,8 +346,10 @@ def multiply(a, b):
     input container type (list -> list, NumPy -> NumPy, CuPy -> CuPy).
     Complex dtypes represent complex coefficients in the same basis; the
     product is complex-bilinear and does not conjugate scalar coefficients.
-    Float16 inputs use float32 products and accumulation, then round to float16
-    on output. Mixed input dtypes follow CuPy result_type promotion.
+    Float16 and bfloat16 inputs use float32 products and accumulation, then
+    round once on output. BF16 requires CuPy 14+, ml_dtypes, and a CUDA build.
+    Mixed BF16 inputs widen to float32 before CuPy result_type promotion;
+    all other mixed inputs follow CuPy result_type promotion directly.
     """
     _require_gpu_runtime()
     _require_kernel()
@@ -342,7 +372,7 @@ def multiply(a, b):
         )
 
     # ---- 2. Unify dtypes (kernel is homogeneous) ----
-    out_dtype = cp.result_type(a.dtype, b.dtype)
+    out_dtype = _result_dtype(a.dtype, b.dtype)
     if a.dtype != out_dtype:
         a = a.astype(out_dtype)
     if b.dtype != out_dtype:
@@ -393,46 +423,15 @@ def multiply(a, b):
     return o
 
 
-def conjugate(x):
-    """Standard Cayley-Dickson conjugation.
-
-    The conjugate of ``x`` is ``x* = (x0, -x1, ..., -x_{n-1})``: the first
-    coefficient is kept, every other coefficient is negated. Complex scalar
-    coefficients are not complex-conjugated. Works on CuPy
-    arrays, NumPy arrays, and Python lists.
-    """
-    _require_gpu_runtime()
-    if isinstance(x, cp.ndarray):
-        xstar = -x
-        xstar[..., 0] = x[..., 0]
-        return xstar
-    if isinstance(x, np.ndarray):
-        xstar = -x
-        xstar[..., 0] = x[..., 0]
-        return xstar
-    # list / tuple
-    return [x[0]] + [-v for v in x[1:]]
-
-def py_sign(r,c):
-    if r and c:
-        m = (v,h,d) = [-_&_ for _ in (r,c,r^c)]
-        if r == c or not ((r|c)//max(m) ^ ((r&h,~r&d)[h<d],~c&v)[v>h]).bit_count() & 1:
-        #m = (h,v,d) = [-_&_ for _ in (r,c,r^c)]
-        #if r == c or not ((r|c)//max(m) ^ ((r&v,~r&d)[v<d],~c&h)[h>v]).bit_count() & 1:
-            return -1
-    return 1
-
-def py_multiply(a,b):
-    dim = len(a)
-    c = np.zeros(dim, dtype=float)
-    for index in range(dim):
-        for row in range(dim):
-            col = index ^ row
-            c[index] += py_sign(row,col) * a[row] * b[col]
-    return c
-
-
 # CPU operations have an independent optional Rust backend. GPU entry points
 # and their CuPy/ctypes ABI remain unchanged.
+# basis/basis_many multiply signed one-based basis labels (zero is invalid),
+# using _python_basis from _cpu.py when the Rust backend is unavailable.
 from ._cpu import basis, basis_many, cpu_backend, twist, twist_many
 
+# Preserve the existing Python reference entry points without duplicating logic.
+from ._cpu import _python_twist as py_sign, _python_multiply as py_multiply
+
+from ._algebra import (
+    conjugate, norm_sq, inverse, right_div, left_div, power, exp, inner, real, imag,
+)
