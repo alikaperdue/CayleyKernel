@@ -95,7 +95,7 @@ jobs:
       - name: Install build tooling
         run: |
           apt-get update
-          apt-get install -y python3 python3-pip make patchelf
+          apt-get install -y python3 python3-pip python3-venv make patchelf
           python3 -m pip install build auditwheel wheel twine
       - name: Compile and repair wheel
         env:
