@@ -51,14 +51,47 @@ def scalar_equation(coeff):
             for i in range(max(len(even),len(odd)))]
 
 
+def square_free_polynomial(coeff):
+    """Remove exact repeated factors before floating-point root finding.
+
+    Coefficients are in ascending order. Rational arithmetic prevents a
+    repeated norm root from splitting into platform-dependent nearby roots.
+    """
+    def trim(p):
+        while p and not p[-1]:
+            p.pop()
+        return p
+
+    def divide(a,b):
+        remainder=a.copy()
+        quotient=[Q(0)]*max(0,len(a)-len(b)+1)
+        while remainder and len(remainder)>=len(b):
+            degree=len(remainder)-len(b)
+            factor=remainder[-1]/b[-1]
+            quotient[degree]=factor
+            for i,c in enumerate(b):
+                remainder[degree+i]-=factor*c
+            trim(remainder)
+        return trim(quotient),remainder
+
+    p=trim([Q(c) for c in coeff])
+    if len(p)<2:
+        return p
+    a,b=p,[i*c for i,c in enumerate(p) if i]
+    while b:
+        a,b=b,divide(a,b)[1]
+    return divide(p,a)[0]
+
+
 def alternating_roots(coeff):
     """Numerical Section 3 algorithm for real composition algebras only.
 
     Returns isolated roots and squared radii for entire spherical families.
-    Repeated/ill-conditioned scalar roots need more careful numerical analysis.
+    Exact repeated factors are removed before numerical root finding.
+    Distinct ill-conditioned scalar roots still need numerical analysis.
     """
     import numpy as np
-    p=np.trim_zeros(np.array(scalar_equation(coeff),dtype=float),'b')
+    p=np.array(square_free_polynomial(scalar_equation(coeff)),dtype=float)
     if not len(p):raise ValueError('identically zero norm equation needs separate analysis')
     roots=[];spheres=[];seen=[]
     for z in np.polynomial.polynomial.polyroots(p):
@@ -134,6 +167,28 @@ class Sections(unittest.TestCase):
         self.assertEqual(roots,[]);self.assertEqual(len(spheres),1);self.assertAlmostEqual(spheres[0],1.)
         roots,spheres=alternating_roots([e(0),{},e(0)])
         self.assertEqual((roots,spheres),([],[]))
+
+    def test_03_4_repeated_norm_roots_are_removed_before_numerical_solve(self):
+        try:import numpy as np
+        except ImportError:self.skipTest('NumPy unavailable for scalar polynomial roots')
+        from unittest.mock import patch
+        # Even parts (N-1) and (N-1)^3 yield norm equations with
+        # multiplicities two and six, but each defines just one sphere.
+        for coeff in ([{0:-1},{},e(0)],
+                      [{0:-1},{},{0:3},{},{0:-3},{},e(0)]):
+            with patch.object(np.polynomial.polynomial,'polyroots',
+                              wraps=np.polynomial.polynomial.polyroots) as solve:
+                roots,spheres=alternating_roots(coeff)
+            self.assertEqual(roots,[])
+            self.assertEqual(spheres,[1.0])
+            p=solve.call_args.args[0]
+            self.assertEqual(len(p),2)
+            self.assertAlmostEqual(float(p[0]/p[1]),-1.)
+        # Exact factor removal must preserve genuinely distinct nearby roots.
+        delta=Q(1,10**9)
+        p=[1+delta,-2-delta,1]
+        reduced=square_free_polynomial(p)
+        self.assertEqual([c/reduced[-1] for c in reduced],p)
 
     def test_04_theorem_4_1_and_root_correspondence(self):
         rng=random.Random(230615891)
