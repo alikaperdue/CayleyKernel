@@ -103,14 +103,14 @@ int cayley_sign(int r, int c) {
     const int o = r | c;
     const int x = r ^ c;
     const int d = x & -x;
-    const int v = r & -r;
-    const int h = c & -c;
+    const int h = r & -r;
+    const int v = c & -c;
     const int a = r && c;
 
     return __popc(
         !x | !a ? !a :
-         h <  v ? ~c & v ^ o & -v :
-         d <  h ?  r & h ^ o & -h :
+         v <  h ? ~c & h ^ o & -h :
+         d <  v ?  r & v ^ o & -v :
                    c & d ^ o & -d
     ) & 1;
 }
