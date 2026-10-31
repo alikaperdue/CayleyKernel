@@ -2,7 +2,12 @@
 # Copyright (c) 2026 Alika Perdue
 """Batched Cayley-Dickson algebra helpers for NumPy, CuPy, and lists.
 
-Coefficient operations run on the input's device without a compiled kernel.
+Coefficient operations run on the input's device.  When the input is a
+CuPy array and the loaded kernel exposes a dedicated entry point
+(``conjugate_<type>`` / ``norm_sq_<type>``), the operation is dispatched
+to a dedicated CUDA kernel; otherwise the helpers fall back to the
+generic NumPy/CuPy expressions so older kernel binaries keep working.
+
 Products use the public GPU ``multiply`` implementation.
 """
 
@@ -52,14 +57,117 @@ def _pair(a, b):
     return x, y, xp
 
 
+# --------------------------------------------------------------------------
+# GPU dispatch helpers
+# --------------------------------------------------------------------------
+# Dtypes for which the compiled kernel exposes a dedicated entry point after
+# the helper-level promotion performed by _array() (integer/unsigned ->
+# float64, float16/bfloat16 -> float32, complex stays as-is).  Everything
+# else falls back to the generic NumPy/CuPy expressions.
+_GPU_CONJ_DTYPES = ("float32", "float64", "complex64", "complex128")
+_GPU_NORMSQ_DTYPES = ("float32", "float64", "complex64", "complex128")
+
+
+def _gpu_batch(x):
+    """Product of all leading (batch) axes of x, as a Python int."""
+    batch = 1
+    for s in x.shape[:-1]:
+        batch *= int(s)
+    return batch
+
+
+def _gpu_available():
+    from . import loaded, _library_path
+    return _library_path is not None and loaded()
+
+
+def _dispatch_conjugate(a, xp):
+    """Run the dedicated CUDA conjugate kernel on CuPy ``a``.
+
+    Returns a fresh CuPy array, or ``None`` when the dispatch is not
+    possible (non-CuPy input, missing kernel symbol, dtype not exposed,
+    or empty batch).  The caller should fall back to the generic
+    expression in that case.
+    """
+    from . import cp, _launch_conjugate
+
+    if cp is None or not isinstance(a, cp.ndarray):
+        return None
+    if not _gpu_available():
+        return None
+    if a.dtype.name not in _GPU_CONJ_DTYPES:
+        return None
+    dim = int(a.shape[-1])
+    if dim == 0 or (dim & (dim - 1)):
+        return None
+    batch = _gpu_batch(a)
+    if batch <= 0:
+        return None
+    out = cp.empty_like(a)
+    try:
+        _launch_conjugate(a.dtype, a, out, dim, batch)
+    except (RuntimeError, TypeError, AttributeError):
+        return None
+    return out
+
+
+def _dispatch_norm_sq(a, xp):
+    """Run the dedicated CUDA norm_sq kernel on CuPy ``a``.
+
+    Returns a fresh CuPy array of shape ``a.shape[:-1]`` (the algebra axis
+    removed), or ``None`` when the dispatch is not possible.
+    """
+    from . import cp, _launch_norm_sq
+
+    if cp is None or not isinstance(a, cp.ndarray):
+        return None
+    if not _gpu_available():
+        return None
+    if a.dtype.name not in _GPU_NORMSQ_DTYPES:
+        return None
+    dim = int(a.shape[-1])
+    if dim == 0 or (dim & (dim - 1)):
+        return None
+    batch = _gpu_batch(a)
+    if batch <= 0:
+        return None
+    out = xp.empty(a.shape[:-1], dtype=a.dtype)
+    try:
+        _launch_norm_sq(a.dtype, a, out, dim, batch)
+    except (RuntimeError, TypeError, AttributeError):
+        return None
+    return out
+
+
+def _dispatch_norm_sq_keepdims(a, xp):
+    """``_dispatch_norm_sq`` but keeping the algebra axis at size 1."""
+    value = _dispatch_norm_sq(a, xp)
+    if value is None:
+        return None
+    if value.ndim == 0:
+        return value.reshape(1)
+    return value[..., None]
+
+
+# --------------------------------------------------------------------------
+# Public helpers
+# --------------------------------------------------------------------------
 def conjugate(x):
     """Negate imaginary basis coefficients, preserving the real coefficient.
 
     Complex scalar coefficients are not complex-conjugated. The last axis is
     the algebra dimension; leading axes are batches. Returns a new container.
     Unsigned and boolean coefficients promote to float64 to allow negation.
+
+    When the input is a CuPy array and the loaded kernel exposes a
+    ``conjugate_<type>`` entry point (float32, float64, complex64,
+    complex128), the computation is dispatched to a dedicated CUDA kernel
+    rather than the generic elementwise/assign path used by CuPy itself.
     """
-    a, _ = _array(x, signed=True)
+    a, xp = _array(x, signed=True)
+    gpu = _dispatch_conjugate(a, xp)
+    if gpu is not None:
+        return _return(gpu, x)
     result = -a
     result[..., 0] = a[..., 0]
     return _return(result, x)
@@ -72,8 +180,16 @@ def norm_sq(a):
     coefficient of a * conjugate(a). For complex coefficients it is a
     bilinear quadratic form, not a Hermitian norm, and can vanish for nonzero a.
     Integers promote to float64; float16/bfloat16 promote to float32.
+
+    When the input is a CuPy array and the loaded kernel exposes a
+    ``norm_sq_<type>`` entry point (float32, float64, complex64,
+    complex128), the computation is dispatched to a dedicated CUDA reduction
+    kernel rather than the generic ``xp.sum(x*x, axis=-1)`` expression.
     """
     x, xp = _array(a, floating=True)
+    gpu = _dispatch_norm_sq(x, xp)
+    if gpu is not None:
+        return _return(gpu, a)
     return _return(xp.sum(x * x, axis=-1), a)
 
 
@@ -86,7 +202,9 @@ def inverse(a):
     performed. If any batch member has zero norm, the entire call fails.
     """
     x, xp = _array(a, floating=True)
-    squared = xp.sum(x * x, axis=-1, keepdims=True)
+    squared = _dispatch_norm_sq_keepdims(x, xp)
+    if squared is None:
+        squared = xp.sum(x * x, axis=-1, keepdims=True)
     if bool(xp.any(squared == 0)):
         raise ZeroDivisionError("Cannot invert an element with zero norm_sq.")
     if x.shape[-1] >= 16:
@@ -95,8 +213,10 @@ def inverse(a):
             "the conjugate/norm inverse does not guarantee cancellation.",
             RuntimeWarning, stacklevel=2,
         )
-    result = -x
-    result[..., 0] = x[..., 0]
+    result = _dispatch_conjugate(x, xp)
+    if result is None:
+        result = -x
+        result[..., 0] = x[..., 0]
     return _return(result / squared, a)
 
 

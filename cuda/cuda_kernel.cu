@@ -80,6 +80,33 @@ template <> struct arithmetic_traits<cuDoubleComplex> {
     }
 };
 
+// Negation helper for the conjugate kernel.  The CUDA vendor types (cuComplex,
+// cuDoubleComplex, __half, __nv_bfloat16) do not define a C++ unary minus,
+// so this trait routes them through the vendor's explicit negation.
+template <typename T> struct negation {
+    __device__ static __forceinline__ T apply(T a) { return -a; }
+};
+template <> struct negation<cuComplex> {
+    __device__ static __forceinline__ cuComplex apply(cuComplex a) {
+        return make_cuComplex(-a.x, -a.y);
+    }
+};
+template <> struct negation<cuDoubleComplex> {
+    __device__ static __forceinline__ cuDoubleComplex apply(cuDoubleComplex a) {
+        return make_cuDoubleComplex(-a.x, -a.y);
+    }
+};
+template <> struct negation<__half> {
+    __device__ static __forceinline__ __half apply(__half a) {
+        return __hmul(a, __float2half(-1.0f));
+    }
+};
+template <> struct negation<__nv_bfloat16> {
+    __device__ static __forceinline__ __nv_bfloat16 apply(__nv_bfloat16 a) {
+        return __float2bfloat16(-__bfloat162float(a));
+    }
+};
+
 
 // Sign of the Cayley-Dickson basis product  e_row * e_col = sign * e_(row^col).
 //
@@ -227,6 +254,102 @@ static void launch_mult(const T* a, const T* b, T* o, int dim, long long batch) 
         launch_mult<TYPE>(a, b, o, dim, batch);                                  \
     }
 
+// =============================================================================
+// Conjugate  --  out[i] = -a[i] for i > 0,  out[0] = a[0]
+// =============================================================================
+template <typename T, int Threads>
+__global__ __launch_bounds__(Threads, 1)
+void conjugate_kernel(const T* __restrict__ a,
+                      T* __restrict__ out, int dim, long long total) {
+    const long long stride = (long long)gridDim.x * Threads;
+    for (long long pos = (long long)blockIdx.x * Threads + threadIdx.x;
+         pos < total; pos += stride) {
+        if ((int)(pos % dim) == 0) out[pos] = a[pos];
+        else out[pos] = negation<T>::apply(a[pos]);
+    }
+}
+
+// =============================================================================
+// norm_sq  --  out[b] = sum_i a[b,i] * a[b,i]
+// =============================================================================
+template <typename T, int Threads>
+__global__ __launch_bounds__(Threads, 1)
+void norm_sq_kernel(const T* __restrict__ a,
+                    typename accum_traits<T>::type* __restrict__ out,
+                    int dim, long long batch) {
+    typedef typename accum_traits<T>::type Acc;
+    typedef arithmetic_traits<Acc> Ops;
+    const long long stride = (long long)gridDim.x * Threads;
+    for (long long b = (long long)blockIdx.x * Threads + threadIdx.x;
+         b < batch; b += stride) {
+        const T* row = a + b * (long long)dim;
+        Acc acc = Ops::zero();
+        for (int i = 0; i < dim; ++i) Ops::add(acc, Ops::mul(Acc(row[i]), Acc(row[i])));
+        out[b] = acc;
+    }
+}
+
+template <typename T, int Threads>
+static void launch_sized_conjugate(const T* a, T* o, int dim, long long total) {
+    const long long needed = (total - 1) / Threads + 1;
+    const unsigned int blocks = (unsigned int)(needed < max_work_blocks
+                                               ? needed : max_work_blocks);
+    conjugate_kernel<T, Threads><<<blocks, Threads>>>(a, o, dim, total);
+}
+
+template <typename T>
+static void launch_conjugate(const T* a, T* o, int dim, long long batch) {
+    if (dim <= 0 || batch <= 0) return;
+    const long long total = batch * (long long)dim;
+    switch (launch_threads(dim, total)) {
+#define LAUNCH_CASE(N) case N: launch_sized_conjugate<T, N>(a, o, dim, total); break;
+        LAUNCH_CASE(32)
+        LAUNCH_CASE(64)
+        LAUNCH_CASE(128)
+        LAUNCH_CASE(256)
+        LAUNCH_CASE(512)
+        LAUNCH_CASE(1024)
+#undef LAUNCH_CASE
+    }
+    cudaDeviceSynchronize();
+}
+
+template <typename T, int Threads>
+static void launch_sized_norm_sq(const T* a, typename accum_traits<T>::type* o,
+                                 int dim, long long batch) {
+    const long long needed = (batch - 1) / Threads + 1;
+    const unsigned int blocks = (unsigned int)(needed < max_work_blocks
+                                               ? needed : max_work_blocks);
+    norm_sq_kernel<T, Threads><<<blocks, Threads>>>(a, o, dim, batch);
+}
+
+template <typename T>
+static void launch_norm_sq(const T* a, typename accum_traits<T>::type* o,
+                           int dim, long long batch) {
+    if (dim <= 0 || batch <= 0) return;
+    switch (launch_threads(dim, batch)) {
+#define LAUNCH_CASE(N) case N: launch_sized_norm_sq<T, N>(a, o, dim, batch); break;
+        LAUNCH_CASE(32)
+        LAUNCH_CASE(64)
+        LAUNCH_CASE(128)
+        LAUNCH_CASE(256)
+        LAUNCH_CASE(512)
+        LAUNCH_CASE(1024)
+#undef LAUNCH_CASE
+    }
+    cudaDeviceSynchronize();
+}
+
+#define DEFINE_CONJ_ENTRIES(SUFFIX, TYPE)                                      \
+    void conjugate_##SUFFIX(const TYPE* a, TYPE* o, int dim, long long batch) \
+    { launch_conjugate<TYPE>(a, o, dim, batch); }
+
+#define DEFINE_NORMSQ_ENTRIES(SUFFIX, TYPE)                                    \
+    void norm_sq_##SUFFIX(const TYPE* a,                                        \
+                          typename accum_traits<TYPE>::type* o,                \
+                          int dim, long long batch)                            \
+    { launch_norm_sq<TYPE>(a, o, dim, batch); }
+
 extern "C" {
 
     DEFINE_MULT_ENTRIES(float,  float)
@@ -244,4 +367,25 @@ extern "C" {
     DEFINE_MULT_ENTRIES(bfloat16, __nv_bfloat16)
     DEFINE_MULT_ENTRIES(complex64,  cuComplex)
     DEFINE_MULT_ENTRIES(complex128, cuDoubleComplex)
+
+    // conjugate and norm_sq are emitted only for the dtypes the Python
+    // _algebra helpers actually dispatch after their own promotion rules
+    // (integer/unsigned -> float64, float16/bfloat16 -> float32, complex
+    // stays as-is).  Integer and boolean conjugation is not valid and is
+    // therefore never exposed as a kernel entry point.
+    DEFINE_CONJ_ENTRIES(float,  float)
+    DEFINE_CONJ_ENTRIES(double, double)
+    DEFINE_CONJ_ENTRIES(complex64,  cuComplex)
+    DEFINE_CONJ_ENTRIES(complex128, cuDoubleComplex)
+
+    DEFINE_NORMSQ_ENTRIES(float,  float)
+    DEFINE_NORMSQ_ENTRIES(double, double)
+    DEFINE_NORMSQ_ENTRIES(complex64,  cuComplex)
+    DEFINE_NORMSQ_ENTRIES(complex128, cuDoubleComplex)
+
+    // ABI / feature version reported to the Python wrapper.
+    //   1 -- legacy build (mult only)
+    //   2 -- batched _nd entry points + diagnostics
+    //   3 -- + conjugate_<type> and norm_sq_<type> entry points
+    int cayley_abi_version(void) { return 3; }
 }

@@ -17,7 +17,11 @@ The heavy lifting is performed by ``cuda_kernel.so`` (built from
     (no ``_nd`` symbols / no diagnostics), with an informative error.
 
 Public API:
-    multiply(a, b)       -- Cayley-Dickson product, O(1) per element on GPU
+    multiply(a, b, out=None, stream=None)
+                            -- Cayley-Dickson product, O(1) per element on GPU.
+                               ``out`` reuses a caller-allocated buffer; ``stream``
+                               selects the CUDA stream used for the launch.
+    multiply_into(a, b, out)  -- explicit alias for ``multiply(a, b, out=out)``
     conjugate(a)         -- standard Cayley-Dickson conjugation
     norm_sq(a), inverse(a), right_div(a, b), left_div(a, b)
     power(a, n), exp(a), inner(a, b), real(a), imag(a)
@@ -27,7 +31,9 @@ Public API:
 """
 
 import ctypes
+import contextlib
 import os
+import warnings
 
 # GPU / array runtime.  Imports are lazy so that ``help(CayleyKernel)``
 # works even on machines without CUDA, and so the error message below is the
@@ -45,6 +51,7 @@ except ImportError:  # pragma: no cover
 __version__ = "0.3.0"
 __all__ = [
     "multiply",
+    "multiply_into",
     "conjugate",
     "norm_sq",
     "inverse",
@@ -115,9 +122,12 @@ def loaded():
 def abi_version():
     """ABI/feature version reported by the loaded kernel.
 
-    Returns ``0`` when no library is loaded and ``1`` for legacy builds that
-    do not expose the ``cayley_abi_version`` symbol.  Current builds
-    report ``2`` (batched ``_nd`` entry points + diagnostics).
+    Returns ``0`` when no library is loaded.  Numeric values:
+
+    * ``1`` -- legacy build (``mult_<type>`` only).
+    * ``2`` -- batched ``mult_<type>_nd`` entry points + diagnostics.
+    * ``3`` -- adds ``conjugate_<type>`` and ``norm_sq_<type>`` entry points
+      used by the GPU-dispatched algebra helpers in :mod:`_algebra`.
     """
     return _ABI_VERSION
 
@@ -276,7 +286,22 @@ def _as_cupy(x, ref_dtype=None):
                  if ref_dtype.kind in "biu" or inferred.dtype.kind == "c"
                  else ref_dtype)
     else:
-        dtype = inferred.dtype if inferred.dtype.kind == "c" else cp.float32
+        if inferred.dtype.kind == "c":
+            dtype = inferred.dtype
+        else:
+            # Legacy default: any real (non-complex) list/tuple as the FIRST
+            # operand is converted to float32.  This is surprising relative to
+            # NumPy (float64) and will change; pass cp.asarray(x, dtype=...) (or
+            # a NumPy array) to pin the dtype explicitly and silence this notice.
+            warnings.warn(
+                "CayleyKernel: a real list/tuple as the first operand defaults "
+                "to float32. This legacy behaviour will change to match "
+                "NumPy's float64 default in a future release; pass "
+                "cp.asarray(x, dtype=...) (or a NumPy array) to pin the dtype "
+                "explicitly.",
+                DeprecationWarning, stacklevel=3,
+            )
+            dtype = cp.float32
     return inferred.astype(dtype, copy=False)
 
 
@@ -304,6 +329,32 @@ def _broadcast_shapes(shapes):
     return tuple(out)
 
 
+def _resolve_stream(stream):
+    """Normalise a user-supplied stream into a CuPy stream context.
+
+    Accepted forms:
+
+      * ``None``       -- default stream, no change (legacy behaviour).
+      * ``cp.cuda.Stream`` -- used as-is via a ``cp.cuda.stream`` context.
+      * ``int``        -- raw CUDA stream handle; wrapped in ``cp.cuda.Stream``.
+
+    Returns a callable no-op when ``stream`` is ``None`` so the caller can
+    wrap the launch unconditionally.
+    """
+    if stream is None:
+        return contextlib.nullcontext()
+    if cp is None:
+        raise TypeError("stream support requires CuPy; install cupy-cuda12x")
+    if isinstance(stream, cp.cuda.Stream):
+        return stream  # cp.cuda.Stream is already a context manager
+    if isinstance(stream, int):
+        return cp.cuda.Stream(stream)  # also a context manager
+    raise TypeError(
+        "stream must be None, a cupy.cuda.Stream, or an integer handle "
+        "(got %s)." % type(stream).__name__
+    )
+
+
 def _launch(kernel_pair, a, b, o, dim, batch):
     """Run the kernel over ``batch`` contiguous vectors of length ``dim``."""
     block_size = os.environ.get("CAYLEY_KERNEL_BLOCK_SIZE")
@@ -329,10 +380,44 @@ def _launch(kernel_pair, a, b, o, dim, batch):
                   ctypes.c_int(dim))
 
 
+def _launch_conjugate(dtype, a, o, dim, batch):
+    """Dispatch ``conjugate_<suffix>(a, o, dim, batch)`` if available."""
+    key = dtype.name
+    suffix = _DTYPE_TO_SUFFIX.get(key)
+    if suffix is None:
+        raise TypeError("Unsupported precision for conjugate: %s" % dtype)
+    fn = getattr(_lib, "conjugate_%s" % suffix, None)
+    if fn is None:
+        raise RuntimeError(
+            "conjugate CUDA entry point not present in %s; rebuild with "
+            "`make kernel` to enable the GPU conjugate path." % _library_path
+        )
+    fn.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int, ctypes.c_longlong]
+    fn.restype = None
+    fn(a.data.ptr, o.data.ptr, ctypes.c_int(dim), ctypes.c_longlong(batch))
+
+
+def _launch_norm_sq(dtype, a, o, dim, batch):
+    """Dispatch ``norm_sq_<suffix>(a, o, dim, batch)`` if available."""
+    key = dtype.name
+    suffix = _DTYPE_TO_SUFFIX.get(key)
+    if suffix is None:
+        raise TypeError("Unsupported precision for norm_sq: %s" % dtype)
+    fn = getattr(_lib, "norm_sq_%s" % suffix, None)
+    if fn is None:
+        raise RuntimeError(
+            "norm_sq CUDA entry point not present in %s; rebuild with "
+            "`make kernel` to enable the GPU norm_sq path." % _library_path
+        )
+    fn.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int, ctypes.c_longlong]
+    fn.restype = None
+    fn(a.data.ptr, o.data.ptr, ctypes.c_int(dim), ctypes.c_longlong(batch))
+
+
 # =============================================================================
 # PUBLIC API
 # =============================================================================
-def multiply(a, b):
+def multiply(a, b, out=None, stream=None):
     """Cayley-Dickson doubling product, executed on the GPU.
 
     The LAST axis is the algebra dimension and must be a power of two (2^n).
@@ -352,19 +437,47 @@ def multiply(a, b):
 
     The output has the broadcast shape and the promoted dtype, matching the
     input container type (list -> list, NumPy -> NumPy, CuPy -> CuPy).
+
+    ``out`` (optional, default ``None``) lets the caller reuse a pre-allocated
+    buffer in tight loops.  The buffer must already be a CuPy array whose
+    shape matches the broadcast result shape and whose dtype is compatible
+    with the operands' promoted dtype (the kernel is homogeneous, so it must
+    equal the promoted dtype exactly).  When ``out`` is given the result is
+    written in-place and the same CuPy array is returned, so no per-iteration
+    allocation occurs::
+
+        c = cp.empty((1024, 8), dtype=cp.float32)
+        for i in range(steps):
+            ck.multiply(a, b_i, out=c)
+
+    ``stream`` (optional, default ``None``) selects the CUDA stream the
+    kernel is launched on.  Accepts a ``cupy.cuda.Stream`` object or a raw
+    integer stream handle.  With ``None`` (the default) the legacy behaviour
+    is preserved exactly.  The kernel itself is still synchronised at the end
+    of the call via ``cudaDeviceSynchronize``, so the call is safe to chain
+    with other CuPy operations but does not expose true async semantics.
+
+    The output has the broadcast shape and the promoted dtype, matching the
+    input container type (list -> list, NumPy -> NumPy, CuPy -> CuPy).
     Complex dtypes represent complex coefficients in the same basis; the
     product is complex-bilinear and does not conjugate scalar coefficients.
     Float16 and bfloat16 inputs use float32 products and accumulation, then
     round once on output. BF16 requires CuPy 14+, ml_dtypes, and a CUDA build.
     Mixed BF16 inputs widen to float32 before CuPy result_type promotion;
     all other mixed inputs follow CuPy result_type promotion directly.
-    A real list as the first operand defaults to float32. As the second
-    operand, it follows a floating/complex first operand's precision, or
-    promotes with an integral first operand to preserve fractional values.
-    Complex lists always promote to preserve imaginary coefficients.
+    A real list as the first operand defaults to float32 (legacy; see the
+    ``DeprecationWarning``). As the second operand, it follows a
+    floating/complex first operand's precision, or promotes with an integral
+    first operand to preserve fractional values.  Complex lists always
+    promote to preserve imaginary coefficients.
     """
     _require_gpu_runtime()
     _require_kernel()
+
+    # ---- 0. Validate and normalise the optional out / stream ----
+    if out is not None and not isinstance(out, cp.ndarray):
+        raise TypeError("out must be a cupy.ndarray when provided")
+    stream_ctx = _resolve_stream(stream)
 
     # ---- 1. Track the incoming container type and standardise to CuPy ----
     if isinstance(a, cp.ndarray) or isinstance(b, cp.ndarray):
@@ -422,17 +535,55 @@ def multiply(a, b):
     for s in batch_shape:
         batch *= int(s)
 
-    o = cp.zeros(out_shape, dtype=out_dtype)
+    # ---- 5b. Allocate (or validate) the destination buffer ----
+    if out is not None:
+        if out.dtype != out_dtype:
+            raise TypeError(
+                "out.dtype (%s) must equal the promoted dtype (%s). "
+                "The CUDA kernel is dtype-homogeneous." % (out.dtype, out_dtype)
+            )
+        if tuple(out.shape) != out_shape:
+            raise ValueError(
+                "out.shape %s does not match the broadcast result shape %s. "
+                % (tuple(out.shape), out_shape)
+            )
+        o = cp.ascontiguousarray(out)
+    else:
+        o = cp.zeros(out_shape, dtype=out_dtype)
 
     if batch > 0:
-        _launch(kernel_pair, a, b, o, int(dim), int(batch))
+        with stream_ctx:
+            _launch(kernel_pair, a, b, o, int(dim), int(batch))
 
     # ---- 6. Return in the caller's container type ----
+    if out is not None:
+        # Caller supplied a buffer: return the same (possibly-reshaped)
+        # array so identity is preserved and no extra copy happens.
+        return o
     if return_type == "list":
         return cp.asnumpy(o).tolist()
     if return_type == "numpy":
         return cp.asnumpy(o)
     return o
+
+
+def multiply_into(a, b, out):
+    """Write ``a * b`` into ``out`` and return ``out``.
+
+    This is the explicit "multiply into a caller-allocated buffer" form of
+    :func:`multiply`.  It is a thin alias for ``multiply(a, b, out=out)`` and
+    exists so that in-place-style intent is unambiguous at the call site and
+    so that a future ``__imul__``-style API can be added without changing
+    existing code.
+
+    True in-place (``a *= b``) would require a CuPy ndarray subclass with an
+    ``__imul__`` method; the public API therefore exposes this alias instead.
+    ``out`` must be a CuPy array whose shape equals the broadcast result
+    shape and whose dtype equals the promoted dtype of ``a`` and ``b``.
+    """
+    if out is None:
+        raise TypeError("multiply_into requires an 'out' buffer")
+    return multiply(a, b, out=out)
 
 
 # CPU operations have an independent optional Rust backend. GPU entry points

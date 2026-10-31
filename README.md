@@ -164,7 +164,8 @@ examples, overflow behavior, prerequisites, and validation commands.
 
 | Function | Description |
 | --- | --- |
-| `multiply(a, b)` | Cayley-Dickson product; last axis = algebra dimension `2^n`, leading axes batched + broadcast |
+| `multiply(a, b, out=None, stream=None)` | Cayley-Dickson product; last axis = algebra dimension `2^n`, leading axes batched + broadcast. `out` reuses a caller-allocated buffer; `stream` selects the CUDA stream |
+| `multiply_into(a, b, out)` | Explicit alias for `multiply(a, b, out=out)`; unambiguous in-place intent |
 | `conjugate(a)` | Standard basis conjugation `(a0, −a1, …, −a_{n−1})` |
 | `norm_sq(a)` | Sum of coefficient squares over the last axis |
 | `inverse(a)` | `conjugate(a) / norm_sq(a)`; raises on zero norm, warns at dimensions ≥ 16 |
@@ -177,7 +178,7 @@ examples, overflow behavior, prerequisites, and validation commands.
 | `imag(a)` | Copy with `e0` set to zero, preserving the algebra axis |
 | `library_path()` | Path of the loaded `cuda_kernel.so` |
 | `loaded()` | `True` once the kernel library has been found |
-| `abi_version()` | Kernel ABI version (`0` = no kernel library, `1` = legacy, `2` = current) |
+| `abi_version()` | Kernel ABI version (`0` = no kernel library, `1` = legacy, `2` = batched, `3` = +conjugate/norm_sq) |
 | `twist(r, c)` | Exact CPU basis sign; nonnegative, zero-based integer indices |
 | `basis(r, c)` | Exact CPU basis product; nonzero, signed one-based integer labels |
 | `twist_many(pairs)`, `basis_many(pairs)` | Ordered CPU batch operations for iterables of pairs |
@@ -204,7 +205,8 @@ hold. The warning applies to all inputs at these dimensions; it is not a
 zero-divisor detector. Division computes the stated ordered products.
 
 ```python
-from CayleyKernel import conjugate, norm_sq, inverse, exp, real, imag
+from CayleyKernel import multiply, multiply_into, conjugate, norm_sq, inverse, exp, real, imag
+import cupy as cp
 
 q = [1.0, 2.0, 3.0, 4.0]
 assert norm_sq(q) == 30.0
@@ -212,7 +214,48 @@ assert conjugate(q) == [1.0, -2.0, -3.0, -4.0]
 assert imag(q) == [0.0, 2.0, 3.0, 4.0]
 q_inverse = inverse(q)
 q_exponential = exp(q)
+
+# Buffer reuse in a tight loop: no per-iteration allocation
+a = cp.random.rand(8, dtype=cp.float32)
+b = cp.random.rand(8, dtype=cp.float32)
+c = cp.empty(8, dtype=cp.float32)
+for i in range(1000):
+    multiply_into(a, b, c)        # equivalent to multiply(a, b, out=c)
+
+# Custom CUDA stream
+with cp.cuda.stream(cp.cuda.Stream(non_blocking=True)):
+    multiply(a, b)                # or pass stream=...
 ```
+
+### Diagnostics
+
+Three read-only helpers are exposed for debugging integration issues. They
+are always importable (they do not require CUDA) and are listed in
+`dir(CayleyKernel)` / `__all__` so that tab completion finds them.
+
+```python
+import CayleyKernel as ck
+
+ck.loaded()          # -> bool; True once cuda_kernel.so is found and loaded
+ck.library_path()    # -> str | None; absolute path of the loaded shared object
+ck.abi_version()     # -> int; 0 = no library, 1 = legacy, 2 = batched,
+                     #         3 = +conjugate/norm_sq entry points
+```
+
+A typical debugging snippet when a kernel call raises an unexpected error:
+
+```python
+print("kernel loaded:", ck.loaded())
+print("library path:", ck.library_path())
+print("abi version:", ck.abi_version())
+```
+
+If `ck.loaded()` is `False`, build the kernel (`make kernel`) and restart
+Python.  If `abi_version()` is `1` or `2`, the loaded shared object is older
+than the current source and is missing the `conjugate_<type>` / `norm_sq_<type>`
+entry points used by the GPU-dispatched algebra helpers; rebuild with
+`make kernel` to upgrade.
+
 
 ### CPU basis operations
 
