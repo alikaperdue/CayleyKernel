@@ -241,11 +241,11 @@ def test_broadcast_3d_stack_against_vector():
 
 
 # ---------------------------------------------------------------------------
-# Batch size larger than the CUDA grid.y cap (65535) -> grid-stride path
+# Batch size larger than the legacy CUDA grid.y cap (65535)
 # ---------------------------------------------------------------------------
 def test_batch_exceeds_max_grid_y():
     dim = 4
-    batch = 70000  # > 65535, forces the grid-stride loop in the kernel
+    batch = 70000  # Regression for batches above the old y-axis grid limit.
     A = cp.random.randn(batch, dim).astype(cp.float32)
     B = cp.random.randn(batch, dim).astype(cp.float32)
     got = multiply(A, B)

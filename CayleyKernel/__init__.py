@@ -306,6 +306,11 @@ def _broadcast_shapes(shapes):
 
 def _launch(kernel_pair, a, b, o, dim, batch):
     """Run the kernel over ``batch`` contiguous vectors of length ``dim``."""
+    block_size = os.environ.get("CAYLEY_KERNEL_BLOCK_SIZE")
+    if block_size is not None and block_size not in ("32", "64", "128", "256", "512", "1024"):
+        raise ValueError(
+            "CAYLEY_KERNEL_BLOCK_SIZE must be one of 32, 64, 128, 256, 512, 1024"
+        )
     legacy_fn, nd_fn = kernel_pair
 
     if nd_fn is not None:

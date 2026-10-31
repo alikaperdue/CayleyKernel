@@ -43,7 +43,7 @@ def test_baseline_rejects_wrong_device_and_inconsistent_samples():
         bs.validate_baseline(bad, bad['environment'])
     bad = copy.deepcopy(report)
     del bad['cases']['single_2pow20']
-    with pytest.raises(ValueError, match='all four'):
+    with pytest.raises(ValueError, match='all configured'):
         bs.validate_baseline(bad, bad['environment'])
 
 
@@ -118,7 +118,7 @@ def test_legacy_timing_protocol_requires_new_recording():
 def test_recording_requires_complete_workloads_and_never_overwrites(tmp_path, monkeypatch):
     path = tmp_path / 'reference.json'
     session = bs.BenchmarkSession(fake_gpu(monkeypatch), record=path)
-    with pytest.raises(ValueError, match='all four'):
+    with pytest.raises(ValueError, match='all configured'):
         session.finish()
     assert not path.exists()
     session.report['cases'] = reference()['cases']

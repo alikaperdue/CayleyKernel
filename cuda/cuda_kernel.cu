@@ -22,17 +22,15 @@
 
 #include <cuda_runtime.h>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <device_launch_parameters.h>
 #include <cuComplex.h>
 #include <cuda_fp16.h>
 #include <cuda_bf16.h>
 
-//const int threads_per_block = 256;
-const int threads_per_block = 1024;
-
-// CUDA allows at most 65535 blocks in the .y grid dimension, so the batch axis
-// is walked with a grid-stride loop.
-const int max_grid_y = 65535;
+// Bound the number of resident work tiles; all batch sizes use grid strides.
+constexpr int max_work_blocks = 65535;
 
 // Bool accumulates in int; FP16/BF16 use float to avoid repeated low-precision
 // rounding. Other types accumulate in their own type.
@@ -115,61 +113,107 @@ int cayley_sign(int r, int c) {
     ) & 1;
 }
 
-// 1. One template to rule them all
-//    x = blockIdx.x/threadIdx.x -> component (column) index inside one vector
-//    y = blockIdx.y             -> batch index (grid-stride)
-template <typename T>
-__global__ void mult_kernel(const T* __restrict__ a,
-                            const T* __restrict__ b,
-                                  T* __restrict__ out,
-                            int dim,
-                            long long batch) {
+// Flatten batch and component axes so a block can process multiple vectors.
+// Block-size specializations give the compiler the actual launch bound rather
+// than imposing a 1024-thread register budget on every launch.
+template <typename T, int Threads>
+__global__ __launch_bounds__(Threads, 1)
+void mult_kernel(const T* __restrict__ a, const T* __restrict__ b,
+                 T* __restrict__ out, int dim, long long total) {
     typedef typename accum_traits<T>::type Acc;
     typedef arithmetic_traits<Acc> Ops;
-
-    int index = blockIdx.x * blockDim.x + threadIdx.x;
-    if (index >= dim) return;
-
-    for (long long item = blockIdx.y; item < batch; item += gridDim.y) {
-        const long long offset = item * (long long)dim;
-        const T* a_vec = a + offset;
-        const T* b_vec = b + offset;
-        T* out_vec   = out + offset;
-
+    const long long stride = (long long)gridDim.x * Threads;
+    for (long long pos = (long long)blockIdx.x * Threads + threadIdx.x;
+         pos < total; pos += stride) {
+        const int index = pos % dim;
+        const long long offset = pos - index;
         Acc acc = Ops::zero();
-
-        for (int row = 0; row < dim; row++) {
-	    int col = index ^ row;
-            const Acc term = Ops::mul(Acc(a_vec[row]), Acc(b_vec[col]));
-            cayley_sign(row, col) ?
-                Ops::add(acc, term) :
-                Ops::sub(acc, term) ;
+        for (int row = 0; row < dim; ++row) {
+            const int col = index ^ row;
+            const Acc term = Ops::mul(Acc(a[offset + row]), Acc(b[offset + col]));
+            cayley_sign(row, col) ? Ops::add(acc, term) : Ops::sub(acc, term);
         }
-
-        out_vec[index] = static_cast<T>(acc);
+        out[pos] = static_cast<T>(acc);
     }
 }
 
-// Shared launch helper: sizes the grid over both the component axis and the
-// batch axis.
+// For dim <= 16, each tile contains Threads/dim complete vectors. Load each
+// input coefficient once per tile and reuse it for all outputs in that vector.
+// Threads and dim are powers of two, so no vector crosses a tile boundary.
+template <typename T, int Threads>
+__global__ __launch_bounds__(Threads, 1)
+void mult_small_kernel(const T* __restrict__ a, const T* __restrict__ b,
+                       T* __restrict__ out, int dim, long long total) {
+    __shared__ T a_tile[Threads];
+    __shared__ T b_tile[Threads];
+    typedef typename accum_traits<T>::type Acc;
+    typedef arithmetic_traits<Acc> Ops;
+    const int lane = threadIdx.x;
+    const int index = lane % dim;
+    const int base = lane - index;
+    const long long stride = (long long)gridDim.x * Threads;
+    // Every thread participates in both barriers, including partial tiles.
+    for (long long tile = (long long)blockIdx.x * Threads;
+         tile < total; tile += stride) {
+        const long long pos = tile + lane;
+        if (pos < total) {
+            a_tile[lane] = a[pos];
+            b_tile[lane] = b[pos];
+        }
+        __syncthreads();
+        if (pos < total) {
+            Acc acc = Ops::zero();
+            for (int row = 0; row < dim; ++row) {
+                const int col = index ^ row;
+                const Acc term = Ops::mul(Acc(a_tile[base + row]),
+                                          Acc(b_tile[base + col]));
+                cayley_sign(row, col) ? Ops::add(acc, term) : Ops::sub(acc, term);
+            }
+            out[pos] = static_cast<T>(acc);
+        }
+        __syncthreads();
+    }
+}
+
+// Read on each call so tuning does not require restarting Python. Python
+// rejects invalid values; direct legacy C callers fall back to the heuristic.
+static int launch_threads(int dim, long long total) {
+    const char* value = std::getenv("CAYLEY_KERNEL_BLOCK_SIZE");
+    if (value) {
+        const char* names[] = {"32", "64", "128", "256", "512", "1024"};
+        for (int slot = 0; slot < 6; ++slot)
+            if (std::strcmp(value, names[slot]) == 0) return 32 << slot;
+    }
+    int threads = dim <= 16 ? 128 : 256;
+    while (threads > 32 && total <= threads / 2) threads /= 2;
+    return threads;
+}
+
+template <typename T, int Threads>
+static void launch_sized(const T* a, const T* b, T* o, int dim, long long total) {
+    const long long needed = (total - 1) / Threads + 1;
+    const unsigned int blocks = (unsigned int)(needed < max_work_blocks
+                                               ? needed : max_work_blocks);
+    if (dim <= 16)
+        mult_small_kernel<T, Threads><<<blocks, Threads>>>(a, b, o, dim, total);
+    else
+        mult_kernel<T, Threads><<<blocks, Threads>>>(a, b, o, dim, total);
+}
+
 template <typename T>
 static void launch_mult(const T* a, const T* b, T* o, int dim, long long batch) {
     if (dim <= 0 || batch <= 0) return;
-
-    // Do not spawn 1024 threads for a 4-component vector.
-    int threads = threads_per_block;
-    if (dim < threads_per_block) {
-        threads = ((dim + 31) / 32) * 32;
-        if (threads < 32) threads = 32;
+    const long long total = batch * (long long)dim;
+    switch (launch_threads(dim, total)) {
+#define LAUNCH_CASE(N) case N: launch_sized<T, N>(a, b, o, dim, total); break;
+        LAUNCH_CASE(32)
+        LAUNCH_CASE(64)
+        LAUNCH_CASE(128)
+        LAUNCH_CASE(256)
+        LAUNCH_CASE(512)
+        LAUNCH_CASE(1024)
+#undef LAUNCH_CASE
     }
-
-    unsigned int grid_x = (unsigned int)((dim + threads - 1) / threads);
-    unsigned int grid_y = (unsigned int)(batch < (long long)max_grid_y ? batch : (long long)max_grid_y);
-
-    dim3 grid(grid_x, grid_y, 1);
-    dim3 block((unsigned int)threads, 1, 1);
-
-    mult_kernel<T><<<grid, block>>>(a, b, o, dim, batch);
     cudaDeviceSynchronize();
 }
 

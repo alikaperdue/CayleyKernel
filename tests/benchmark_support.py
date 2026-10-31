@@ -4,6 +4,7 @@ import hashlib
 from datetime import datetime, timezone
 import json
 import math
+import os
 from pathlib import Path
 import platform
 import statistics
@@ -26,6 +27,10 @@ CASE_SHAPES = {
     "batch_1024_dim16": [1024, 16],
     "batch_16_dim1024": [16, 1024],
     "batch_1024_dim1024": [1024, 1024],
+    "batch_4096_dim8": [4096, 8],
+    "batch_16384_dim16": [16384, 16],
+    "batch_65535_dim16": [65535, 16],
+    "batch_70000_dim4": [70000, 4],
 }
 
 
@@ -37,7 +42,7 @@ def validate_baseline(report, environment):
     if mismatch:
         raise ValueError("Baseline environment differs: " + ", ".join(mismatch))
     if set(report.get("cases", {})) != set(CASE_SHAPES):
-        raise ValueError("Baseline must contain all four workloads.")
+        raise ValueError("Baseline must contain all configured workloads; record a new baseline.")
     for name, shape in CASE_SHAPES.items():
         case = report["cases"][name]
         samples = case.get("samples_seconds", [])
@@ -88,6 +93,7 @@ def provenance():
         "git_head": git("rev-parse", "HEAD"),
         "working_tree_dirty": bool(git("status", "--porcelain")),
         "kernel_abi": ck.abi_version(),
+        "launch_block_size": os.environ.get("CAYLEY_KERNEL_BLOCK_SIZE", "auto"),
         "sha256": {label(p):
                    hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
     }

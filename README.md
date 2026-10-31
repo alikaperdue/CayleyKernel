@@ -71,7 +71,43 @@ both your GPU and toolkit, for example:
 make kernel ARCHS="sm_80"  # example for an sm_80 GPU
 ```
 
-For AMD HIP/ROCm, use a ROCm-compatible CuPy environment and `make kernel-amd`.
+AMD HIP/ROCm is experimental and must be built separately with
+`make kernel-amd` in a ROCm-compatible CuPy environment. This target writes
+`CayleyKernel/cuda_kernel.so`, the filename the wrapper loads, replacing any
+NVIDIA build at that path. There is no automatic CUDA/ROCm probing or OpenCL
+backend. The HIP kernel does not include the CUDA launch tuning below or BF16
+support; rebuild with `make kernel` when returning to NVIDIA.
+
+CUDA launch tuning:
+
+```bash
+CAYLEY_KERNEL_BLOCK_SIZE=512 python3 your_script.py
+```
+
+The optional override accepts `32`, `64`, `128`, `256`, `512`, or `1024`
+threads and is read on every multiplication. Invalid values raise `ValueError`
+in Python; direct C callers fall back to the default. With the variable unset,
+the heuristic uses 128 threads for dimensions up to 16 and 256 otherwise,
+reducing to as few as 32 threads for small workloads. These are starting
+points, not a measured autotuner: benchmark your dimensions, batch sizes and
+dtypes on your GPU before choosing an override. The benchmark suite now also
+covers batches of 4096, 16384, 65535 and 70000 small vectors; record a new
+baseline under a new filename because older baselines lack these cases.
+Rebuild the CUDA library to use these settings; older libraries ignore the
+override.
+
+Blocks cover a flattened batch/component axis, packing multiple vectors per
+block where possible. All batch sizes use a grid-stride loop, capped at 65535
+work blocks. Dimensions up to 16 reuse both input vectors through shared
+memory. Each block-size specialization has `__launch_bounds__(block_size, 1)`;
+more aggressive occupancy hints need measurements before adoption.
+
+FP32 retains its existing arithmetic. No `CAYLEY_KERNEL_TF32` switch is
+provided: TF32 throughput comes from Tensor Core matrix operations, and
+rounding scalar inputs to TF32 or BF16 does not turn this kernel into a
+Tensor Core implementation. A future reduced-precision path needs a separate
+matrix formulation and accuracy/performance validation. See
+[NVIDIA’s TF32 explanation](https://developer.nvidia.com/blog/accelerating-ai-training-with-tf32-tensor-cores/).
 
 To build a wheel containing the compiled kernel:
 
