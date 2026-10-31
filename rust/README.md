@@ -17,10 +17,15 @@ run from the repository root:
 
 ```sh
 python -m pip install ./rust
-# Optional: install the main Python wrapper without downloading GPU dependencies
-python -m pip install --no-deps -e .
+# Install the main Python wrapper and declare the Rust dependency
+python -m pip install -e ".[rust]"
 python -c "from CayleyKernel import cpu_backend; print(cpu_backend())"
 ```
+
+Prebuilt companion wheels are built for Linux x86_64, macOS arm64, and
+Windows x86_64 on Python 3.10–3.14. See the main
+[wheel installation guide](../docs/building.md) for release downloads and the
+`cayley-kernel[rust]` extra. A source installation requires a Rust toolchain.
 
 The extension is distributed separately as `cayley-kernel-rust` and imports as
 `cayley_kernel_rust`. Building from source requires Rust; using a built wheel does

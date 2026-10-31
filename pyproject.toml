@@ -26,21 +26,27 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: CUDA",
     "Topic :: Scientific/Engineering :: Mathematics",
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
     "numpy",
-    "cupy",
 ]
 
 [project.optional-dependencies]
-bfloat16 = ["ml_dtypes>=0.5", "numpy>=2.1.2", "cupy>=14"]
+rust = ["cayley-kernel-rust==0.1.0"]
+cuda11 = ["cupy-cuda11x>=13,<14"]
+cuda12 = ["cupy-cuda12x>=13"]
+bfloat16 = ["ml_dtypes>=0.5", "numpy>=2.1.2", "cupy-cuda12x>=14"]
 test = [
     "pytest",
 ]

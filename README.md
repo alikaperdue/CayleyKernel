@@ -46,6 +46,10 @@ octonions onward. The GPU evaluates the product in a single kernel launch:
 
 ## Installation
 
+The release workflow builds CPU/Rust wheels for Linux, macOS, and Windows, plus
+Linux CUDA wheels for cu118/cu120/cu121. See [release wheel installation](docs/building.md#release-wheels-and-cpu-installations)
+for downloads, platform coverage, and the `rust`, `cuda11`, and `cuda12` extras.
+
 ### Build from source
 
 Dense CUDA multiplication requires an NVIDIA GPU, the CUDA toolkit (`nvcc`
@@ -58,7 +62,8 @@ SciPy and SymPy.
 git clone https://github.com/alikaperdue/CayleyKernel.git
 cd CayleyKernel
 
-python3 -m pip install -e '.[test]' scipy sympy
+# Select cuda11 for CUDA 11.8, or cuda12 for CUDA 12.x.
+python3 -m pip install -e '.[test,cuda12]' scipy sympy
 make kernel                 # compile cuda/cuda_kernel.cu -> CayleyKernel/cuda_kernel.so
 make test                   # run the default suite, excluding slow tests
 ```
@@ -212,11 +217,10 @@ q_exponential = exp(q)
 ### CPU basis operations
 
 `twist` and `basis` work without CUDA, NumPy, or CuPy. From a source checkout,
-install the package without its GPU dependencies if only these operations
-are needed:
+install the package with its default CPU dependencies:
 
 ```bash
-python3 -m pip install --no-deps -e .
+python3 -m pip install -e .
 ```
 
 ```python
@@ -242,17 +246,21 @@ make test-cpu
 
 The sparse CPU operations used by the research scripts can use a Rust extension
 while retaining arbitrary-size integer indices. Dense CUDA/HIP products keep
-their existing implementation. With a stable Rust toolchain installed:
+their existing implementation. With a Rust toolchain installed, run from a
+source checkout:
 
 ```bash
 python3 -m pip install ./rust
+python3 -m pip install -e '.[rust]'
 python3 -c "from CayleyKernel import cpu_backend; print(cpu_backend())"
 ```
 
 Rust is selected automatically when installed; Python remains the fallback.
 Set `CAYLEY_KERNEL_CPU_BACKEND=python` or `rust` before starting Python to select
 explicitly. The separate extension is optional and does not change the main
-package's build requirements. See [Rust setup, API, and verification](rust/README.md)
+package's build requirements. Release installations can use the `rust` extra
+to resolve a prebuilt companion wheel; see [release wheel installation](docs/building.md).
+See [Rust setup, API, and verification](rust/README.md)
 for CPU-only installation, input conventions, and reproducible benchmarks.
 
 ## Repository layout
