@@ -10,8 +10,6 @@ import random
 from statistics import median
 from time import perf_counter
 
-LEVELS = 4,8,12,16,20
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -63,7 +61,8 @@ def compare(functions, repeats, count):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--bits", type=positive, nargs="+", default=[2**p for p in LEVELS])
+    parser.add_argument("--bits", type=positive, nargs="+", default=[32, 64, 65, 128, 129, 256, 257, 1024, 4096])
+    parser.add_argument("--dims", type=positive, nargs="+", default=[2, 8, 32, 128])
     parser.add_argument("--pairs", type=positive, default=128)
     parser.add_argument("--repeats", type=positive, default=3)
     parser.add_argument("--seed", type=int, default=2026)
@@ -94,6 +93,18 @@ def main(argv=None):
             python_us, rust_us = compare(functions, args.repeats, args.pairs)
             print(f"{bits:9d} {operation:>12} {python_us:12.3f} {rust_us:12.3f} "
                   f"{python_us / rust_us:8.2f}x")
+
+    import numpy as np
+    print("\nDense product: median microseconds per complete product (including conversion)")
+    print(f"{'dim':>9} {'Python us':>12} {'Rust us':>12} {'speedup':>9}")
+    for dim in args.dims:
+        if dim & (dim - 1):
+            parser.error("--dims must be powers of two")
+        a, b = [[rng.uniform(-1, 1) for _ in range(dim)] for _ in range(2)]
+        functions = [lambda backend=backend: backend.cpu_multiply(a, b) for backend in backends]
+        np.testing.assert_array_equal(functions[0](), functions[1]())
+        python_us, rust_us = compare(functions, args.repeats, 1)
+        print(f"{dim:9d} {python_us:12.3f} {rust_us:12.3f} {python_us / rust_us:8.2f}x")
 
 
 if __name__ == "__main__":

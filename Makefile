@@ -52,6 +52,7 @@ rust-check:
 	$(CARGO) fmt --manifest-path rust/Cargo.toml --check
 	$(CARGO) clippy --manifest-path rust/Cargo.toml --locked --all-targets --features python -- -D warnings
 	$(CARGO) test --manifest-path rust/Cargo.toml --locked
+	$(CARGO) check --manifest-path rust/Cargo.toml --locked --no-default-features --features no_std
 
 test-cpu:
 	$(PYTHON) -m pytest -q -m cpu tests/

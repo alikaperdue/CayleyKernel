@@ -43,6 +43,7 @@ __pycache__/
 !/docs/
 /docs/*
 !/docs/building.md
+!/docs/rust-cpu-benchmarks.md
 !/docs/papers/
 /docs/papers/**
 !/docs/papers/**/

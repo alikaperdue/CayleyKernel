@@ -36,6 +36,15 @@ jobs:
         run: cargo fmt --manifest-path rust/Cargo.toml --check
       - name: Test standalone Rust library
         run: cargo test --manifest-path rust/Cargo.toml --locked
+      - name: Check no_std library
+        run: cargo check --manifest-path rust/Cargo.toml --locked --no-default-features --features no_std
+      - name: Test no_std library
+        run: cargo test --manifest-path rust/Cargo.toml --locked --no-default-features --features no_std
+      - name: Check no_std WebAssembly library
+        if: runner.os == 'Linux'
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo check --manifest-path rust/Cargo.toml --locked --no-default-features --features no_std --target wasm32-unknown-unknown
       - name: Install optional Rust extension
         run: python -m pip install ./rust
       - name: Lint Rust and Python bindings

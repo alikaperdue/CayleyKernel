@@ -71,6 +71,7 @@ __all__ = [
     "twist_many",
     "basis_many",
     "cpu_backend",
+    "cpu_multiply",
 ]
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -590,7 +591,7 @@ def multiply_into(a, b, out):
 # and their CuPy/ctypes ABI remain unchanged.
 # basis/basis_many multiply signed one-based basis labels (zero is invalid),
 # using _python_basis from _cpu.py when the Rust backend is unavailable.
-from ._cpu import basis, basis_many, cpu_backend, twist, twist_many
+from ._cpu import basis, basis_many, cpu_backend, cpu_multiply, twist, twist_many
 
 # Preserve the existing Python reference entry points without duplicating logic.
 from ._cpu import _python_twist as py_sign, _python_multiply as py_multiply

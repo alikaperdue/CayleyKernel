@@ -171,3 +171,21 @@ def basis_many(pairs):
     if _native is not None:
         return _native.basis_many(pairs)
     return [_python_basis(r, c) for r, c in pairs]
+
+
+def cpu_multiply(a, b):
+    """Multiply equal power-of-two real vectors, returning a float64 NumPy array.
+
+    Uses the selected CPU backend; py_multiply remains the Python reference.
+    """
+    import numpy as np
+
+    a, b = np.asarray(a), np.asarray(b)
+    if np.iscomplexobj(a) or np.iscomplexobj(b):
+        raise TypeError("Inputs must be real coefficient vectors")
+    a, b = a.astype(np.float64, copy=False), b.astype(np.float64, copy=False)
+    if a.ndim != 1 or b.ndim != 1:
+        raise ValueError("Inputs must be one-dimensional real coefficient vectors")
+    if _native is None or not hasattr(_native, "multiply"):
+        return _python_multiply(a, b)
+    return np.asarray(_native.multiply(a.tolist(), b.tolist()), dtype=np.float64)

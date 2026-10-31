@@ -6,6 +6,7 @@ from pathlib import Path
 import random
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import pytest
 
@@ -53,7 +54,7 @@ def test_exhaustive_signed_basis(cpu):
 
 def test_word_boundaries_and_random_bigints(cpu):
     rng = random.Random(2026)
-    for bits in (31, 32, 63, 64, 65, 127, 128, 129, 1024, 4096):
+    for bits in (31, 32, 63, 64, 65, 127, 128, 129, 191, 192, 255, 256, 257, 1024, 4096):
         top = 1 << (bits - 1)
         pairs = [(0, top), (top, 0), (top, top), (top, top - 1),
                  ((1 << bits) - 1, top), (top + 1, top + 2),
@@ -170,3 +171,62 @@ def test_native_rejects_invalid_labels():
     # The public wrapper separately guarantees ValueError before conversion.
     with pytest.raises((ValueError, OverflowError)):
         native.twist(-1, 2)
+
+
+@pytest.mark.parametrize("dim", [1, 2, 4, 8, 16, 32, 64])
+def test_cpu_multiply(cpu, dim):
+    np = pytest.importorskip("numpy")
+    rng = np.random.default_rng(81 + dim)
+    # Non-contiguous views cover conversion; random floats cover summation order.
+    a, b = rng.normal(size=dim * 2)[::2], rng.normal(size=dim)
+    expected = cpu._python_multiply(a, b)
+    for left, right in ((a, b), (a.tolist(), b.tolist())):
+        actual = cpu.cpu_multiply(left, right)
+        assert actual.dtype == np.float64
+        np.testing.assert_array_equal(actual, expected)
+
+
+@pytest.mark.parametrize("a,b", [([], []), ([1, 2], [1]), ([1]*3, [1]*3),
+                                  ([[1, 2]], [[3, 4]]), (1, 2)])
+def test_cpu_multiply_invalid_shapes(cpu, a, b):
+    pytest.importorskip("numpy")
+    with pytest.raises(ValueError):
+        cpu.cpu_multiply(a, b)
+
+
+def test_cpu_multiply_rejects_complex(cpu):
+    pytest.importorskip("numpy")
+    with pytest.raises(TypeError, match="real"):
+        cpu.cpu_multiply([1j], [1])
+
+
+def test_native_multiply():
+    native = pytest.importorskip("cayley_kernel_rust")
+    if not hasattr(native, "multiply"):
+        message = (
+            "Installed Rust extension predates multiply; rebuild with "
+            "'python -m pip install --force-reinstall ./rust'"
+        )
+        if os.environ.get("CAYLEY_TEST_REQUIRE_RUST") == "1":
+            pytest.fail(message)
+        pytest.skip(message)
+    assert native.multiply([3, 4], [1, 2]) == [-5.0, 10.0]
+    for a, b in (([], []), ([1, 2], [1]), ([1]*3, [1]*3)):
+        with pytest.raises(ValueError, match="same power-of-two length"):
+            native.multiply(a, b)
+
+
+def test_cpu_multiply_with_older_extension(cpu, monkeypatch):
+    np = pytest.importorskip("numpy")
+    monkeypatch.setattr(cpu, "_native", SimpleNamespace(twist=cpu._python_twist))
+    assert cpu.cpu_backend() == "rust"
+    assert cpu.twist(3, 6) == doubling_sign(3, 6)
+    np.testing.assert_array_equal(cpu.cpu_multiply([3, 4], [1, 2]), [-5.0, 10.0])
+    with pytest.raises(ValueError, match="same power-of-two length"):
+        cpu.cpu_multiply([1, 2], [1])
+
+
+def test_cpu_multiply_export():
+    import CayleyKernel as ck
+    assert "cpu_multiply" in ck.__all__
+    assert ck.cpu_multiply([3, 4], [1, 2]).tolist() == [-5.0, 10.0]

@@ -303,8 +303,10 @@ Set `CAYLEY_KERNEL_CPU_BACKEND=python` or `rust` before starting Python to selec
 explicitly. The separate extension is optional and does not change the main
 package's build requirements. Release installations can use the `rust` extra
 to resolve a prebuilt companion wheel; see [release wheel installation](docs/building.md).
-See [Rust setup, API, and verification](rust/README.md)
-for CPU-only installation, input conventions, and reproducible benchmarks.
+Dense real CPU products are available as `CayleyKernel.cpu_multiply(a, b)` using
+NumPy `float64` output and the selected optional Rust backend. See the
+[Rust backend guide](rust/README.md) for fixed-width acceleration, `no_std`/WASM
+builds, wheel commands, and benchmarks.
 
 ## Repository layout
 

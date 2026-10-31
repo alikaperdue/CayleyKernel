@@ -9,14 +9,16 @@ repository = "https://github.com/alikaperdue/CayleyKernel"
 
 [lib]
 name = "cayley_kernel_rust"
-crate-type = ["rlib", "cdylib"]
+# Maturin requests cdylib explicitly; rlib also builds on no_std targets.
+crate-type = ["rlib"]
 
 [features]
 default = []
-python = ["dep:pyo3"]
+no_std = []
+python = ["dep:pyo3", "num-bigint/std"]
 
 [dependencies]
-num-bigint = "0.4.6"
+num-bigint = { version = "0.4.6", default-features = false }
 pyo3 = { version = "0.27.2", optional = true, features = ["num-bigint"] }
 
 [profile.release]
