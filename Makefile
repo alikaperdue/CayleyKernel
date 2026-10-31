@@ -15,6 +15,7 @@
 #   make rust-install    install the optional Rust CPU extension
 #   make rust-check      format/lint checks and standalone Rust tests
 #   make test-cpu        run CPU tests without requiring a GPU runtime
+#   make test-papers     opt-in paper-reproduction suite
 #   make wheel           build a redistributable wheel (bundles the kernel)
 #   make clean           remove build artifacts and compiled binaries
 
@@ -41,7 +42,7 @@ ARCHS ?= sm_75 sm_80 sm_86 sm_89 sm_90 sm_100 sm_110 sm_120
 NVCC_GENCODES := $(foreach a,$(ARCHS),-gencode arch=compute_$(subst sm_,,$(a)),code=$(a))
 
 .PHONY: all kernel kernel-amd sign-check test test-all test-sparse-zd zd-showcase wheel clean
-.PHONY: rust-install rust-check test-cpu benchmark benchmark-record
+.PHONY: rust-install rust-check test-cpu test-papers benchmark benchmark-record
 
 # The optional CPU extension is packaged separately; ordinary Python/GPU
 # installations never need a Rust toolchain.
@@ -56,6 +57,9 @@ rust-check:
 
 test-cpu:
 	$(PYTHON) -m pytest -q -m cpu tests/
+
+test-papers:
+	$(PYTHON) -m pytest -q tests/papers --run-papers
 
 all: kernel
 

@@ -4,6 +4,7 @@
 
 import os
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -25,8 +26,17 @@ except Exception:
 
 import CayleyKernel
 
+_PAPERS_ROOT = Path(__file__).resolve().parent / "papers"
+
+
+def _is_paper(path):
+    path = Path(path).resolve()
+    return path == _PAPERS_ROOT or _PAPERS_ROOT in path.parents
+
 
 def pytest_addoption(parser):
+    parser.addoption("--run-papers", action="store_true",
+                     help="Collect and run optional paper-reproduction tests.")
     timing = parser.getgroup("GPU performance baselines")
     timing.addoption("--run-benchmarks", action="store_true",
                      help="Enable GPU timing tests (also choose record or baseline).")
@@ -64,7 +74,21 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("zd_level", levels, ids=lambda n: "level-%d" % n)
 
 
+def pytest_ignore_collect(collection_path, config):
+    # Avoid importing research dependencies or running module-level setup.
+    if not config.getoption("--run-papers") and _is_paper(collection_path):
+        return True
+    return None
+
+
 def pytest_collection_modifyitems(config, items):
+    for item in items:
+        if _is_paper(item.path):
+            item.add_marker("papers")
+        # Also guard explicitly requested files (which can bypass ignore_collect)
+        # and paper-marked tests outside tests/papers.
+        if item.get_closest_marker("papers") and not config.getoption("--run-papers"):
+            item.add_marker(pytest.mark.skip(reason="opt-in: --run-papers"))
     if not config.getoption("--run-benchmarks"):
         skip = pytest.mark.skip(reason="opt-in: --run-benchmarks plus --benchmark-record or --benchmark-baseline")
         for item in items:
@@ -107,6 +131,7 @@ def pytest_configure(config):
     )
     config.addinivalue_line("markers", "sparse_zd: opt-in CPU sparse zero-divisor checks")
     config.addinivalue_line("markers", "cpu: CPU-only checks without a CUDA runtime")
+    config.addinivalue_line("markers", "papers: opt-in paper reproductions (--run-papers)")
 
 
 @pytest.fixture(autouse=True)

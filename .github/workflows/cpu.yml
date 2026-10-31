@@ -26,8 +26,7 @@ jobs:
           components: rustfmt, clippy
       - name: Install Python tests and package without GPU dependencies
         run: |
-          python -m pip install pytest numpy scipy sympy tzdata
-          python -m pip install --no-deps -e .
+          python -m pip install -e ".[test]" scipy sympy tzdata
       - name: Verify Python fallback before installing Rust
         env:
           CAYLEY_KERNEL_CPU_BACKEND: python
@@ -58,3 +57,7 @@ jobs:
         env:
           CAYLEY_KERNEL_CPU_BACKEND: rust
         run: python -m pytest -q tests/test_sparse_zd.py --run-sparse-zd --zd-levels=4,32,256 --zd-samples=16 --zd-repeats=1
+      - name: Verify optional paper reproductions
+        env:
+          CAYLEY_KERNEL_CPU_BACKEND: rust
+        run: python -m pytest -q -m cpu tests/papers --run-papers

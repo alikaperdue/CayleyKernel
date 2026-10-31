@@ -281,7 +281,7 @@ signed label. Zero is a valid `twist` index and an invalid `basis` label.
 For the CPU test collection, install its dependencies and run:
 
 ```bash
-python3 -m pip install numpy pytest scipy sympy
+python3 -m pip install -e '.[test]' scipy sympy
 make test-cpu
 ```
 
@@ -334,9 +334,13 @@ download a wheel from Releases.
 make test          # default suite, excluding slow tests
 make test-cpu      # CPU-marked checks
 make test-all      # default suite followed by slow tests
+make test-papers   # opt-in paper reproductions
 ```
 
-`test-all` excludes the opt-in sparse zero-divisor and benchmark checks;
+Install `.[test]` to include Hypothesis property tests on the public CPU and
+CUDA multiplication APIs. CPU properties run with both Python and Rust in CI.
+
+`test-all` excludes the opt-in paper, sparse zero-divisor and benchmark checks;
 run `make test-sparse-zd` and `make benchmark` separately to enable them.
 The obsolete `run-native-zd` target has been removed because its C source
 is unavailable. Use `make zd-showcase` for huge-index zero-divisor checks.
@@ -356,6 +360,13 @@ Runtime depends on the selected tests, hardware, and installed dependencies.
 * `benchmark`: GPU timings require `--run-benchmarks` and an explicit baseline
   recording or comparison path. Selecting `-m benchmark` alone does not enable them.
 * `sparse_zd`: additional CPU sparse validation requires `--run-sparse-zd`.
+* `papers`: `tests/papers/` is excluded before import by default. Enable it with
+  `python3 -m pytest -q tests/papers --run-papers` (optionally `-m cpu`). Selecting
+  `-m papers` alone does not enable it. CPU CI runs papers in a separate step.
+
+Linux/macOS/Windows CPU and Rust CI is automatic. The [CUDA CI workflow](.github/workflows/gpu.yml)
+compares eight GPU workloads against a [committed measured reference](tests/baselines/README.md)
+with 20% tolerance; it requires provisioning a matching self-hosted GPU runner.
 
 Details and commands for [GPU performance baselines, huge-index showcases,
 and sparse zero-divisor validation](docs/testing.md) are documented separately.

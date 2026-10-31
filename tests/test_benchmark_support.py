@@ -23,6 +23,14 @@ def reference():
     }
 
 
+def test_committed_baselines_are_complete_and_valid():
+    paths = sorted((bs.ROOT / 'tests' / 'baselines').glob('*.json'))
+    assert paths, 'Commit at least one measured GPU reference'
+    for path in paths:
+        report = json.loads(path.read_text())
+        bs.validate_baseline(report, report['environment'])
+
+
 def test_baseline_rejects_wrong_device_and_inconsistent_samples():
     report = reference()
     bs.validate_baseline(report, report['environment'])

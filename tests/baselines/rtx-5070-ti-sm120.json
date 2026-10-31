@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-10-31T19:11:36.455282+00:00",
+  "protocol": {
+    "warmup": 3,
+    "trials": 5,
+    "statistic": "median",
+    "timer": "synchronized_batched_wall_seconds",
+    "seed": 2026,
+    "target_sample_seconds": 0.1,
+    "max_repetitions": 16384
+  },
+  "environment": {
+    "gpu_name": "NVIDIA GeForce RTX 5070 Ti",
+    "pci_bus_id": "0000:01:00.0",
+    "compute_capability": "120",
+    "cuda_runtime_version": 13020,
+    "cuda_driver_version": 13000,
+    "cupy_version": "14.1.0",
+    "python_version": "3.12.3",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39"
+  },
+  "provenance": {
+    "git_head": "39bef8f41f44da9513e9bb20cd61a69dcc2203c2",
+    "working_tree_dirty": true,
+    "kernel_abi": 3,
+    "launch_block_size": "auto",
+    "sha256": {
+      "cuda/cuda_kernel.cu": "b0fe12679023e201636978cce09d5991d38e6a36e2f0b63b6fd1ac11f3de4739",
+      "CayleyKernel/__init__.py": "6fea53040f1b1333a9e31a26445b70d6091bc08851d02e20e1c2397b72a61e29",
+      "CayleyKernel/cuda_kernel.so": "4cc5466a6eb21c4b68eb49ff34dab5d06e072df808c1fad3462d5ebc0f1700b3"
+    }
+  },
+  "cases": {
+    "single_2pow20": {
+      "shape": [
+        1048576
+      ],
+      "dtype": "float32",
+      "samples_seconds": [
+        2.2032674720103387,
+        2.202018476993544,
+        2.202754123019986,
+        2.2027373110176995,
+        2.2111659919901285
+      ],
+      "repetitions": 1,
+      "median_seconds": 2.202754123019986
+    },
+    "batch_1024_dim16": {
+      "shape": [
+        1024,
+        16
+      ],
+      "dtype": "float32",
+      "samples_seconds": [
+        1.455660046545404e-05,
+        1.4072832520639622e-05,
+        1.4160018920961193e-05,
+        1.4071468871890147e-05,
+        1.4116434449817916e-05
+      ],
+      "repetitions": 8192,
+      "median_seconds": 1.4116434449817916e-05
+    },
+    "batch_16_dim1024": {
+      "shape": [
+        16,
+        1024
+      ],
+      "dtype": "float32",
+      "samples_seconds": [
+        0.00010584185156403692,
+        0.00010477417384890941,
+        0.00010349964748002094,
+        0.0001002740029321103,
+        0.00010025067578567359
+      ],
+      "repetitions": 1024,
+      "median_seconds": 0.00010349964748002094
+    },
+    "batch_1024_dim1024": {
+      "shape": [
+        1024,
+        1024
+      ],
+      "dtype": "float32",
+      "samples_seconds": [
+        0.002173655265778507,
+        0.0021736261405749246,
+        0.0021741455939263687,
+        0.0021742999533671536,
+        0.002173082109493407
+      ],
+      "repetitions": 64,
+      "median_seconds": 0.002173655265778507
+    },
+    "batch_4096_dim8": {
+      "shape": [
+        4096,
+        8
+      ],
+      "dtype": "float32",
+      "samples_seconds": [
+        1.3502672118193004e-05,
+        1.4116656128493332e-05,
+        1.4295064207914265e-05,
+        1.4234688965331088e-05,
+        1.4414301880094627e-05
+      ],
+      "repetitions": 8192,
+      "median_seconds": 1.4234688965331088e-05
+    },
+    "batch_16384_dim16": {
+      "shape": [
+        16384,
+        16
+      ],
+      "dtype": "float32",
+      "samples_seconds": [
+        2.092172131185066e-05,
+        2.0907367186850934e-05,
+        2.0909275146863138e-05,
+        2.1566809568440704e-05,
+        2.172771533182072e-05
+      ],
+      "repetitions": 8192,
+      "median_seconds": 2.092172131185066e-05
+    },
+    "batch_65535_dim16": {
+      "shape": [
+        65535,
+        16
+      ],
+      "dtype": "float32",
+      "samples_seconds": [
+        4.564196753165106e-05,
+        4.551483740300455e-05,
+        4.449401440353995e-05,
+        4.4485062254295826e-05,
+        4.449279980178744e-05
+      ],
+      "repetitions": 4096,
+      "median_seconds": 4.449401440353995e-05
+    },
+    "batch_70000_dim4": {
+      "shape": [
+        70000,
+        4
+      ],
+      "dtype": "float32",
+      "samples_seconds": [
+        1.549327429373193e-05,
+        1.5675143799853686e-05,
+        1.5615494874055003e-05,
+        1.558973767146199e-05,
+        1.5562442381877872e-05
+      ],
+      "repetitions": 8192,
+      "median_seconds": 1.558973767146199e-05
+    }
+  }
+}

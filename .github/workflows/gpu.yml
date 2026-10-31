@@ -1,0 +1,36 @@
+name: CUDA correctness and performance
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  cuda:
+    # Enable only after provisioning a trusted, idle Linux CUDA runner.
+    # Do not execute untrusted pull requests on a self-hosted GPU machine.
+    if: github.event_name == 'workflow_dispatch' || vars.CAYLEY_GPU_CI == 'true'
+    runs-on: [self-hosted, linux, x64, rtx-5070-ti]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.3'
+      - name: Install baseline-compatible Python dependencies
+        run: python -m pip install -e '.[test]' cupy-cuda13x==14.1.0
+      - name: Build the CUDA kernel
+        run: make kernel ARCHS=sm_120
+      - name: Require a working GPU and kernel (never silently skip this job)
+        run: |
+          python -c 'import cupy as cp; import CayleyKernel as ck; assert cp.cuda.runtime.getDeviceCount() > 0; assert ck.loaded(); ck.multiply(cp.ones(2), cp.ones(2))'
+      - name: Check CUDA correctness and generated edge cases
+        run: python -m pytest -q -m 'not slow and not benchmark and not sparse_zd' tests/
+      - name: Compare all timing workloads with the committed reference
+        run: >-
+          python -m pytest -q -s tests/test_benchmark.py --run-benchmarks
+          --benchmark-baseline tests/baselines/rtx-5070-ti-sm120.json
+          --benchmark-max-regression 0.20

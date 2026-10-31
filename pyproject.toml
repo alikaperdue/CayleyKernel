@@ -48,7 +48,8 @@ cuda11 = ["cupy-cuda11x>=13,<14"]
 cuda12 = ["cupy-cuda12x>=13"]
 bfloat16 = ["ml_dtypes>=0.5", "numpy>=2.1.2", "cupy-cuda12x>=14"]
 test = [
-    "pytest",
+    "pytest>=7",
+    "hypothesis>=6",
 ]
 
 [project.urls]
@@ -66,6 +67,7 @@ CayleyKernel = ["*.so"]
 
 [tool.pytest.ini_options]
 markers = [
+    "papers: paper reproductions (opt-in: --run-papers)",
     "sparse_zd: CPU-only sparse zero-divisor validation (opt-in: --run-sparse-zd)",
     "slow: heavy identity/batch tests at 2^20 and above (opt-in: pytest -m slow)",
     "benchmark: GPU timing checks (opt-in: --run-benchmarks with a local baseline)",
