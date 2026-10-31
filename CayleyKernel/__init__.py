@@ -8,7 +8,7 @@ quaternions, octonions, sedenions, ...) on NVIDIA GPUs through a compiled
 CUDA kernel.
 
 The heavy lifting is performed by ``cuda_kernel.so`` (built from
-``cuda/kernel.cu`` via ``make kernel``), loaded with ctypes.  The wrapper:
+``cuda/cuda_kernel.cu`` via ``make kernel``), loaded with ctypes.  The wrapper:
 
   * validates that the algebra dimension is a power of two,
   * supports arbitrary batch shapes ``(B, ..., dim)`` and broadcasting,
@@ -23,7 +23,7 @@ Public API:
     power(a, n), exp(a), inner(a, b), real(a), imag(a)
     library_path()       -- resolved path of the loaded shared object
     loaded()             -- True once the kernel library has been found
-    abi_version()        -- ABI version reported by the kernel (>= 2), or 0
+    abi_version()        -- kernel ABI version (1 for legacy builds), or 0
 """
 
 import ctypes
@@ -42,7 +42,7 @@ try:
 except ImportError:  # pragma: no cover
     np = None
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __all__ = [
     "multiply",
     "conjugate",
@@ -144,7 +144,7 @@ def _require_kernel():
 # and "batch" is the product of all leading (batch) axes.
 #
 # NOTE: the symbol names below are part of the stable ABI; keep them in sync
-# with cuda/kernel.cu and cuda/amd_kernel.cu.
+# with cuda/cuda_kernel.cu and cuda/amd_kernel.cu.
 
 _TYPE_SUFFIXES = (
     "float",     # float32
@@ -267,13 +267,16 @@ def _as_cupy(x, ref_dtype=None):
         return cp.asarray(x)
     # lists, tuples, scalars
     inferred = cp.asarray(x)
-    # Preserve complex coefficients, including when the other operand is real.
-    # Real Python lists retain the historical float32 / reference-dtype policy.
-    if inferred.dtype.kind == "c":
-        dtype = (_result_dtype(cp.dtype(ref_dtype), inferred.dtype)
-                 if ref_dtype is not None else inferred.dtype)
+    # Real lists follow floating/complex reference precision (including BF16).
+    # Integer references and complex lists need promotion to avoid discarding
+    # fractional or imaginary coefficients.
+    if ref_dtype is not None:
+        ref_dtype = cp.dtype(ref_dtype)
+        dtype = (_result_dtype(ref_dtype, inferred.dtype)
+                 if ref_dtype.kind in "biu" or inferred.dtype.kind == "c"
+                 else ref_dtype)
     else:
-        dtype = ref_dtype if ref_dtype is not None else cp.float32
+        dtype = inferred.dtype if inferred.dtype.kind == "c" else cp.float32
     return inferred.astype(dtype, copy=False)
 
 
@@ -350,6 +353,10 @@ def multiply(a, b):
     round once on output. BF16 requires CuPy 14+, ml_dtypes, and a CUDA build.
     Mixed BF16 inputs widen to float32 before CuPy result_type promotion;
     all other mixed inputs follow CuPy result_type promotion directly.
+    A real list as the first operand defaults to float32. As the second
+    operand, it follows a floating/complex first operand's precision, or
+    promotes with an integral first operand to preserve fractional values.
+    Complex lists always promote to preserve imaginary coefficients.
     """
     _require_gpu_runtime()
     _require_kernel()

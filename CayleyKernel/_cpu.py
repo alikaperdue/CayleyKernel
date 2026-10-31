@@ -106,6 +106,10 @@ def _python_muliply_aio(a,b):
     return o
 
 
+# Correct spelling for discovery; retain the original function and name.
+_python_multiply_aio = _python_muliply_aio
+
+
 _requested = os.environ.get("CAYLEY_KERNEL_CPU_BACKEND", "auto").lower()
 if _requested not in ("auto", "python", "rust"):
     raise ValueError("CAYLEY_KERNEL_CPU_BACKEND must be auto, python, or rust")

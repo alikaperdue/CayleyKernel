@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=70.1.0", "wheel"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,8 +10,9 @@ authors = [
     { name = "Alika Perdue", email = "alikaperdue@gmail.com" }
 ]
 readme = "README.md"
-requires-python = ">=3.8"
-license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 keywords = [
     "cayley-dickson",
     "octonions",
@@ -24,11 +25,8 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",

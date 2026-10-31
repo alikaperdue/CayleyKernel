@@ -114,7 +114,7 @@ class WheelMetadataTests(unittest.TestCase):
         if missing:
             self.skipTest(
                 "missing build dependencies: " + ", ".join(sorted(missing))
-                + "; install with: python -m pip install build 'setuptools>=70.1.0' wheel"
+                + "; install with: python -m pip install build 'setuptools>=77.0.3'"
             )
         for native in (False, True):
             with self.subTest(native=native), tempfile.TemporaryDirectory() as temp:

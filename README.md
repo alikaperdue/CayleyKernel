@@ -50,7 +50,7 @@ octonions onward. The GPU evaluates the product in a single kernel launch:
 
 Dense CUDA multiplication requires an NVIDIA GPU, the CUDA toolkit (`nvcc`
 on PATH), and a Python environment with NumPy and a compatible CuPy build.
-The package metadata declares Python ≥ 3.8; dependency versions must also
+The package requires Python ≥ 3.10; dependency versions must also
 support the selected interpreter. Tests need pytest; research suites also use
 SciPy and SymPy.
 
@@ -136,7 +136,7 @@ examples, overflow behavior, prerequisites, and validation commands.
 | `imag(a)` | Copy with `e0` set to zero, preserving the algebra axis |
 | `library_path()` | Path of the loaded `cuda_kernel.so` |
 | `loaded()` | `True` once the kernel library has been found |
-| `abi_version()` | Kernel ABI version (current builds report `2`) |
+| `abi_version()` | Kernel ABI version (`0` = no kernel library, `1` = legacy, `2` = current) |
 | `twist(r, c)` | Exact CPU basis sign; nonnegative, zero-based integer indices |
 | `basis(r, c)` | Exact CPU basis product; nonzero, signed one-based integer labels |
 | `twist_many(pairs)`, `basis_many(pairs)` | Ordered CPU batch operations for iterables of pairs |
@@ -246,6 +246,11 @@ make test          # default suite, excluding slow tests
 make test-cpu      # CPU-marked checks
 make test-all      # default suite followed by slow tests
 ```
+
+`test-all` excludes the opt-in sparse zero-divisor and benchmark checks;
+run `make test-sparse-zd` and `make benchmark` separately to enable them.
+The obsolete `run-native-zd` target has been removed because its C source
+is unavailable. Use `make zd-showcase` for huge-index zero-divisor checks.
 
 The default suite covers small dense products against a recursive reference,
 batching, broadcasting, dtypes, and algebraic identities. Norm multiplicativity

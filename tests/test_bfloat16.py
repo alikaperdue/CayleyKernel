@@ -87,12 +87,15 @@ def test_mixed_promotion(monkeypatch, bf16, other, reverse):
 
 
 @pytest.mark.cpu
-def test_same_dtype_and_lists(monkeypatch, bf16):
+@pytest.mark.parametrize('values', [[1, -2], [1.5, -2.25]])
+def test_same_dtype_and_lists(monkeypatch, bf16, values):
     monkeypatch.setattr(ck, 'cp', np)
     dtype = np.dtype(bf16)
     assert dtype.itemsize == 2
     assert ck._result_dtype(dtype, dtype) == dtype
-    assert ck._as_cupy([1, -2], dtype).dtype == dtype
+    result = ck._as_cupy(values, dtype)
+    assert result.dtype == dtype
+    np.testing.assert_array_equal(result.astype(np.float32), values)
     result = ck._as_cupy([1 + 2j], dtype)
     assert result.dtype.kind == 'c'
     assert result[0] == 1 + 2j

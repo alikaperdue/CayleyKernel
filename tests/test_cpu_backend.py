@@ -144,7 +144,8 @@ def test_python_multiply_against_doubling(cpu, dim):
     expected = [0] * dim
     for r, c in itertools.product(range(dim), repeat=2):
         expected[r ^ c] += doubling_sign(r, c) * a[r] * b[c]
-    for multiply in (cpu._python_multiply, cpu._python_muliply_aio):
+    assert cpu._python_multiply_aio is cpu._python_muliply_aio
+    for multiply in (cpu._python_multiply, cpu._python_multiply_aio):
         result = multiply(a, b)
         assert isinstance(result, np.ndarray)
         assert result.dtype == np.float64

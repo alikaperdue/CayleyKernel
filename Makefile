@@ -8,7 +8,7 @@
 #   make kernel-amd      compile the HIP/ROCm kernel (AMD)
 #   make sign-check      host-side equivalence test of the sign function
 #   make test            run the default pytest suite
-#   make test-all        default + slow suites (GPU timing is separate)
+#   make test-all        default + slow suites (excludes opt-in sparse/timing checks)
 #   make benchmark      opt-in timing comparison against BENCHMARK_BASELINE
 #   make test-sparse-zd  opt-in CPU sparse zero-divisor validation
 #   make zd-showcase     random million-bit zero-divisor confirmations
@@ -26,8 +26,8 @@ CARGO      ?= cargo
 PYTHON     ?= python3
 
 # Compilation flags for native optimizations (Targeting Zen 4 / Ryzen 9)
-CC = gcc
-CFLAGS = -O3 -march=native -Wall
+CC ?= gcc
+CFLAGS ?= -O3 -march=native -Wall
 
 KERNEL_SRC ?= cuda/cuda_kernel.cu
 AMD_SRC    ?= cuda/amd_kernel.cu
@@ -40,7 +40,7 @@ ARCHS ?= sm_75 sm_80 sm_86 sm_89 sm_90 sm_100 sm_110 sm_120
 
 NVCC_GENCODES := $(foreach a,$(ARCHS),-gencode arch=compute_$(subst sm_,,$(a)),code=$(a))
 
-.PHONY: all kernel kernel-amd sign-check test test-all test-sparse-zd zd-showcase wheel clean run-native-zd
+.PHONY: all kernel kernel-amd sign-check test test-all test-sparse-zd zd-showcase wheel clean
 .PHONY: rust-install rust-check test-cpu benchmark benchmark-record
 
 # The optional CPU extension is packaged separately; ordinary Python/GPU
@@ -92,11 +92,6 @@ zd-showcase:
 	python3 scripts/zd_showcase.py --levels=$(ZD_HUGE_LEVELS) \
 	    --witnesses=$(ZD_WITNESSES) --seed=$(ZD_SEED)
 
-run-native-zd: native_tests/aux_zd_limits.c
-	$(CC) $(CFLAGS) native_tests/aux_zd_limits.c -o native_tests/aux_zd_limits
-	./native_tests/aux_zd_limits --levels=100000000000 --witnesses=3
-
-
 test-sparse-zd:
 	python3 -m pytest -q -s tests/test_sparse_zd.py --run-sparse-zd \
 	    --zd-levels=$(ZD_LEVELS) --zd-samples=$(ZD_SAMPLES) --zd-seed=$(ZD_SEED) \
@@ -125,6 +120,5 @@ clean:
 	rm -f $(LIB_NAME) $(SIGN_TOOL)
 	rm -rf build/ dist/ wheelhouse/ *.egg-info CayleyKernel/*.so
 	rm -rf rust/target/ rust/build/ rust/dist/ rust/wheelhouse/ rust/*.egg-info
-	rm -f native_tests/aux_zd_limits
 	find . -type d -name __pycache__ -prune -exec rm -rf {} +
 	rm -rf .pytest_cache/

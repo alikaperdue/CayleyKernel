@@ -38,11 +38,12 @@ def assert_half(actual, expected):
 
 @pytest.mark.cpu
 class TestHalfWrapper:
-    def test_real_list_can_follow_half_operand(self, monkeypatch):
+    @pytest.mark.parametrize('values', [[3, 4], [1.5, -2.25]])
+    def test_real_list_follows_half_operand(self, monkeypatch, values):
         monkeypatch.setattr(ck, 'cp', np)
-        result = ck._as_cupy([1.5, -2.25], np.float16)
+        result = ck._as_cupy(values, np.float16)
         assert result.dtype == np.dtype(np.float16)
-        np.testing.assert_array_equal(result, [1.5, -2.25])
+        np.testing.assert_array_equal(result, values)
 
     def test_complex_list_with_half_operand_keeps_imaginary_parts(self, monkeypatch):
         monkeypatch.setattr(ck, 'cp', np)

@@ -47,11 +47,21 @@ class TestComplexWrapper:
         assert result.dtype.kind == 'c'
         np.testing.assert_array_equal(result, values)
 
-    @pytest.mark.parametrize('ref_dtype', [None, np.float64, np.complex64])
-    def test_real_list_conversion_unchanged(self, monkeypatch, ref_dtype):
+    @pytest.mark.parametrize('ref_dtype', [None, np.float16, np.float32,
+                                         np.float64, np.complex64])
+    def test_real_list_follows_floating_precision(self, monkeypatch, ref_dtype):
         monkeypatch.setattr(ck, 'cp', np)
         result = ck._as_cupy([1, 2], ref_dtype)
-        assert result.dtype == np.dtype(np.float32 if ref_dtype is None else ref_dtype)
+        expected = np.dtype(np.float32 if ref_dtype is None else ref_dtype)
+        assert result.dtype == expected
+
+    @pytest.mark.parametrize('ref_dtype', [np.int64, np.uint32, np.bool_])
+    def test_fractional_list_with_integer_operand(self, monkeypatch, ref_dtype):
+        monkeypatch.setattr(ck, 'cp', np)
+        values = [1.5, 2.5, 3.5]
+        result = ck._as_cupy(values, np.dtype(ref_dtype))
+        assert result.dtype == np.result_type(ref_dtype, np.float64)
+        np.testing.assert_array_equal(result, values)
 
     @pytest.mark.parametrize('shape', [(4,), (2, 3, 4)])
     def test_conjugation_is_basis_conjugation(self, monkeypatch, shape):
