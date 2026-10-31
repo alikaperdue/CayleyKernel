@@ -128,7 +128,7 @@ def _require_kernel():
             "CayleyKernel: kernel shared library 'cuda_kernel.so' "
             "not found.  Build it with:\n"
             "    make kernel            # or: make kernel ARCHS=\"sm_80\"\n"
-            "then restart Python.  (Prebuilt wheels are available from "
+            "then restart Python.  (Check for prebuilt wheels on "
             "GitHub Releases if you prefer not to compile.)"
         )
 

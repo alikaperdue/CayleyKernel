@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Wheel tagging for native libraries loaded through ctypes."""
+"""Thin native-wheel tagging shim; all package metadata lives in pyproject.toml."""
 
 from pathlib import Path
 

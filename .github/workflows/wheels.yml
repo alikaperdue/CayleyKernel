@@ -1,0 +1,133 @@
+name: Release wheels
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/wheels.yml'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'CayleyKernel/**'
+      - 'tests/test_wheel_build.py'
+      - 'rust/**'
+      - 'cuda/**'
+      - 'scripts/build_wheel.sh'
+      - 'Makefile'
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  python-wheel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install build twine 'setuptools>=77.0.3' wheel
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - run: python tests/test_wheel_build.py -v
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-wheel
+          path: dist/*
+
+  rust-wheels:
+    needs: python-wheel
+    name: Rust / ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: PyO3/maturin-action@v1
+        with:
+          command: build
+          args: --release --locked --manifest-path rust/Cargo.toml --interpreter ${{ matrix.python }} --out rust-wheelhouse
+          manylinux: auto
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-wheel
+          path: python-wheelhouse
+      - name: Install wheels with normal dependency resolution
+        shell: bash
+        run: |
+          wheel=$(find python-wheelhouse -name '*.whl' -print -quit)
+          python -m pip install --only-binary=:all: --find-links=rust-wheelhouse "${wheel}[rust]"
+      - name: Verify installed native backend outside the checkout
+        working-directory: ${{ runner.temp }}
+        env:
+          CAYLEY_KERNEL_CPU_BACKEND: rust
+        run: python -c "from CayleyKernel import cpu_backend, basis, twist; assert cpu_backend() == 'rust'; assert basis(2, 2) == -1; assert twist(1, 1) == -1"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rust-${{ matrix.os }}-py${{ matrix.python }}
+          path: rust-wheelhouse/*.whl
+
+  cuda-wheels:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - cuda: 11.8.0
+            variant: cu118
+            archs: sm_75 sm_80 sm_86 sm_89 sm_90
+          - cuda: 12.0.1
+            variant: cu120
+            archs: sm_75 sm_80 sm_86 sm_89 sm_90
+          - cuda: 12.1.1
+            variant: cu121
+            archs: sm_75 sm_80 sm_86 sm_89 sm_90
+    container: nvidia/cuda:${{ matrix.cuda }}-devel-ubuntu22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build tooling
+        run: |
+          apt-get update
+          apt-get install -y python3 python3-pip make patchelf
+          python3 -m pip install build auditwheel wheel twine
+      - name: Compile and repair wheel
+        env:
+          ARCHS: ${{ matrix.archs }}
+        run: bash scripts/build_wheel.sh
+      - name: Give each CUDA variant a unique release filename
+        run: python3 -m wheel tags --build=1${{ matrix.variant }} --remove wheelhouse/*.whl
+      - run: python3 -m twine check wheelhouse/*.whl
+      - name: Verify installed kernel can be loaded without a GPU
+        run: |
+          python3 -m pip install wheelhouse/*.whl
+          cd /tmp
+          python3 -c 'import CayleyKernel as ck; assert ck.loaded(); assert ck.abi_version() >= 1'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cuda-${{ matrix.variant }}-linux-x86_64
+          path: wheelhouse/*.whl
+
+  publish:
+    if: github.event_name == 'release'
+    needs: [python-wheel, rust-wheels, cuda-wheels]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Attach tested distributions to the published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$RELEASE_TAG" release-assets/* --clobber

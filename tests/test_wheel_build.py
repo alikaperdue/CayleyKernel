@@ -1,5 +1,6 @@
 """Build-script regression checks without requiring a CUDA compiler."""
 
+from email.parser import BytesParser
 import importlib.util
 from importlib import metadata as package_metadata
 import os
@@ -133,6 +134,17 @@ class WheelMetadataTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 wheel, = (root / "dist").glob("*.whl")
                 with zipfile.ZipFile(wheel) as archive:
+                    package_path, = [p for p in archive.namelist() if p.endswith(".dist-info/METADATA")]
+                    package = BytesParser().parsebytes(archive.read(package_path))
+                    requirements = [Requirement(value) for value in package.get_all("Requires-Dist", [])]
+                    defaults = {r.name for r in requirements if not r.marker or r.marker.evaluate({"extra": ""})}
+                    self.assertEqual(defaults, {"numpy"})
+                    rust = [r for r in requirements if r.name == "cayley-kernel-rust"]
+                    self.assertEqual(len(rust), 1)
+                    self.assertTrue(rust[0].marker.evaluate({"extra": "rust"}))
+                    self.assertFalse(rust[0].marker.evaluate({"extra": ""}))
+                    self.assertIn("0.1.0", rust[0].specifier)
+                    self.assertIn("Programming Language :: Python :: 3.13", package.get_all("Classifier"))
                     metadata_path, = [p for p in archive.namelist() if p.endswith(".dist-info/WHEEL")]
                     metadata = archive.read(metadata_path).decode()
                     if native:
