@@ -19,6 +19,10 @@ a full dense product therefore requires `O(dim^2)` work.
   and CPU basis operations.
 * The O(1) basis-sign method is based on the paper by [`Maher Ben Abdessalem`](https://figshare.com/articles/preprint/A_Proven_Sign_Law_for_Cayley-Dickson_Algebras_Ordinary_and_Split_Constructions/33705022)
 
+**Contributing:** see [`CONTRIBUTING.md`](CONTRIBUTING.md) for branch naming,
+lint/format entry points, testing, and a step-by-step guide to adding a
+supported dtype.
+
 ---
 
 ## Computation
@@ -159,6 +163,10 @@ basis conjugation does not complex-conjugate those coefficients.
 
 See [coefficient types and precision](docs/precision.md) for promotion rules,
 examples, overflow behavior, prerequisites, and validation commands.
+
+For positioning relative to `scipy.spatial.transform.Rotation`, the `quaternion`
+PyPI package, and the in-repo recursive reference, see
+[positioning and related libraries](docs/comparison.md).
 
 ### API
 
@@ -317,7 +325,7 @@ CayleyKernel/
 │   ├── cuda_kernel.cu       NVIDIA CUDA kernel (primary target)
 │   └── amd_kernel.cu        AMD HIP/ROCm port of the same kernel
 ├── tests/                   pytest suite (reference impl + identities)
-├── docs/                    build, precision, validation, and research docs
+├── docs/                    build, precision, testing, comparison, and research docs
 ├── rust/                    optional CPU basis-operation accelerator
 ├── scripts/build_wheel.sh   kernel -> package -> wheel -> auditwheel
 ├── Makefile                 kernel / test / wheel / clean targets
