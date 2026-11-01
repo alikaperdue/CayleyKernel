@@ -270,6 +270,118 @@ static void launch_mult(const T* a, const T* b, T* o, int dim, long long batch) 
   }
 
 // =============================================================================
+// Fused multiply-add  --  out[i] = sign * sum_row +/- sign_term(c[i])
+//
+//   sign in {-1, +1};  +1 means multiply_add(a, b, c) = a*b + c,  -1 means
+//   multiply_subtract(a, b, c) = a*b - c.  The +/- c[i] term is folded into
+//   the same per-thread accumulator as the dim basis-sign terms so the whole
+//   expression executes in a single kernel launch (no separate add kernel).
+// =============================================================================
+template <typename T, int Threads>
+__global__ __launch_bounds__(Threads, 1) void fma_mult_kernel(const T* __restrict__ a,
+                                                               const T* __restrict__ b,
+                                                               const T* __restrict__ c,
+                                                               T* __restrict__ out, int dim,
+                                                               long long total, int sign) {
+  typedef typename accum_traits<T>::type Acc;
+  typedef arithmetic_traits<Acc> Ops;
+  const long long stride = (long long)gridDim.x * Threads;
+  for (long long pos = (long long)blockIdx.x * Threads + threadIdx.x; pos < total; pos += stride) {
+    const int index = pos % dim;
+    const long long offset = pos - index;
+    Acc acc = Ops::zero();
+    for (int row = 0; row < dim; ++row) {
+      const int col = index ^ row;
+      const Acc term = Ops::mul(Acc(a[offset + row]), Acc(b[offset + col]));
+      cayley_sign(row, col) ? Ops::add(acc, term) : Ops::sub(acc, term);
+    }
+    sign > 0 ? Ops::add(acc, Acc(c[offset + index])) : Ops::sub(acc, Acc(c[offset + index]));
+    out[pos] = static_cast<T>(acc);
+  }
+}
+
+template <typename T, int Threads>
+__global__ __launch_bounds__(Threads, 1) void fma_mult_small_kernel(const T* __restrict__ a,
+                                                                     const T* __restrict__ b,
+                                                                     const T* __restrict__ c,
+                                                                     T* __restrict__ out, int dim,
+                                                                     long long total, int sign) {
+  __shared__ T a_tile[Threads];
+  __shared__ T b_tile[Threads];
+  __shared__ T c_tile[Threads];
+  typedef typename accum_traits<T>::type Acc;
+  typedef arithmetic_traits<Acc> Ops;
+  const int lane = threadIdx.x;
+  const int index = lane % dim;
+  const int base = lane - index;
+  const long long stride = (long long)gridDim.x * Threads;
+  for (long long tile = (long long)blockIdx.x * Threads; tile < total; tile += stride) {
+    const long long pos = tile + lane;
+    if (pos < total) {
+      a_tile[lane] = a[pos];
+      b_tile[lane] = b[pos];
+      c_tile[lane] = c[pos];
+    }
+    __syncthreads();
+    if (pos < total) {
+      Acc acc = Ops::zero();
+      for (int row = 0; row < dim; ++row) {
+        const int col = index ^ row;
+        const Acc term = Ops::mul(Acc(a_tile[base + row]), Acc(b_tile[base + col]));
+        cayley_sign(row, col) ? Ops::add(acc, term) : Ops::sub(acc, term);
+      }
+      sign > 0 ? Ops::add(acc, Acc(c_tile[base + index]))
+               : Ops::sub(acc, Acc(c_tile[base + index]));
+      out[pos] = static_cast<T>(acc);
+    }
+    __syncthreads();
+  }
+}
+
+template <typename T, int Threads>
+static void launch_sized_fma(const T* a, const T* b, const T* c, T* o, int dim, long long total,
+                             int sign) {
+  const long long needed = (total - 1) / Threads + 1;
+  const unsigned int blocks = (unsigned int)(needed < max_work_blocks ? needed : max_work_blocks);
+  if (dim <= 16)
+    fma_mult_small_kernel<T, Threads><<<blocks, Threads>>>(a, b, c, o, dim, total, sign);
+  else
+    fma_mult_kernel<T, Threads><<<blocks, Threads>>>(a, b, c, o, dim, total, sign);
+}
+
+template <typename T>
+static void launch_fma_mult(const T* a, const T* b, const T* c, T* o, int dim, long long batch,
+                            int sign) {
+  if (dim <= 0 || batch <= 0)
+    return;
+  if (sign != -1 && sign != 1)
+    sign = 1;
+  const long long total = batch * (long long)dim;
+  switch (launch_threads(dim, total)) {
+#define LAUNCH_CASE(N)                                          \
+  case N:                                                       \
+    launch_sized_fma<T, N>(a, b, c, o, dim, total, sign);       \
+    break;
+    LAUNCH_CASE(32)
+    LAUNCH_CASE(64)
+    LAUNCH_CASE(128)
+    LAUNCH_CASE(256)
+    LAUNCH_CASE(512)
+    LAUNCH_CASE(1024)
+#undef LAUNCH_CASE
+  }
+  cudaDeviceSynchronize();
+}
+
+// Emits the single fused entry point; the Python wrapper dispatches the same
+// symbol with sign = +1 (add) or sign = -1 (subtract).
+#define DEFINE_FMA_ENTRIES(SUFFIX, TYPE)                                                        \
+  void fma_mult_##SUFFIX(const TYPE* a, const TYPE* b, const TYPE* c, TYPE* o, int dim,         \
+                         long long batch, int sign) {                                           \
+    launch_fma_mult<TYPE>(a, b, c, o, dim, batch, sign);                                        \
+  }
+
+// =============================================================================
 // Conjugate  --  out[i] = -a[i] for i > 0,  out[0] = a[0]
 // =============================================================================
 template <typename T, int Threads>
@@ -390,6 +502,25 @@ DEFINE_MULT_ENTRIES(bfloat16, __nv_bfloat16)
 DEFINE_MULT_ENTRIES(complex64, cuComplex)
 DEFINE_MULT_ENTRIES(complex128, cuDoubleComplex)
 
+// Fused a*b + c / a*b - c kernels, one per supported dtype.  The `sign`
+// argument selects which Python entry point (multiply_add vs.
+// multiply_subtract) the launch came from.
+DEFINE_FMA_ENTRIES(float, float)
+DEFINE_FMA_ENTRIES(double, double)
+DEFINE_FMA_ENTRIES(uint64, uint64_t)
+DEFINE_FMA_ENTRIES(int64, int64_t)
+DEFINE_FMA_ENTRIES(uint32, uint32_t)
+DEFINE_FMA_ENTRIES(int32, int32_t)
+DEFINE_FMA_ENTRIES(int16, int16_t)
+DEFINE_FMA_ENTRIES(uint16, uint16_t)
+DEFINE_FMA_ENTRIES(int8, int8_t)
+DEFINE_FMA_ENTRIES(uint8, uint8_t)
+DEFINE_FMA_ENTRIES(bool, bool)
+DEFINE_FMA_ENTRIES(half, __half)
+DEFINE_FMA_ENTRIES(bfloat16, __nv_bfloat16)
+DEFINE_FMA_ENTRIES(complex64, cuComplex)
+DEFINE_FMA_ENTRIES(complex128, cuDoubleComplex)
+
 // conjugate and norm_sq are emitted only for the dtypes the Python
 // _algebra helpers actually dispatch after their own promotion rules
 // (integer/unsigned -> float64, float16/bfloat16 -> float32, complex
@@ -409,7 +540,8 @@ DEFINE_NORMSQ_ENTRIES(complex128, cuDoubleComplex)
 //   1 -- legacy build (mult only)
 //   2 -- batched _nd entry points + diagnostics
 //   3 -- + conjugate_<type> and norm_sq_<type> entry points
+//   4 -- + fma_mult_<type> entry points (fused a*b + c / a*b - c)
 int cayley_abi_version(void) {
-  return 3;
+  return 4;
 }
 }

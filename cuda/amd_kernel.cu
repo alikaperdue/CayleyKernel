@@ -154,6 +154,79 @@ static void launch_mult(const T* a, const T* b, T* o, int dim, long long batch) 
     launch_mult<TYPE>(a, b, o, dim, batch);                                                  \
   }
 
+// =============================================================================
+// Fused multiply-add  --  out[i] = sign * sum_row +/- sign_term(c[i])
+//
+//   sign in {-1, +1};  +1 means multiply_add(a, b, c) = a*b + c,  -1 means
+//   multiply_subtract(a, b, c) = a*b - c.  The +/- c[i] term is folded into
+//   the same per-thread accumulator as the dim basis-sign terms so the whole
+//   expression executes in a single kernel launch (no separate add kernel).
+// =============================================================================
+template <typename T>
+__global__ void fma_mult_kernel(const T* __restrict__ a, const T* __restrict__ b,
+                                const T* __restrict__ c, T* __restrict__ out, int dim,
+                                long long batch, int sign) {
+  typedef typename accum_traits<T>::type Acc;
+  typedef arithmetic_traits<Acc> Ops;
+
+  int index = blockIdx.x * blockDim.x + threadIdx.x;
+  if (index >= dim)
+    return;
+
+  for (long long item = blockIdx.y; item < batch; item += gridDim.y) {
+    const long long offset = item * (long long)dim;
+    const T* a_vec = a + offset;
+    const T* b_vec = b + offset;
+    const T* c_vec = c + offset;
+    T* out_vec = out + offset;
+
+    Acc acc = Ops::zero();
+
+    for (int row = 0; row < dim; row++) {
+      int col = index ^ row;
+      const Acc term = Ops::mul(Acc(a_vec[row]), Acc(b_vec[col]));
+      cayley_sign(row, col) ? Ops::add(acc, term) : Ops::sub(acc, term);
+    }
+    sign > 0 ? Ops::add(acc, Acc(c_vec[index])) : Ops::sub(acc, Acc(c_vec[index]));
+
+    out_vec[index] = static_cast<T>(acc);
+  }
+}
+
+template <typename T>
+static void launch_fma_mult(const T* a, const T* b, const T* c, T* o, int dim, long long batch,
+                            int sign) {
+  if (dim <= 0 || batch <= 0)
+    return;
+  if (sign != -1 && sign != 1)
+    sign = 1;
+
+  int threads = threads_per_block;
+  if (dim < threads_per_block) {
+    threads = ((dim + 63) / 64) * 64;  // wavefront is 64 on AMD
+    if (threads < 64)
+      threads = 64;
+  }
+
+  unsigned int grid_x = (unsigned int)((dim + threads - 1) / threads);
+  unsigned int grid_y =
+      (unsigned int)(batch < (long long)max_grid_y ? batch : (long long)max_grid_y);
+
+  dim3 grid(grid_x, grid_y, 1);
+  dim3 block((unsigned int)threads, 1, 1);
+
+  fma_mult_kernel<T><<<grid, block>>>(a, b, c, o, dim, batch, sign);
+  hipDeviceSynchronize();
+}
+
+// Emits the single fused entry point; the Python wrapper dispatches the same
+// symbol with sign = +1 (add) or sign = -1 (subtract).
+#define DEFINE_FMA_ENTRIES(SUFFIX, TYPE)                                                        \
+  void fma_mult_##SUFFIX(const TYPE* a, const TYPE* b, const TYPE* c, TYPE* o, int dim,         \
+                         long long batch, int sign) {                                           \
+    launch_fma_mult<TYPE>(a, b, c, o, dim, batch, sign);                                        \
+  }
+
 extern "C" {
 DEFINE_MULT_ENTRIES(float, float)
 DEFINE_MULT_ENTRIES(double, double)
@@ -169,4 +242,31 @@ DEFINE_MULT_ENTRIES(bool, bool)
 DEFINE_MULT_ENTRIES(half, __half)
 DEFINE_MULT_ENTRIES(complex64, hipFloatComplex)
 DEFINE_MULT_ENTRIES(complex128, hipDoubleComplex)
+
+// Fused a*b + c / a*b - c kernels (ABI-4 symbol family).  The HIP port does
+// not export BF16 (no __nv_bfloat16 on ROCm), matching the existing
+// mult_<type> exports above.
+DEFINE_FMA_ENTRIES(float, float)
+DEFINE_FMA_ENTRIES(double, double)
+DEFINE_FMA_ENTRIES(uint64, uint64_t)
+DEFINE_FMA_ENTRIES(int64, int64_t)
+DEFINE_FMA_ENTRIES(uint32, uint32_t)
+DEFINE_FMA_ENTRIES(int32, int32_t)
+DEFINE_FMA_ENTRIES(int16, int16_t)
+DEFINE_FMA_ENTRIES(uint16, uint16_t)
+DEFINE_FMA_ENTRIES(int8, int8_t)
+DEFINE_FMA_ENTRIES(uint8, uint8_t)
+DEFINE_FMA_ENTRIES(bool, bool)
+DEFINE_FMA_ENTRIES(half, __half)
+DEFINE_FMA_ENTRIES(complex64, hipFloatComplex)
+DEFINE_FMA_ENTRIES(complex128, hipDoubleComplex)
+
+// ABI / feature version reported to the Python wrapper.
+//   1 -- legacy build (mult only)
+//   2 -- batched _nd entry points + diagnostics
+//   3 -- + conjugate_<type> and norm_sq_<type> entry points
+//   4 -- + fma_mult_<type> entry points (fused a*b + c / a*b - c)
+int cayley_abi_version(void) {
+  return 4;
+}
 }

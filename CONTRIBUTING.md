@@ -189,6 +189,15 @@ The templated kernel and the `accum_traits` / `arithmetic_traits` /
 need to add the `extern "C"` exports for the new suffix, and a `static_assert`
 if the new type has a platform-dependent size.
 
+If you are adding a **new kernel family** (e.g. fused multiply-add), you
+must also emit the new entry point for the same suffix in **both**
+`cuda/cuda_kernel.cu` and `cuda/amd_kernel.cu`, add a matching benchmark
+case in `tests/benchmark_support.py` (a new `CASE_SHAPES_*` dict), and add
+corresponding tests in `tests/`. Bump `cayley_abi_version()` in the kernel
+and the `abi_version()` docstring in `CayleyKernel/__init__.py`.
+Record a **new** baseline file under `benchmark-results/` (do not overwrite
+an existing one).
+
 Rebuild and smoke-test:
 
 ```bash

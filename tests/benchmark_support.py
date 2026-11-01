@@ -42,6 +42,46 @@ CASE_SHAPES = {
     "batch_70000_dim4": [70000, 4],
 }
 
+# Fused multiply-add (ABI >= 4).  The "sign" field selects which Python
+# entry point (multiply_add for +1, multiply_subtract for -1) the harness
+# should launch.  These cases only appear when the loaded kernel exposes
+# the fused symbols; older baselines omit them and the comparison step
+# skips them gracefully (see validate_baseline).
+CASE_SHAPES_FMA = {
+    "fma_batch_65536_dim32_add": {"shape": [65536, 32], "sign": +1},
+    "fma_batch_65536_dim32_sub": {"shape": [65536, 32], "sign": -1},
+    "fma_batch_1024_dim16_add": {"shape": [1024, 16], "sign": +1},
+    "fma_batch_1024_dim16_sub": {"shape": [1024, 16], "sign": -1},
+}
+
+# Three-kernel "before" baseline: multiply(a, b) followed by elementwise + c.
+# Recorded so the PR description's before/after throughput table (three-kernel
+# path vs. single-kernel multiply_add) comes from the same harness and the
+# same baseline file as the fused cases.  Optional on older baselines.
+CASE_SHAPES_FMA_BASELINE = {
+    "baseline_multiply_add_batch_65536_dim32": [65536, 32],
+}
+
+
+def _validate_case(name, case, shape, sign=None):
+    samples = case.get("samples_seconds", [])
+    repetitions = case.get("repetitions")
+    if (
+        case.get("shape") != list(shape)
+        or case.get("dtype") != "float32"
+        or type(repetitions) is not int
+        or not 1 <= repetitions <= PROTOCOL["max_repetitions"]
+        or len(samples) != PROTOCOL["trials"]
+        or any(
+            not isinstance(s, (float, int)) or not math.isfinite(s) or s <= 0 for s in samples
+        )
+    ):
+        raise ValueError("Invalid baseline workload/samples: " + name)
+    if case.get("median_seconds") != statistics.median(samples):
+        raise ValueError("Baseline median does not match its samples: " + name)
+    if sign is not None and case.get("sign") != sign:
+        raise ValueError("Baseline fused sign differs: " + name)
+
 
 def validate_baseline(report, environment):
     if (
@@ -57,25 +97,28 @@ def validate_baseline(report, environment):
     ]
     if mismatch:
         raise ValueError("Baseline environment differs: " + ", ".join(mismatch))
-    if set(report.get("cases", {})) != set(CASE_SHAPES):
-        raise ValueError("Baseline must contain all configured workloads; record a new baseline.")
+    cases = report.get("cases", {})
+    # Multiply (2-operand) cases are required on every baseline, including
+    # older ones that pre-date the fused entry points.
+    missing = [name for name in CASE_SHAPES if name not in cases]
+    if missing:
+        raise ValueError("Baseline is missing all configured multiply cases: " + ", ".join(missing))
     for name, shape in CASE_SHAPES.items():
-        case = report["cases"][name]
-        samples = case.get("samples_seconds", [])
-        repetitions = case.get("repetitions")
-        if (
-            case.get("shape") != shape
-            or case.get("dtype") != "float32"
-            or type(repetitions) is not int
-            or not 1 <= repetitions <= PROTOCOL["max_repetitions"]
-            or len(samples) != PROTOCOL["trials"]
-            or any(
-                not isinstance(s, (float, int)) or not math.isfinite(s) or s <= 0 for s in samples
-            )
-        ):
-            raise ValueError("Invalid baseline workload/samples: " + name)
-        if case.get("median_seconds") != statistics.median(samples):
-            raise ValueError("Baseline median does not match its samples: " + name)
+        _validate_case(name, cases[name], shape)
+    # Fused cases are optional: older baselines pre-date ABI >= 4 and will
+    # not contain them.  When present, they must be valid.
+    for name, spec in CASE_SHAPES_FMA.items():
+        if name in cases:
+            _validate_case(name, cases[name], spec["shape"], sign=spec["sign"])
+    for name, shape in CASE_SHAPES_FMA_BASELINE.items():
+        if name in cases:
+            _validate_case(name, cases[name], shape)
+    # Names that are neither multiply, fused, nor the three-kernel baseline
+    # are invalid.
+    known = set(CASE_SHAPES) | set(CASE_SHAPES_FMA) | set(CASE_SHAPES_FMA_BASELINE)
+    unknown = [name for name in cases if name not in known]
+    if unknown:
+        raise ValueError("Baseline has unknown cases: " + ", ".join(unknown))
 
 
 def regression_limit(baseline_case, max_regression):
@@ -146,32 +189,62 @@ class BenchmarkSession:
             validate_baseline(self.baseline, self.report["environment"])
 
     @staticmethod
-    def _time_calls(multiply, x, y, stream, repetitions):
+    def _time_calls(fn, args, stream, repetitions):
         stream.synchronize()
         start = time.perf_counter()
         for _ in range(repetitions):
-            result = multiply(x, y)
+            result = fn(*args)
             del result
         stream.synchronize()
         return time.perf_counter() - start
 
     def measure(self, name, multiply, shape):
+        # Two-operand multiply: a*b.  Both operands share ``shape``; the
+        # inner tuple tells _measure how many operands to allocate.
+        return self._measure(name, multiply, (shape, shape), shape)
+
+    def measure_fma(self, name, multiply_fn, shape, sign):
+        """Record/compare a fused multiply_add (sign=+1) or
+        multiply_subtract (sign=-1) workload.
+
+        All three operands are drawn from the same RNG and share ``shape``;
+        the resulting case dict additionally records the ``sign`` so that
+        baselines can be validated against the expected entry point.
+        """
+        if sign not in (+1, -1):
+            raise ValueError("sign must be +1 (multiply_add) or -1 (multiply_subtract)")
+        import CayleyKernel as ck
+
+        fn = ck.multiply_add if sign == +1 else ck.multiply_subtract
+        return self._measure(name, fn, (shape, shape, shape), shape, sign=sign)
+
+    def measure_fma_baseline(self, name, multiply_fn, shape):
+        """Record the three-kernel path multiply(a, b) + c at the given shape.
+
+        This is the "before" half of the fused FMA throughput comparison:
+        two CUDA launches (multiply, then elementwise add) plus the Python
+        glue and the intermediate allocation, as opposed to the single fused
+        launch captured by ``measure_fma``.  Stored in the same baseline
+        file so the before/after numbers in the PR description come from
+        one consistent run.
+        """
+        def multiply_then_add(a, b, c):
+            return multiply_fn(a, b) + c
+        return self._measure(name, multiply_then_add, (shape, shape, shape), shape)
+
+    def _measure(self, name, fn, operand_shapes, shape, sign=None):
         cp = self.cp
         cp.random.seed(PROTOCOL["seed"])
-        x = cp.random.rand(*shape, dtype=cp.float32)
-        y = cp.random.rand(*shape, dtype=cp.float32)
+        operands = [cp.random.rand(*operand_shapes[0], dtype=cp.float32) for _ in operand_shapes]
         stream = cp.cuda.Stream.null
+        args = tuple(operands)
         for _ in range(PROTOCOL["warmup"]):
-            result = multiply(x, y)
+            result = fn(*args)
             stream.synchronize()
             del result
-        # Calibration also warms this workload under sustained GPU activity.
-        # Keep long operations at one call; amortize synchronization overhead
-        # across repeated calls for short operations. Recording and comparison
-        # both calibrate locally and use the same per-call timing statistic.
         repetitions = 1
         while True:
-            elapsed = self._time_calls(multiply, x, y, stream, repetitions)
+            elapsed = self._time_calls(fn, args, stream, repetitions)
             if (
                 elapsed >= PROTOCOL["target_sample_seconds"]
                 or repetitions >= PROTOCOL["max_repetitions"]
@@ -180,7 +253,7 @@ class BenchmarkSession:
             repetitions *= 2
         samples = []
         for _ in range(PROTOCOL["trials"]):
-            elapsed = self._time_calls(multiply, x, y, stream, repetitions)
+            elapsed = self._time_calls(fn, args, stream, repetitions)
             samples.append(elapsed / repetitions)
         case = {
             "shape": list(shape),
@@ -189,12 +262,14 @@ class BenchmarkSession:
             "repetitions": repetitions,
             "median_seconds": statistics.median(samples),
         }
+        if sign is not None:
+            case["sign"] = sign
         self.report["cases"][name] = case
         print(
             f"\n{name}: {case['median_seconds']:.6f}s median per call; "
             f"{repetitions} calls/sample; samples={samples}"
         )
-        if self.baseline is not None:
+        if self.baseline is not None and name in self.baseline.get("cases", {}):
             reference = self.baseline["cases"][name]
             limit = regression_limit(reference, self.max_regression)
             assert case["median_seconds"] <= limit, (
