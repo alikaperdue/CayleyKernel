@@ -1,15 +1,32 @@
 """Paper-ordered exact tests. GPU tests run whenever CUDA is available."""
+import random
+import unittest
 from collections import Counter
 from fractions import Fraction
 from itertools import combinations, product
-import random
-import unittest
 
 import CayleyKernel as CK
 from tests.papers.type_replay import replay_product
-from .emanation import (e,add,scale,mul,recursive_sign,assessor,labels,cell,direct_cell,
-                        high_bits,paint_cell,recipe_rules,table,counts,trip_count,
-                        whorf_count,box_kites,trijoin)
+
+from .emanation import (
+    assessor,
+    box_kites,
+    cell,
+    counts,
+    direct_cell,
+    e,
+    high_bits,
+    labels,
+    mul,
+    paint_cell,
+    recipe_rules,
+    recursive_sign,
+    scale,
+    table,
+    trijoin,
+    trip_count,
+    whorf_count,
+)
 
 SEED=7040112
 OBSERVATIONS={}

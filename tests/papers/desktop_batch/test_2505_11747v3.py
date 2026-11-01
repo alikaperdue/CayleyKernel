@@ -1,12 +1,16 @@
 """Wilmot: exhaustive finite triads, subspaces and two-term zero products."""
+import math
+import random
+import unittest
 from collections import Counter
-from functools import lru_cache
-from itertools import combinations,product
 from fractions import Fraction as Q
-import math,random,unittest
+from functools import lru_cache
+from itertools import combinations, product
+
 import CayleyKernel as CK
-from .common import add,e,mul,neg,scale,Algebra,gpu_replay
-from tests.papers.arxiv_2608_28176.algebra import line
+
+from .common import Algebra, add, e, gpu_replay, mul, neg, scale
+
 try:
     import pytest
     pytestmark=pytest.mark.cpu

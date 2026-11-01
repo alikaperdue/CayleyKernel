@@ -142,7 +142,7 @@ print(multiply(a, b))
 # 1024 independent 16-dimensional (sedenion) products in one launch
 A = cp.random.rand(1024, 16, dtype=cp.float32)
 B = cp.random.rand(1024, 16, dtype=cp.float32)
-C = multiply(A, B)                       # shape (1024, 16)
+C = multiply(A, B)  # shape (1024, 16)
 
 # Broadcasting: one vector against a whole stack
 C = multiply(A, cp.random.rand(16, dtype=cp.float32))
@@ -228,11 +228,11 @@ a = cp.random.rand(8, dtype=cp.float32)
 b = cp.random.rand(8, dtype=cp.float32)
 c = cp.empty(8, dtype=cp.float32)
 for i in range(1000):
-    multiply_into(a, b, c)        # equivalent to multiply(a, b, out=c)
+    multiply_into(a, b, c)  # equivalent to multiply(a, b, out=c)
 
 # Custom CUDA stream
 with cp.cuda.stream(cp.cuda.Stream(non_blocking=True)):
-    multiply(a, b)                # or pass stream=...
+    multiply(a, b)  # or pass stream=...
 ```
 
 ### Diagnostics
@@ -244,10 +244,10 @@ are always importable (they do not require CUDA) and are listed in
 ```python
 import CayleyKernel as ck
 
-ck.loaded()          # -> bool; True once cuda_kernel.so is found and loaded
-ck.library_path()    # -> str | None; absolute path of the loaded shared object
-ck.abi_version()     # -> int; 0 = no library, 1 = legacy, 2 = batched,
-                     #         3 = +conjugate/norm_sq entry points
+ck.loaded()  # -> bool; True once cuda_kernel.so is found and loaded
+ck.library_path()  # -> str | None; absolute path of the loaded shared object
+ck.abi_version()  # -> int; 0 = no library, 1 = legacy, 2 = batched,
+#         3 = +conjugate/norm_sq entry points
 ```
 
 A typical debugging snippet when a kernel call raises an unexpected error:

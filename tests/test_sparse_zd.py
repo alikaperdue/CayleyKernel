@@ -6,11 +6,11 @@ All support indices here are zero-based. Only the adapter to basis
 uses its signed, one-based encoding. No dense 2**n arrays are allocated.
 """
 
-from itertools import combinations, product
 import platform
 import random
-from statistics import median
 import sys
+from itertools import combinations, product
+from statistics import median
 from time import perf_counter
 
 import pytest
@@ -18,6 +18,7 @@ import pytest
 from CayleyKernel import basis, twist
 
 pytestmark = pytest.mark.sparse_zd
+
 
 def safe_getrandbits(rng, total_bits):
     """Bypasses Python's 32-bit C-boundary by chunking huge bit requests."""
@@ -35,7 +36,6 @@ def safe_getrandbits(rng, total_bits):
         result = (result << bits_to_get) | rng.getrandbits(bits_to_get)
         remaining -= bits_to_get
     return result
-
 
 
 def _doubling_sign(a, b, level):
@@ -82,8 +82,7 @@ def _reference_sparse(x, y, signs):
 
 
 def _check_support(a, b, c, d, level, context):
-    signs = [_doubling_sign(p, q, level)
-             for p, q in ((a, c), (a, d), (b, c), (b, d))]
+    signs = [_doubling_sign(p, q, level) for p, q in ((a, c), (a, d), (b, c), (b, d))]
     zeros = 0
     for s, t in product((-1, 1), repeat=2):
         x, y = ((a, 1), (b, s)), ((c, 1), (d, t))
@@ -93,9 +92,9 @@ def _check_support(a, b, c, d, level, context):
             f"{context}; support={(a, b, c, d)}; signs={(s, t)}; "
             f"expected={expected}; actual={actual}"
         )
-        cancels = (a ^ b == c ^ d and
-                   signs[0] + s * t * signs[3] == 0 and
-                   t * signs[1] + s * signs[2] == 0)
+        cancels = (
+            a ^ b == c ^ d and signs[0] + s * t * signs[3] == 0 and t * signs[1] + s * signs[2] == 0
+        )
         assert cancels == (not expected), context
         zeros += not expected
     return zeros
@@ -106,9 +105,12 @@ def test_exhaustive_small_basiss():
     for a, b in product(range(64), repeat=2):
         sign = _doubling_sign(a, b, 6)
         for sa, sb in product((-1, 1), repeat=2):
-            assert basis(sa * (a + 1), sb * (b + 1)) == (
-                sa * sb * sign * ((a ^ b) + 1)
-            ), (a, b, sa, sb)
+            assert basis(sa * (a + 1), sb * (b + 1)) == (sa * sb * sign * ((a ^ b) + 1)), (
+                a,
+                b,
+                sa,
+                sb,
+            )
 
 
 def test_exhaustive_sedenion_two_term_products():
@@ -118,7 +120,7 @@ def test_exhaustive_sedenion_two_term_products():
     for (a, b), (c, d) in product(supports, repeat=2):
         zeros += _check_support(a, b, c, d, 4, "exhaustive level=4")
     assert zeros > 0
-    print(f"\nlevel=4 exhaustive: {4 * len(supports)**2} products; {zeros} zero products")
+    print(f"\nlevel=4 exhaustive: {4 * len(supports) ** 2} products; {zeros} zero products")
 
 
 def test_embedded_known_witness(zd_level):
@@ -135,22 +137,21 @@ def _supports(level, samples, seed):
     mask = (1 << level) - 1
     # Exercise isolated bits, dense runs, alternating bits, then uniform draws.
     alternating = sum(1 << bit for bit in range(0, level, 2))
-    patterns = [(top, 1, 2), (mask, 1, top),
-                (top | 1, top, 2), (alternating | top, 1, mask)]
+    patterns = [(top, 1, 2), (mask, 1, top), (top | 1, top, 2), (alternating | top, 1, mask)]
     for sample in range(samples):
         if sample < len(patterns):
             a, b, c = patterns[sample]
         else:
-            #a = rng.getrandbits(level) | top
-            #b = rng.getrandbits(level)
-            #while b == a:
-                #b = rng.getrandbits(level)
-            #c = rng.getrandbits(level)
-            a = safe_getrandbits(rng,level) | top
-            b = safe_getrandbits(rng,level)
+            # a = rng.getrandbits(level) | top
+            # b = rng.getrandbits(level)
+            # while b == a:
+            # b = rng.getrandbits(level)
+            # c = rng.getrandbits(level)
+            a = safe_getrandbits(rng, level) | top
+            b = safe_getrandbits(rng, level)
             while b == a:
-                b = safe_getrandbits(rng,level)
-            c = safe_getrandbits(rng,level)
+                b = safe_getrandbits(rng, level)
+            c = safe_getrandbits(rng, level)
         d = a ^ b ^ c
         yield a, b, c, d
 
@@ -166,9 +167,11 @@ def test_high_bit_sparse_candidates(zd_level, request):
         # Break XOR compatibility while retaining two nonzero terms in y.
         flip = 1 if a ^ b != 1 else 2
         assert _check_support(a, b, c, d ^ flip, zd_level, context + "; negative") == 0
-    print(f"\nlevel={zd_level}; seed={seed}; candidates={samples}; "
-          f"XOR-compatible products={4 * samples}; zero products={zeros}; "
-          f"guaranteed nonzero controls={4 * samples}")
+    print(
+        f"\nlevel={zd_level}; seed={seed}; candidates={samples}; "
+        f"XOR-compatible products={4 * samples}; zero products={zeros}; "
+        f"guaranteed nonzero controls={4 * samples}"
+    )
 
 
 def _doubling_basis(r, c, level):
@@ -206,7 +209,7 @@ def _compare_timings(old, new, cases, repeats):
     timings = [[], []]
     for repeat in range(repeats):
         # Alternate execution order to reduce systematic ordering effects.
-        for method in ((0, 1) if repeat % 2 == 0 else (1, 0)):
+        for method in (0, 1) if repeat % 2 == 0 else (1, 0):
             elapsed = _batch_seconds(functions[method], cases, loops[method])
             timings[method].append(elapsed / (loops[method] * len(cases)))
     return tuple(median(values) for values in timings)
@@ -222,25 +225,30 @@ def test_method_timings(zd_level, request):
     seed = request.config.getoption("--zd-seed")
     repeats = request.config.getoption("--zd-repeats")
     supports = list(_supports(zd_level, samples, seed))
-    pairs = [(p, q) for a, b, c, d in supports
-             for p, q in ((a, c), (a, d), (b, c), (b, d))]
-    encoded = [((-1 if index & 1 else 1) * (a + 1),
-                (-1 if index & 2 else 1) * (b + 1))
-               for index, (a, b) in enumerate(pairs)]
-    sparse = [(((a, 1), (b, s)), ((c, 1), (d, t)))
-              for a, b, c, d in supports for s, t in product((-1, 1), repeat=2)]
+    pairs = [(p, q) for a, b, c, d in supports for p, q in ((a, c), (a, d), (b, c), (b, d))]
+    encoded = [
+        ((-1 if index & 1 else 1) * (a + 1), (-1 if index & 2 else 1) * (b + 1))
+        for index, (a, b) in enumerate(pairs)
+    ]
+    sparse = [
+        (((a, 1), (b, s)), ((c, 1), (d, t)))
+        for a, b, c, d in supports
+        for s, t in product((-1, 1), repeat=2)
+    ]
     workloads = [
         ("sign", lambda a, b: _doubling_sign(a, b, zd_level), twist, pairs),
-        ("basis product", lambda r, c: _doubling_basis(r, c, zd_level),
-         basis, encoded),
-        ("two-term product", lambda x, y: _doubling_sparse(x, y, zd_level),
-         _kernel_sparse, sparse),
+        ("basis product", lambda r, c: _doubling_basis(r, c, zd_level), basis, encoded),
+        ("two-term product", lambda x, y: _doubling_sparse(x, y, zd_level), _kernel_sparse, sparse),
     ]
-    print(f"\nCPU timings: Python {sys.version.split()[0]}, {platform.machine()}, "
-          f"{platform.system()}; level={zd_level}; seed={seed}; "
-          f"candidates={samples}; median of {repeats} rounds")
+    print(
+        f"\nCPU timings: Python {sys.version.split()[0]}, {platform.machine()}, "
+        f"{platform.system()}; level={zd_level}; seed={seed}; "
+        f"candidates={samples}; median of {repeats} rounds"
+    )
     print("  workload             cases   doubling us/op   new us/op   speedup")
     for name, old, new, cases in workloads:
         old_seconds, new_seconds = _compare_timings(old, new, cases, repeats)
-        print(f"  {name:<20} {len(cases):>5} {old_seconds * 1e6:>16.3f} "
-              f"{new_seconds * 1e6:>11.3f} {old_seconds / new_seconds:>8.2f}x")
+        print(
+            f"  {name:<20} {len(cases):>5} {old_seconds * 1e6:>16.3f} "
+            f"{new_seconds * 1e6:>11.3f} {old_seconds / new_seconds:>8.2f}x"
+        )

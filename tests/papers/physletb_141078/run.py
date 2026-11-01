@@ -1,18 +1,21 @@
 # SPDX-License-Identifier: Apache-2.0
 """Run in paper order and save provenance, outcomes and compact experiment data."""
 import argparse
-from datetime import datetime
 import hashlib
 import json
-from pathlib import Path
 import platform
 import subprocess
 import time
 import unittest
+from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
+
 import numpy as np
 import sympy as sp
+
 import CayleyKernel as CK
+
 from . import test_sections
 
 

@@ -205,7 +205,7 @@ from the NumPy/CuPy dtype name to that suffix in `_DTYPE_TO_SUFFIX`:
 ```python
 _TYPE_SUFFIXES = (
     # ... existing entries ...
-    "mynewtype",   # e.g. "float8_e4m3"
+    "mynewtype",  # e.g. "float8_e4m3"
 )
 
 _DTYPE_TO_SUFFIX = {

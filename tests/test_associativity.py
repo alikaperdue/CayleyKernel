@@ -2,20 +2,35 @@
 """CPU-only associativity checks, including an independent doubling oracle."""
 
 import csv
-from functools import lru_cache
 import itertools
 import json
 import random
+from functools import lru_cache
 
 import pytest
 
 from CayleyKernel import twist
 from scripts.associativity import (
-    associativity_ratio, draw_triple, exhaustive_triples, independent,
-    main, measure, seeded_rng, type_signature, wilson, fixed_weight,
-    probe_positions, sweep_configurations, run_sweep,
-    draw_parity, bernoulli_index, uniform_rate, prefix_independence_probability,
-    exact_disjoint_orders, study_configurations, run_study,
+    associativity_ratio,
+    bernoulli_index,
+    draw_parity,
+    draw_triple,
+    exact_disjoint_orders,
+    exhaustive_triples,
+    fixed_weight,
+    independent,
+    main,
+    measure,
+    prefix_independence_probability,
+    probe_positions,
+    run_study,
+    run_sweep,
+    seeded_rng,
+    study_configurations,
+    sweep_configurations,
+    type_signature,
+    uniform_rate,
+    wilson,
 )
 
 pytestmark = pytest.mark.cpu
@@ -117,8 +132,7 @@ def test_sampling_regimes_and_arbitrary_width(n):
 def test_neighbors_joint_counts_and_centered_correlation():
     result = measure(3, exhaustive_triples(3), neighbors_rng=random.Random(4))
     for kind in ("flip_a", "flip_b", "flip_c", "flip_shared", "increment_a"):
-        assert sum(r["total"] for r in result["neighbors"]
-                   if r["perturbation"] == kind) == 512
+        assert sum(r["total"] for r in result["neighbors"] if r["perturbation"] == kind) == 512
     for row in result["neighbors"]:
         assert row["failures"] == row["n01"] + row["n10"]
         assert row["total"] == sum(row[k] for k in ("n00", "n01", "n10", "n11"))
@@ -129,16 +143,30 @@ def test_neighbors_joint_counts_and_centered_correlation():
 
 def test_intervals_and_reproducibility():
     low, high = wilson(0, 100)
-    assert 0 <= low < .001 and 0.03 < high < .04
+    assert 0 <= low < 0.001 and 0.03 < high < 0.04
     low, high = wilson(50, 100)
-    assert low < .5 < high
+    assert low < 0.5 < high
     assert wilson(0, 0) == (None, None)
-    assert seeded_rng(7, 128, "sparse").getrandbits(1024) == seeded_rng(7, 128, "sparse").getrandbits(1024)
+    assert seeded_rng(7, 128, "sparse").getrandbits(1024) == seeded_rng(
+        7, 128, "sparse"
+    ).getrandbits(1024)
 
 
 def test_cli_outputs_and_configuration(tmp_path):
-    args = ["--exhaustive-max", "2", "--levels", "32", "128", "1024",
-            "--samples", "8", "--no-sweeps", "--no-studies", "--output", str(tmp_path)]
+    args = [
+        "--exhaustive-max",
+        "2",
+        "--levels",
+        "32",
+        "128",
+        "1024",
+        "--samples",
+        "8",
+        "--no-sweeps",
+        "--no-studies",
+        "--output",
+        str(tmp_path),
+    ]
     main(args)
     metadata = json.loads((tmp_path / "metadata.json").read_text())
     assert metadata["arguments"]["samples"] == 8
@@ -170,7 +198,7 @@ def test_fixed_weight_and_sweep_parameters():
         for k in range(n + 1):
             value = fixed_weight(rng, n, k)
             assert value.bit_count() == k and 0 <= value < (1 << n)
-    configs = list(sweep_configurations([8, 8], [1, 3, 16], [0, .01, .49, .5, 1], [1, 4, 16]))
+    configs = list(sweep_configurations([8, 8], [1, 3, 16], [0, 0.01, 0.49, 0.5, 1], [1, 4, 16]))
     assert len(configs) == 9  # four weight, three unique effective density, two width
     assert all(c["level"] == 8 for c in configs)
     for config in configs:
@@ -183,9 +211,29 @@ def test_fixed_weight_and_sweep_parameters():
 
 
 def test_sweeps_cli_outputs(tmp_path):
-    main(["--exhaustive-max", "0", "--levels", "8", "--samples", "5",
-          "--sweep-levels", "8", "--weights", "1", "--widths", "2",
-          "--densities", ".5", "--sweep-samples", "10", "--no-studies", "--output", str(tmp_path)])
+    main(
+        [
+            "--exhaustive-max",
+            "0",
+            "--levels",
+            "8",
+            "--samples",
+            "5",
+            "--sweep-levels",
+            "8",
+            "--weights",
+            "1",
+            "--widths",
+            "2",
+            "--densities",
+            ".5",
+            "--sweep-samples",
+            "10",
+            "--no-studies",
+            "--output",
+            str(tmp_path),
+        ]
+    )
     tables = json.loads((tmp_path / "results.json").read_text())
     assert len(tables["sweeps"]) == 4
     assert all(r["total"] == 10 for r in tables["sweeps"])
@@ -198,16 +246,54 @@ def test_sweeps_cli_outputs(tmp_path):
 def test_plot_and_replot(tmp_path, monkeypatch):
     pytest.importorskip("matplotlib")
     from scripts import associativity
-    main(["--exhaustive-max", "3", "--levels", "8", "--samples", "30",
-          "--sweep-levels", "8", "--weights", "1", "3", "--widths", "2", "4",
-          "--densities", ".25", ".75", "--sweep-samples", "30",
-          "--study-levels", "8", "--study-samples", "30", "--study-densities", ".25", ".75",
-          "--order-max-weight", "3",
-          "--plot", "--output", str(tmp_path)])
-    for name in ("associativity.png", "associativity.pdf", "structure.png", "controls.png", "controls.pdf"):
+
+    main(
+        [
+            "--exhaustive-max",
+            "3",
+            "--levels",
+            "8",
+            "--samples",
+            "30",
+            "--sweep-levels",
+            "8",
+            "--weights",
+            "1",
+            "3",
+            "--widths",
+            "2",
+            "4",
+            "--densities",
+            ".25",
+            ".75",
+            "--sweep-samples",
+            "30",
+            "--study-levels",
+            "8",
+            "--study-samples",
+            "30",
+            "--study-densities",
+            ".25",
+            ".75",
+            "--order-max-weight",
+            "3",
+            "--plot",
+            "--output",
+            str(tmp_path),
+        ]
+    )
+    for name in (
+        "associativity.png",
+        "associativity.pdf",
+        "structure.png",
+        "controls.png",
+        "controls.pdf",
+    ):
         assert (tmp_path / name).stat().st_size > 1000
+
     def no_sampling(*args, **kwargs):
         pytest.fail("replot must not run an experiment")
+
     monkeypatch.setattr(associativity, "measure", no_sampling)
     main(["--replot", "--output", str(tmp_path)])
 
@@ -219,7 +305,7 @@ def test_parity_control_and_study_reproducibility():
             triple = draw_parity(rng, 128, pattern)
             assert all(x.bit_length() <= 128 for x in triple)
             assert sum((x.bit_count() & 1) << i for i, x in enumerate(triple)) == pattern
-    configs = list(study_configurations([8], [.25, .75]))
+    configs = list(study_configurations([8], [0.25, 0.75]))
     assert len(configs) == 17  # eight parity, five adjacent weights, four density
     for config in configs:
         row = run_study(config, 20, 2026)
@@ -234,9 +320,11 @@ def test_bernoulli_bit_planes_exact(threshold):
     class Planes:
         def __init__(self):
             self.planes = iter([0b1100, 0b1010])
+
         def getrandbits(self, n):
             assert n == 4
             return next(self.planes)
+
     assert bernoulli_index(Planes(), 4, threshold, precision=2) == (1 << threshold) - 1
 
 
@@ -245,7 +333,11 @@ def test_exact_order_counts_and_sparse_strata():
     pooled = next(r for r in rows if r["lowest_pattern"] == 0)
     assert (pooled["failures"], pooled["total"]) == (1056, 1680)
     assert (pooled["numerator"], pooled["denominator"]) == (22, 35)
-    assert {r["lowest_pattern"]: r["failures"] for r in rows if r["lowest_pattern"]} == {1: 332, 2: 392, 4: 332}
+    assert {r["lowest_pattern"]: r["failures"] for r in rows if r["lowest_pattern"]} == {
+        1: 332,
+        2: 392,
+        4: 332,
+    }
     measured = measure(3, exhaustive_triples(3), exact=True)
     assert sum(r["total"] for r in measured["sparse_order"]) == 512
     disjoint = next(r for r in measured["summary"] if r["stratum"] == "disjoint_nonzero")
@@ -257,7 +349,9 @@ def test_unused_bit_gaps_preserve_order_signs():
     for _ in range(100):
         positions = sorted(rng.sample(range(128), 9))
         triple = tuple(rng.getrandbits(9) for _ in range(3))
-        embedded = tuple(sum(((x >> j) & 1) << pos for j, pos in enumerate(positions)) for x in triple)
+        embedded = tuple(
+            sum(((x >> j) & 1) << pos for j, pos in enumerate(positions)) for x in triple
+        )
         assert associativity_ratio(*triple) == associativity_ratio(*embedded)
         assert twist(triple[0], triple[1]) == twist(embedded[0], embedded[1])
 
@@ -272,15 +366,26 @@ def test_high_bit_rules_and_uniform_reference():
     assert uniform_rate(3) == 168 / 512
     assert uniform_rate(4) == 1848 / 4096
     assert uniform_rate(3, independent_only=True) == 1
-    assert uniform_rate(16384) == .5
+    assert uniform_rate(16384) == 0.5
 
 
-@pytest.mark.parametrize("args", [["--samples", "0"], ["--levels", "0"],
-                                  ["--levels", "2"], ["--exhaustive-max", "7"],
-                                  ["--densities", "nan"], ["--densities", "1.1"],
-                                  ["--sweep-samples", "0"], ["--widths", "0"],
-                                  ["--study-samples", "0"], ["--study-levels", "0"],
-                                  ["--study-densities", "nan"], ["--order-max-weight", "6"]])
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["--samples", "0"],
+        ["--levels", "0"],
+        ["--levels", "2"],
+        ["--exhaustive-max", "7"],
+        ["--densities", "nan"],
+        ["--densities", "1.1"],
+        ["--sweep-samples", "0"],
+        ["--widths", "0"],
+        ["--study-samples", "0"],
+        ["--study-levels", "0"],
+        ["--study-densities", "nan"],
+        ["--order-max-weight", "6"],
+    ],
+)
 def test_invalid_cli(args):
     with pytest.raises(SystemExit) as error:
         main(args)

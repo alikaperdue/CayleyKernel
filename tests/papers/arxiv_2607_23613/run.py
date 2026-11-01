@@ -7,13 +7,15 @@ import platform
 import subprocess
 import time
 import unittest
-from   pathlib  import Path
-from   datetime import datetime
-from   zoneinfo import ZoneInfo
+from datetime import datetime
+from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import sympy as sp
+
 import CayleyKernel as CK
+
 from . import test_sections
 
 

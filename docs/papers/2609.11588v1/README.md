@@ -20,6 +20,7 @@ Direct use from the repository root:
 
 ```python
 from scripts.quasilinear_cd import multiply
+
 result = multiply(a, b)  # real arrays, coefficient axis last; batch broadcasting
 ```
 

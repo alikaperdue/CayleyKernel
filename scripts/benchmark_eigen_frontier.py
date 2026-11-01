@@ -4,15 +4,17 @@ import argparse
 import hashlib
 import json
 import platform
-import time
 import threading
+import time
 from contextlib import contextmanager
 from pathlib import Path
+
 import numpy as np
 import scipy
+
 import CayleyKernel as CK
-from scripts.paper_quadratic_frontier import Products, coefficient, newton
 from scripts.batched_eigen_frontier import BatchProducts, solve_batch, verify
+from scripts.paper_quadratic_frontier import Products, coefficient, newton
 
 
 class CountedProducts(Products):

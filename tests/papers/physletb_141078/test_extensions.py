@@ -1,25 +1,46 @@
 # SPDX-License-Identifier: Apache-2.0
 """Independent follow-up suite: XOR subalgebras, unit centralizers, explicit irreps."""
-from collections import Counter
-from itertools import product,combinations
 import random
 import unittest
+from itertools import combinations, product
+
 try:
     import numpy as np
     import sympy as s
 except ModuleNotFoundError as exc:
     raise unittest.SkipTest('follow-up needs NumPy and SymPy: '+str(exc))
 import CayleyKernel as CK
+
+from .algebra import comm, e, flat, matrix_units, operator, oracle, restrict, span_rank
 from .extension_algebra import (
-    xor_span,rref_subspaces,canonical_basis,gaussian_count,tables,defects,
-    table_product,failure_witness,survey,sampled_bases,basis_profile,graph_centralizer,
-    sparse_unit_checks,signed_isomorphism,gpu_bases,
+    basis_profile,
+    canonical_basis,
+    defects,
+    failure_witness,
+    gaussian_count,
+    gpu_bases,
+    graph_centralizer,
+    rref_subspaces,
+    sampled_bases,
+    signed_isomorphism,
+    sparse_unit_checks,
+    survey,
+    table_product,
+    tables,
+    xor_span,
 )
-from .algebra import oracle,operator,e,flat,span_rank,comm,matrix_units,restrict
 from .particle_reconstruction import (
-    model,adj,clean,restricted_module,restriction_matrix,commutant_dimension,
-    sparse_matrix,EXPECTED,EXPECTED_CHARGES,
+    EXPECTED,
+    EXPECTED_CHARGES,
+    adj,
+    clean,
+    commutant_dimension,
+    model,
+    restricted_module,
+    restriction_matrix,
+    sparse_matrix,
 )
+
 try:
     import pytest
     pytestmark=pytest.mark.cpu

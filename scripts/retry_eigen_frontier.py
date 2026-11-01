@@ -9,8 +9,9 @@ import time
 from pathlib import Path
 
 import numpy as np
+
+from scripts.batched_eigen_frontier import add_controls, controls, retry_group, starting_points
 from scripts.paper_quadratic_frontier import Products, newton
-from scripts.batched_eigen_frontier import starting_points, retry_group, add_controls, controls
 
 
 def retry_case(record, saved_x, backend, starts, seed, maxiter, tol, restart=40, cycles=15, line_search=12):
@@ -102,8 +103,8 @@ def main():
               'batched_source_sha256': hashlib.sha256(Path(__file__).with_name('batched_eigen_frontier.py').read_bytes()).hexdigest(),
               'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
     print(f'Retrying {len(records)} unresolved matrices with {args.solver}; output={output}', flush=True)
-    from scripts.survey_eigen_frontier import atomic_json
     from scripts.benchmark_eigen_frontier import heartbeat
+    from scripts.survey_eigen_frontier import atomic_json
     destination = output/'results.json'
     report.update(status='running', chunks=[], batch_statistics={})
     atomic_json(destination, report)

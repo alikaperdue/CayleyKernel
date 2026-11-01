@@ -8,16 +8,15 @@ See scripts/RELATION_GRAPHS.md for definitions and interpretation.
 """
 
 import argparse
-from collections import deque
 import json
-from pathlib import Path
 import random
 import sys
+from collections import deque
+from pathlib import Path
 from time import perf_counter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from CayleyKernel import basis, twist
-
 
 RELATIONS = ("commute", "orthogonality", "zero-either", "dot")
 DEFAULT_LEVELS = [4, 5] + [1 << k for k in range(3, 22)]

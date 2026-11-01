@@ -1,18 +1,42 @@
 """Section-ordered finite tests. Counterexample passes reproduce discrepancies."""
-from fractions import Fraction as F
-from itertools import product
 import math
 import random
 import unittest
+from fractions import Fraction as F
+from itertools import product
 
 import numpy as np
+
 import CayleyKernel as CK
 from tests.papers.type_replay import replay_product
-from .algebra import (e, add, scale, conj, norm2, mul, reference, recursive_sign,
-                      power, quadratic_power, bracketed_powers, polynomial,
-                      polymul, remainder, minimal_polynomial, radius_from_roots,
-                      lp, unit_power_samples, bumped, paper_sqrt, stable_sqrt,
-                      Angle, complex_argument, quaternion_argument, angle_vector)
+
+from .algebra import (
+    Angle,
+    add,
+    angle_vector,
+    bracketed_powers,
+    bumped,
+    complex_argument,
+    conj,
+    e,
+    lp,
+    minimal_polynomial,
+    mul,
+    norm2,
+    paper_sqrt,
+    polymul,
+    polynomial,
+    power,
+    quadratic_power,
+    quaternion_argument,
+    radius_from_roots,
+    recursive_sign,
+    reference,
+    remainder,
+    scale,
+    stable_sqrt,
+    unit_power_samples,
+)
 
 OBSERVATIONS = {}
 DIMS = (1, 2, 4, 8, 16, 32, 64)

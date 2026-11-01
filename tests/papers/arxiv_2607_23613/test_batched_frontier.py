@@ -1,11 +1,18 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
+
 import numpy as np
 import pytest
+
 from scripts.batched_eigen_frontier import (
-    BatchProducts, residual, derivative, solve_batch, retry_group, starting_points,
+    BatchProducts,
+    derivative,
+    residual,
+    retry_group,
+    solve_batch,
+    starting_points,
 )
-from scripts.paper_quadratic_frontier import reference_product, Products, encoded, newton
+from scripts.paper_quadratic_frontier import Products, encoded, newton, reference_product
 
 pytestmark = pytest.mark.cpu
 
@@ -230,8 +237,9 @@ def test_independent_line_search_decisions():
 
 
 def test_benchmark_screen_overrides_labels_and_interrupt(tmp_path, monkeypatch, capsys):
-    import scripts.benchmark_eigen_frontier as benchmark
     from argparse import Namespace
+
+    import scripts.benchmark_eigen_frontier as benchmark
     defaults = dict(level=None, matrices=None, starts=None, batch_size=None,
                     maxiter=None, gmres_restart=None, gmres_cycles=None, repeats=None)
     profile = benchmark.apply_profile(Namespace(screen=True, **defaults))
@@ -268,6 +276,7 @@ def test_benchmark_screen_overrides_labels_and_interrupt(tmp_path, monkeypatch, 
 
 def test_benchmark_heartbeat_stops(capsys):
     import time
+
     from scripts.benchmark_eigen_frontier import heartbeat
     with heartbeat('test-measurement', .01):
         time.sleep(.06)

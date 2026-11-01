@@ -24,8 +24,7 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
 cp = pytest.importorskip("cupy", reason="GPU tests require CuPy")
-import CayleyKernel  # noqa: E402
-from CayleyKernel import multiply, _select_kernel  # noqa: E402
+from CayleyKernel import _select_kernel, multiply  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -108,9 +107,7 @@ def test_2d_batch_matches_1d(dim, batch):
     got = multiply(A, B)
     assert got.shape == (batch, dim)
     for i in range(batch):
-        cp.testing.assert_allclose(
-            got[i], multiply(A[i], B[i]), rtol=1e-4, atol=1e-5
-        )
+        cp.testing.assert_allclose(got[i], multiply(A[i], B[i]), rtol=1e-4, atol=1e-5)
 
 
 @pytest.mark.parametrize("dim", [4, 8])
@@ -120,9 +117,7 @@ def test_2d_batch_matches_recursive(dim):
     B = cp.random.randn(batch, dim).astype(cp.float64)
     got = multiply(A, B)
     for i in range(batch):
-        cp.testing.assert_allclose(
-            got[i], ref_mult(A[i], B[i]), rtol=1e-10, atol=1e-12
-        )
+        cp.testing.assert_allclose(got[i], ref_mult(A[i], B[i]), rtol=1e-10, atol=1e-12)
 
 
 # ---------------------------------------------------------------------------
@@ -136,9 +131,7 @@ def test_3d_batch_matches_1d():
     assert got.shape == (B, N, dim)
     for i in range(B):
         for j in range(N):
-            cp.testing.assert_allclose(
-                got[i, j], multiply(A[i, j], C[i, j]), rtol=1e-4, atol=1e-5
-            )
+            cp.testing.assert_allclose(got[i, j], multiply(A[i, j], C[i, j]), rtol=1e-4, atol=1e-5)
 
 
 def test_4d_batch_matches_1d():
@@ -168,9 +161,7 @@ def test_broadcast_stack_against_vector(dim):
     got = multiply(A, v)
     assert got.shape == (N, dim)
     for i in range(N):
-        cp.testing.assert_allclose(
-            got[i], multiply(A[i], v), rtol=1e-4, atol=1e-5
-        )
+        cp.testing.assert_allclose(got[i], multiply(A[i], v), rtol=1e-4, atol=1e-5)
 
 
 def test_broadcast_vector_against_stack():
@@ -180,9 +171,7 @@ def test_broadcast_vector_against_stack():
     got = multiply(v, A)
     assert got.shape == (N, dim)
     for i in range(N):
-        cp.testing.assert_allclose(
-            got[i], multiply(v, A[i]), rtol=1e-4, atol=1e-5
-        )
+        cp.testing.assert_allclose(got[i], multiply(v, A[i]), rtol=1e-4, atol=1e-5)
 
 
 def test_broadcast_3d_stack_against_vector():
@@ -193,9 +182,7 @@ def test_broadcast_3d_stack_against_vector():
     assert got.shape == (B, N, dim)
     for i in range(B):
         for j in range(N):
-            cp.testing.assert_allclose(
-                got[i, j], multiply(A[i, j], v), rtol=1e-4, atol=1e-5
-            )
+            cp.testing.assert_allclose(got[i, j], multiply(A[i, j], v), rtol=1e-4, atol=1e-5)
 
 
 # ---------------------------------------------------------------------------
@@ -209,9 +196,7 @@ def test_batch_exceeds_max_grid_y():
     got = multiply(A, B)
     assert got.shape == (batch, dim)
     for i in (0, 1, 65534, 65535, 65536, batch - 1):
-        cp.testing.assert_allclose(
-            got[i], multiply(A[i], B[i]), rtol=1e-4, atol=1e-5
-        )
+        cp.testing.assert_allclose(got[i], multiply(A[i], B[i]), rtol=1e-4, atol=1e-5)
 
 
 # ---------------------------------------------------------------------------
@@ -284,6 +269,4 @@ def test_rejects_unsupported_dtype():
 def test_2d_product_small_case():
     a = cp.array([3.0, 4.0], dtype=cp.float64)
     b = cp.array([1.0, 2.0], dtype=cp.float64)
-    cp.testing.assert_allclose(
-        multiply(a, b), ref_mult(a, b), rtol=1e-12, atol=1e-14
-    )
+    cp.testing.assert_allclose(multiply(a, b), ref_mult(a, b), rtol=1e-12, atol=1e-14)

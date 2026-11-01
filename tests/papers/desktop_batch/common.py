@@ -4,15 +4,20 @@ No changes to CayleyKernel; basis_product is an adapter to the actual public
 API (currently named basis). Sparse products never stand in for GPU execution.
 """
 import math
-import unittest
+
 import CayleyKernel as CK
 from tests.papers.type_replay import replay_product
 from tests.papers.arxiv_2608_28176.algebra import (
     Algebra, add, conj, e, neg, scale, pair, rank, nullity, recursive_basis,
 )
 
-basis_product = getattr(CK, 'basis_product', CK.basis)
+__all__ = [
+    "Algebra", "add", "conj", "e", "neg", "scale",
+    "pair", "rank", "nullity", "recursive_basis",
+    "basis_product", "mul","close","gpu_replay"
+]
 
+basis_product = getattr(CK, 'basis_product', CK.basis)
 
 def mul(x, y):
     out = {}

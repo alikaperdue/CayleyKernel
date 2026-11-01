@@ -1,17 +1,16 @@
 """Build-script regression checks without requiring a CUDA compiler."""
 
-from email.parser import BytesParser
 import importlib.util
-from importlib import metadata as package_metadata
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 import zipfile
-
+from email.parser import BytesParser
+from importlib import metadata as package_metadata
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,7 +25,9 @@ class WheelBuildScriptTests(unittest.TestCase):
         (self.root / "bin").mkdir()
         shutil.copy2(ROOT / "scripts/build_wheel.sh", self.root / "scripts")
         shutil.copy2(ROOT / "Makefile", self.root)
-        self.command("nvcc", '''printf '%s\\n' "$@" > nvcc-args
+        self.command(
+            "nvcc",
+            """printf '%s\\n' "$@" > nvcc-args
 while [ "$#" -gt 0 ]; do
     if [ "$1" = -o ]; then
         shift
@@ -35,15 +36,22 @@ while [ "$#" -gt 0 ]; do
     fi
     shift
 done
-''')
-        self.command("build-python", '''printf '%s\\n' "$@" > python-args
+""",
+        )
+        self.command(
+            "build-python",
+            """printf '%s\\n' "$@" > python-args
 mkdir -p dist
 touch dist/fixture-py3-none-linux_x86_64.whl
-''')
-        self.command("auditwheel", '''printf '%s\\n' "$@" > auditwheel-args
+""",
+        )
+        self.command(
+            "auditwheel",
+            """printf '%s\\n' "$@" > auditwheel-args
 mkdir -p wheelhouse
 touch wheelhouse/fixture-py3-none-manylinux_2_34_x86_64.whl
-''')
+""",
+        )
 
     def command(self, name, body):
         path = self.root / "bin" / name
@@ -57,8 +65,11 @@ touch wheelhouse/fixture-py3-none-manylinux_2_34_x86_64.whl
         env.update(PATH=f"{self.root / 'bin'}:{env['PATH']}", PYTHON="build-python")
         env.update(overrides)
         return subprocess.run(
-            ["bash", "scripts/build_wheel.sh"], cwd=self.root, env=env,
-            text=True, capture_output=True,
+            ["bash", "scripts/build_wheel.sh"],
+            cwd=self.root,
+            env=env,
+            text=True,
+            capture_output=True,
         )
 
     def test_default_architectures_and_packaged_output(self):
@@ -114,7 +125,8 @@ class WheelMetadataTests(unittest.TestCase):
                     missing.append(value)
         if missing:
             self.skipTest(
-                "missing build dependencies: " + ", ".join(sorted(missing))
+                "missing build dependencies: "
+                + ", ".join(sorted(missing))
                 + "; install with: python -m pip install build 'setuptools>=77.0.3'"
             )
         for native in (False, True):
@@ -129,30 +141,46 @@ class WheelMetadataTests(unittest.TestCase):
                     (package / "cuda_kernel.so").write_bytes(b"native-library-fixture")
                 result = subprocess.run(
                     [sys.executable, "-m", "build", "--wheel", "--no-isolation"],
-                    cwd=root, text=True, capture_output=True,
+                    cwd=root,
+                    text=True,
+                    capture_output=True,
                 )
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-                wheel, = (root / "dist").glob("*.whl")
+                (wheel,) = (root / "dist").glob("*.whl")
                 with zipfile.ZipFile(wheel) as archive:
-                    package_path, = [p for p in archive.namelist() if p.endswith(".dist-info/METADATA")]
+                    (package_path,) = [
+                        p for p in archive.namelist() if p.endswith(".dist-info/METADATA")
+                    ]
                     package = BytesParser().parsebytes(archive.read(package_path))
-                    requirements = [Requirement(value) for value in package.get_all("Requires-Dist", [])]
-                    defaults = {r.name for r in requirements if not r.marker or r.marker.evaluate({"extra": ""})}
+                    requirements = [
+                        Requirement(value) for value in package.get_all("Requires-Dist", [])
+                    ]
+                    defaults = {
+                        r.name
+                        for r in requirements
+                        if not r.marker or r.marker.evaluate({"extra": ""})
+                    }
                     self.assertEqual(defaults, {"numpy"})
                     rust = [r for r in requirements if r.name == "cayley-kernel-rust"]
                     self.assertEqual(len(rust), 1)
                     self.assertTrue(rust[0].marker.evaluate({"extra": "rust"}))
                     self.assertFalse(rust[0].marker.evaluate({"extra": ""}))
                     self.assertIn("0.1.0", rust[0].specifier)
-                    self.assertIn("Programming Language :: Python :: 3.13", package.get_all("Classifier"))
-                    metadata_path, = [p for p in archive.namelist() if p.endswith(".dist-info/WHEEL")]
+                    self.assertIn(
+                        "Programming Language :: Python :: 3.13", package.get_all("Classifier")
+                    )
+                    (metadata_path,) = [
+                        p for p in archive.namelist() if p.endswith(".dist-info/WHEEL")
+                    ]
                     metadata = archive.read(metadata_path).decode()
                     if native:
                         self.assertIn("Root-Is-Purelib: false", metadata)
                         self.assertIn("Tag: py3-none-", metadata)
                         self.assertNotIn("Tag: py3-none-any", metadata)
                         self.assertNotIn("-any.whl", wheel.name)
-                        self.assertEqual(archive.read("CayleyKernel/cuda_kernel.so"), b"native-library-fixture")
+                        self.assertEqual(
+                            archive.read("CayleyKernel/cuda_kernel.so"), b"native-library-fixture"
+                        )
                     else:
                         self.assertIn("Root-Is-Purelib: true", metadata)
                         self.assertIn("Tag: py3-none-any", metadata)

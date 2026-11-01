@@ -1,15 +1,44 @@
 """Tests in paper order; CPU verification is separate from optional hardware tests."""
-from collections import Counter
-from itertools import combinations,product
 import random
 import unittest
+from collections import Counter
+from itertools import combinations, product
+
 import numpy as np
+
 import CayleyKernel as CK
-from .finite import (e,add,scale,conj,mul,batch_product,basis_table,recursive_sign,parameters,
-                     norm_weights,norm,trace,chunks,enumerate_counts,quadratic_histogram,
-                     zorn_mul,zorn_norm,split_to_zorn,zorn_to_split,norm_minus_one_quaternion,
-                     main_to_split,split_to_main,annihilator,paper_id,paper_nil,paper_zd,
-                     paper_units,correct_norm_zero,correct_intersection)
+
+from .finite import (
+    add,
+    annihilator,
+    basis_table,
+    batch_product,
+    chunks,
+    conj,
+    correct_intersection,
+    correct_norm_zero,
+    e,
+    enumerate_counts,
+    main_to_split,
+    mul,
+    norm,
+    norm_minus_one_quaternion,
+    norm_weights,
+    paper_id,
+    paper_nil,
+    paper_units,
+    paper_zd,
+    parameters,
+    quadratic_histogram,
+    recursive_sign,
+    scale,
+    split_to_main,
+    split_to_zorn,
+    trace,
+    zorn_mul,
+    zorn_norm,
+    zorn_to_split,
+)
 
 SEED=6172024
 OBSERVATIONS={}

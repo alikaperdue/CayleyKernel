@@ -20,7 +20,6 @@ Run with:
     pytest -q tests/test_identities.py
 """
 
-import numpy as np
 import pytest
 
 cp = pytest.importorskip("cupy")
@@ -55,9 +54,7 @@ def test_real_composition_xx_star_is_norm_squared(dim):
         got = multiply(x, conjugate(x))
         norm_sq = float(cp.sum(x**2))
         assert float(got[0]) == pytest.approx(norm_sq, rel=1e-10, abs=1e-12)
-        cp.testing.assert_allclose(
-            got[1:], cp.zeros(dim - 1, dtype=cp.float64), atol=1e-12
-        )
+        cp.testing.assert_allclose(got[1:], cp.zeros(dim - 1, dtype=cp.float64), atol=1e-12)
 
 
 @pytest.mark.parametrize("dim", [2, 4, 8, 16, 32])
@@ -105,7 +102,9 @@ def test_sedenion_zero_divisors():
 
     got = multiply(x, y)
     cp.testing.assert_allclose(
-        got, cp.zeros(dim, dtype=cp.float64), atol=1e-14,
+        got,
+        cp.zeros(dim, dtype=cp.float64),
+        atol=1e-14,
         err_msg="expected a zero product from the sedenion zero-divisor pair",
     )
 

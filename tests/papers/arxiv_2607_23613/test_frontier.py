@@ -1,15 +1,23 @@
 # SPDX-License-Identifier: Apache-2.0
 """Regression checks for the exploratory solver, not universal existence claims."""
 import unittest
+
 try:
     import numpy as np
     import scipy
 except ModuleNotFoundError as exc:
     raise unittest.SkipTest(str(exc))
 import pytest
+
 from scripts.paper_quadratic_frontier import (
-    Products, reference_product, square, square_derivative, square_root,
-    newton, root_experiment, eigen_experiment,
+    Products,
+    eigen_experiment,
+    newton,
+    reference_product,
+    root_experiment,
+    square,
+    square_derivative,
+    square_root,
 )
 
 pytestmark = pytest.mark.cpu
@@ -88,6 +96,7 @@ def test_gpu_root_and_eigen_pipeline():
 def test_saved_vectors_reproduce_original_equation(tmp_path, monkeypatch):
     import hashlib
     import json
+
     from scripts.paper_quadratic_frontier import main
     output = tmp_path/'run'
     monkeypatch.setattr('sys.argv', ['frontier', '--levels', '3', '--samples', '1', '--output', str(output)])

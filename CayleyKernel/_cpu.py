@@ -4,6 +4,7 @@
 The backend is selected once at import through CAYLEY_KERNEL_CPU_BACKEND.
 Python remains usable without Rust, NumPy, CuPy, or a compiled GPU library.
 """
+
 import importlib
 import operator
 import os
@@ -19,11 +20,7 @@ def _python_twist(r, c):
         v = r & -r
         h = c & -c
         u = r | c
-        p = (
-            ~c & v ^ u & -v if h < v else
-             r & h ^ u & -h if d < h else
-             c & d ^ u & -d
-        )
+        p = ~c & v ^ u & -v if h < v else r & h ^ u & -h if d < h else c & d ^ u & -d
         return 1 if p.bit_count() & 1 else -1
     return 1
 
@@ -75,7 +72,7 @@ def _python_basis(r, c):
 # u - union
 # p - parity
 #
-def _python_muliply_aio(a,b):
+def _python_muliply_aio(a, b):
     import numpy as np
 
     dim = len(a)
@@ -95,11 +92,7 @@ def _python_muliply_aio(a,b):
                     v = r & -r
                     h = c & -c
                     u = r | c
-                    p = (
-                        ~c & v ^ u & -v if h < v else
-                         r & h ^ u & -h if d < h else
-                         c & d ^ u & -d
-                    )
+                    p = ~c & v ^ u & -v if h < v else r & h ^ u & -h if d < h else c & d ^ u & -d
                     s = 1 if p.bit_count() & 1 else -1
             t += s * a[r] * b[c]
         o[i] = t

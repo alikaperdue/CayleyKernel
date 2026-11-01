@@ -7,7 +7,7 @@ from fractions import Fraction
 from functools import lru_cache
 from itertools import product
 
-from CayleyKernel import basis, twist
+from CayleyKernel import basis
 
 
 def e(i):

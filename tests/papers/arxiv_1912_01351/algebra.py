@@ -7,6 +7,7 @@ from fractions import Fraction
 from itertools import product
 
 import numpy as np
+
 import CayleyKernel as CK
 
 PAPER_TO_KERNEL = (0, 1, 2, 4, 3, 5, 6, 7)

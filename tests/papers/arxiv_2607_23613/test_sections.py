@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests ordered by the paper's sections, then explicitly labeled extensions."""
-import random
+import itertools
 import math
 import os
-import itertools
+import random
 import unittest
 from fractions import Fraction
 
@@ -17,9 +17,26 @@ except ModuleNotFoundError as exc:
     raise unittest.SkipTest('paper companion requires NumPy and SymPy: ' + str(exc))
 import CayleyKernel as CK
 from tests.papers.desktop_batch.common import (
-    basis_product, mul, add, neg, scale, conj, e, recursive_basis, gpu_replay,
+    add,
+    basis_product,
+    conj,
+    e,
+    gpu_replay,
+    mul,
+    neg,
+    recursive_basis,
+    scale,
 )
-from .method import dense, sparse, linear_matrix, evaluate, elimination, singular_slice, real_candidates
+
+from .method import (
+    dense,
+    elimination,
+    evaluate,
+    linear_matrix,
+    real_candidates,
+    singular_slice,
+    sparse,
+)
 
 try:
     import pytest

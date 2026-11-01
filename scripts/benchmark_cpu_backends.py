@@ -4,9 +4,9 @@
 import argparse
 import importlib.util
 import os
-from pathlib import Path
 import platform
 import random
+from pathlib import Path
 from statistics import median
 from time import perf_counter
 

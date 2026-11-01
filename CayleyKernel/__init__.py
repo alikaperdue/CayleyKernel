@@ -30,8 +30,8 @@ Public API:
     abi_version()        -- kernel ABI version (1 for legacy builds), or 0
 """
 
-import ctypes
 import contextlib
+import ctypes
 import os
 import warnings
 
@@ -100,7 +100,7 @@ _KERNEL_LOADED = _lib is not None
 
 if _KERNEL_LOADED:
     try:
-        _abi_fn = getattr(_lib, "cayley_abi_version")
+        _abi_fn = _lib.cayley_abi_version
         _abi_fn.argtypes = []
         _abi_fn.restype = ctypes.c_int
         _ABI_VERSION = int(_abi_fn())
@@ -138,7 +138,7 @@ def _require_kernel():
         raise RuntimeError(
             "CayleyKernel: kernel shared library 'cuda_kernel.so' "
             "not found.  Build it with:\n"
-            "    make kernel            # or: make kernel ARCHS=\"sm_80\"\n"
+            '    make kernel            # or: make kernel ARCHS="sm_80"\n'
             "then restart Python.  (Check for prebuilt wheels on "
             "GitHub Releases if you prefer not to compile.)"
         )
@@ -158,8 +158,8 @@ def _require_kernel():
 # with cuda/cuda_kernel.cu and cuda/amd_kernel.cu.
 
 _TYPE_SUFFIXES = (
-    "float",     # float32
-    "double",    # float64
+    "float",  # float32
+    "double",  # float64
     "int32",
     "int64",
     "uint32",
@@ -169,32 +169,31 @@ _TYPE_SUFFIXES = (
     "int8",
     "uint8",
     "bool",
-    "half",       # 16-bit float (FP16 / __half)
-    "bfloat16",   # 16-bit brain float (CUDA / __nv_bfloat16)
+    "half",  # 16-bit float (FP16 / __half)
+    "bfloat16",  # 16-bit brain float (CUDA / __nv_bfloat16)
     "complex64",  # float2  / complex float
-    "complex128", # double2 / complex double
+    "complex128",  # double2 / complex double
 )
 
 _LEGACY_ARGTYPES = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
-_ND_ARGTYPES = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p,
-                ctypes.c_int, ctypes.c_longlong]
+_ND_ARGTYPES = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int, ctypes.c_longlong]
 
 _DTYPE_TO_SUFFIX = {
     "float32": "float",
     "float64": "double",
-    "int32":   "int32",
-    "int64":   "int64",
-    "uint32":  "uint32",
-    "uint64":  "uint64",
-    "int16":   "int16",
-    "uint16":  "uint16",
-    "int8":    "int8",
-    "uint8":   "uint8",
-    "bool":    "bool",
-    "bool_":   "bool",
-    "float16":    "half",
-    "bfloat16":   "bfloat16",
-    "complex64":  "complex64",
+    "int32": "int32",
+    "int64": "int64",
+    "uint32": "uint32",
+    "uint64": "uint64",
+    "int16": "int16",
+    "uint16": "uint16",
+    "int8": "int8",
+    "uint8": "uint8",
+    "bool": "bool",
+    "bool_": "bool",
+    "float16": "half",
+    "bfloat16": "bfloat16",
+    "complex64": "complex64",
     "complex128": "complex128",
 }
 
@@ -283,9 +282,11 @@ def _as_cupy(x, ref_dtype=None):
     # fractional or imaginary coefficients.
     if ref_dtype is not None:
         ref_dtype = cp.dtype(ref_dtype)
-        dtype = (_result_dtype(ref_dtype, inferred.dtype)
-                 if ref_dtype.kind in "biu" or inferred.dtype.kind == "c"
-                 else ref_dtype)
+        dtype = (
+            _result_dtype(ref_dtype, inferred.dtype)
+            if ref_dtype.kind in "biu" or inferred.dtype.kind == "c"
+            else ref_dtype
+        )
     else:
         if inferred.dtype.kind == "c":
             dtype = inferred.dtype
@@ -300,7 +301,8 @@ def _as_cupy(x, ref_dtype=None):
                 "NumPy's float64 default in a future release; pass "
                 "cp.asarray(x, dtype=...) (or a NumPy array) to pin the dtype "
                 "explicitly.",
-                DeprecationWarning, stacklevel=3,
+                DeprecationWarning,
+                stacklevel=3,
             )
             dtype = cp.float32
     return inferred.astype(dtype, copy=False)
@@ -324,8 +326,7 @@ def _broadcast_shapes(shapes):
                 out[i + j] = d
             elif d != 1 and d != cur:
                 raise ValueError(
-                    "operands could not be broadcast together "
-                    "(batch shapes: %s)" % (shapes,)
+                    "operands could not be broadcast together (batch shapes: %s)" % (shapes,)
                 )
     return tuple(out)
 
@@ -360,14 +361,11 @@ def _launch(kernel_pair, a, b, o, dim, batch):
     """Run the kernel over ``batch`` contiguous vectors of length ``dim``."""
     block_size = os.environ.get("CAYLEY_KERNEL_BLOCK_SIZE")
     if block_size is not None and block_size not in ("32", "64", "128", "256", "512", "1024"):
-        raise ValueError(
-            "CAYLEY_KERNEL_BLOCK_SIZE must be one of 32, 64, 128, 256, 512, 1024"
-        )
+        raise ValueError("CAYLEY_KERNEL_BLOCK_SIZE must be one of 32, 64, 128, 256, 512, 1024")
     legacy_fn, nd_fn = kernel_pair
 
     if nd_fn is not None:
-        nd_fn(a.data.ptr, b.data.ptr, o.data.ptr,
-              ctypes.c_int(dim), ctypes.c_longlong(batch))
+        nd_fn(a.data.ptr, b.data.ptr, o.data.ptr, ctypes.c_int(dim), ctypes.c_longlong(batch))
         return
 
     # Fallback for an older kernel without the batched symbol:
@@ -375,10 +373,12 @@ def _launch(kernel_pair, a, b, o, dim, batch):
     itemsize = a.dtype.itemsize
     stride = dim * itemsize
     for i in range(batch):
-        legacy_fn(a.data.ptr + i * stride,
-                  b.data.ptr + i * stride,
-                  o.data.ptr + i * stride,
-                  ctypes.c_int(dim))
+        legacy_fn(
+            a.data.ptr + i * stride,
+            b.data.ptr + i * stride,
+            o.data.ptr + i * stride,
+            ctypes.c_int(dim),
+        )
 
 
 def _launch_conjugate(dtype, a, o, dim, batch):
@@ -511,13 +511,10 @@ def multiply(a, b, out=None, stream=None):
     if b.shape[-1] != dim:
         raise ValueError(
             "Algebra dimension mismatch: a.shape[-1] (%d) != b.shape[-1] (%d). "
-            "The last axis must be identical for both operands."
-            % (dim, b.shape[-1])
+            "The last axis must be identical for both operands." % (dim, b.shape[-1])
         )
     if not is_power_of_two(dim):
-        raise ValueError(
-            "Algebra dimension (last axis = %d) must be a power of two (2^n)." % dim
-        )
+        raise ValueError("Algebra dimension (last axis = %d) must be a power of two (2^n)." % dim)
 
     # ---- 4. Broadcast the leading (batch) axes ----
     batch_shape = _broadcast_shapes([a.shape[:-1], b.shape[:-1]])
@@ -591,11 +588,20 @@ def multiply_into(a, b, out):
 # and their CuPy/ctypes ABI remain unchanged.
 # basis/basis_many multiply signed one-based basis labels (zero is invalid),
 # using _python_basis from _cpu.py when the Rust backend is unavailable.
-from ._cpu import basis, basis_many, cpu_backend, cpu_multiply, twist, twist_many
+from ._algebra import (
+    conjugate,
+    exp,
+    imag,
+    inner,
+    inverse,
+    left_div,
+    norm_sq,
+    power,
+    real,
+    right_div,
+)
+from ._cpu import _python_multiply as py_multiply
 
 # Preserve the existing Python reference entry points without duplicating logic.
-from ._cpu import _python_twist as py_sign, _python_multiply as py_multiply
-
-from ._algebra import (
-    conjugate, norm_sq, inverse, right_div, left_div, power, exp, inner, real, imag,
-)
+from ._cpu import _python_twist as py_sign
+from ._cpu import basis, basis_many, cpu_backend, cpu_multiply, twist, twist_many

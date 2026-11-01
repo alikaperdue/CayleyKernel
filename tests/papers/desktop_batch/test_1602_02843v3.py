@@ -1,9 +1,12 @@
 """Bales: all eight shuffle products, twist trees and periodicity."""
-from itertools import product
 import random
 import unittest
+from itertools import product
+
 from CayleyKernel import twist
+
 from .common import basis_product, e, gpu_replay
+
 try:
     import pytest
     pytestmark = pytest.mark.cpu

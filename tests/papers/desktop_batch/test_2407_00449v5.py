@@ -1,8 +1,10 @@
 """Tensor multiplication, HyperDense/HyperConv and CD functional maps."""
-from itertools import product
 import unittest
-from .common import e,mul,add,scale,gpu_replay
+from itertools import product
+
+from .common import add, gpu_replay, mul
 from .test_2205_07986v2 import independent_sign
+
 try:
     import numpy as np
 except ImportError:np=None
@@ -116,7 +118,7 @@ class Sections(unittest.TestCase):
 
     def test_07_gpu_typed_dense_layer(self):
         import CayleyKernel as CK
-        from tests.papers.type_replay import require_gpu, host
+        from tests.papers.type_replay import host, require_gpu
         require_gpu(self)
         rng=np.random.default_rng(240700453)
         for dim in (2,4,8,16,32):

@@ -4,6 +4,7 @@ import json
 import sys
 
 import pytest
+
 np = pytest.importorskip('numpy')
 pytest.importorskip('scipy')
 from scripts.retry_eigen_frontier import main

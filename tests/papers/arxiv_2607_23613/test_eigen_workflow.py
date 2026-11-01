@@ -1,8 +1,10 @@
 """Search workflow regressions; no kernel product validation."""
 import hashlib
 import json
+
 import numpy as np
 import pytest
+
 from scripts.audit_eigen_benchmarks import audit
 
 pytestmark = pytest.mark.cpu
@@ -108,6 +110,7 @@ def test_resume_saved_without_fresh_starts(tmp_path, monkeypatch):
 
 def test_retry_checkpoints_before_next_chunk_and_graceful_stop(tmp_path, monkeypatch):
     import signal
+
     import scripts.retry_eigen_frontier as retry
     source = tmp_path/'source'; source.mkdir()
     np.savez(source/'candidate.npz', root=np.array([0., .8, 0., 0.]))

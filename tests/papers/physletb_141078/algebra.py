@@ -1,8 +1,17 @@
 # SPDX-License-Identifier: Apache-2.0
 """Exact operator arithmetic; transport the paper's Fano convention explicitly."""
 from functools import lru_cache
+
 import sympy as s
-from tests.papers.desktop_batch.common import basis_product, mul, add, neg, scale, conj, e
+
+from tests.papers.desktop_batch.common import add, basis_product, conj, e, mul, scale
+
+__all__ = [
+    "add", "basis_product", "conj", "e", "mul", "scale",
+    "PAPER", "TRIPLES", "vector", "operator", "operators", "words", "flat",
+    "span_rank", "comm", "matrix_units", "restrict", "centralizer", "phases",
+    "lie_model", "physical", "embedding", "hopf", "oracle",
+]
 
 # Paper labels e1,...,e7 are NOT CayleyKernel's binary labels.
 PAPER = (e(0), e(1), e(2), e(4), e(3), e(6), {7: -1}, e(5))

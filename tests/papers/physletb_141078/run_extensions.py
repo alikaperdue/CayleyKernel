@@ -2,20 +2,23 @@
 """Run the separate follow-up and export classification data and exact irrep matrices."""
 import argparse
 import csv
-from datetime import datetime
 import hashlib
 import json
-from pathlib import Path
 import platform
 import subprocess
 import time
 import unittest
+from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
+
 import numpy as np
 import sympy as sp
+
 import CayleyKernel as CK
+
 from . import test_extensions as test
-from .extension_algebra import canonical_basis,xor_span,tables,defects,failure_witness
+from .extension_algebra import canonical_basis, defects, failure_witness, tables, xor_span
 
 
 class Result(unittest.TextTestResult):

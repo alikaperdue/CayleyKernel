@@ -1,6 +1,8 @@
 """LDR networks: finite reconstruction, embedding and gradient checks."""
 import unittest
-from .common import e, mul, gpu_replay
+
+from .common import e, gpu_replay, mul
+
 try:
     import numpy as np
 except ImportError:

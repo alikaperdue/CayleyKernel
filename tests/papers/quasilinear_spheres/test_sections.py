@@ -1,14 +1,36 @@
 """Exact, paper-ordered tests; normalized rays avoid floating point rank claims."""
-from fractions import Fraction as F
-from itertools import product, combinations
 import random
 import unittest
+from fractions import Fraction as F
+from itertools import combinations, product
+
 import numpy as np
+
 import CayleyKernel as CK
 from tests.papers.type_replay import replay_product
-from .algebra import (e,add,scale,conj,dot,norm2,oracle_sign,mul,rows_from_columns,
-                      nullspace,span_rank,embed,right,orbit,constraints,frame,
-                      transform,diagonal,sphere_dimensions,minimum_q)
+
+from .algebra import (
+    add,
+    conj,
+    constraints,
+    diagonal,
+    dot,
+    e,
+    embed,
+    frame,
+    minimum_q,
+    mul,
+    norm2,
+    nullspace,
+    oracle_sign,
+    orbit,
+    right,
+    rows_from_columns,
+    scale,
+    span_rank,
+    sphere_dimensions,
+    transform,
+)
 
 SEED=2010981
 OBSERVATIONS={}

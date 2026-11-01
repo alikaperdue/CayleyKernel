@@ -8,6 +8,7 @@ from functools import lru_cache
 from itertools import product
 
 import numpy as np
+
 import CayleyKernel as CK
 
 REPS = {

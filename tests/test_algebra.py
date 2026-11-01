@@ -106,8 +106,8 @@ class TestAlgebra:
 
     def test_ordered_division(self, monkeypatch):
         monkeypatch.setattr(ck, "multiply", reference)
-        a = np.array([1., 2., 3., 4.])
-        b = np.array([[2., 1., -1., 3.], [3., 2., 1., 0.]])
+        a = np.array([1.0, 2.0, 3.0, 4.0])
+        b = np.array([[2.0, 1.0, -1.0, 3.0], [3.0, 2.0, 1.0, 0.0]])
         right = ck.right_div(a, b)
         left = ck.left_div(a, b)
         np.testing.assert_allclose(reference(right, b), np.broadcast_to(a, b.shape))
@@ -130,14 +130,16 @@ class TestAlgebra:
         result = fn(a, b)
         assert isinstance(result, np.ndarray)
         x, y = np.asarray(a, dtype=float), np.asarray(b, dtype=float)
-        expected = reference(x, ck.inverse(y)) if fn is ck.right_div else reference(ck.inverse(x), y)
+        expected = (
+            reference(x, ck.inverse(y)) if fn is ck.right_div else reference(ck.inverse(x), y)
+        )
         np.testing.assert_allclose(result, expected)
         assert isinstance(fn([1, 2], [2, 1]), list)
 
     @pytest.mark.parametrize("n", [-5, -1, 0, 1, 2, 7, np.int64(13)])
     def test_power_against_repeated_products(self, monkeypatch, n):
         monkeypatch.setattr(ck, "multiply", reference)
-        a = np.array([[0.2, 0.3, -0.1, 0.4], [1., 0., 0., 0.]])
+        a = np.array([[0.2, 0.3, -0.1, 0.4], [1.0, 0.0, 0.0, 0.0]])
         factor = ck.inverse(a) if n < 0 else a
         expected = np.zeros_like(a)
         expected[..., 0] = 1
@@ -199,8 +201,8 @@ def test_gpu_helpers():
             pytest.skip("No CUDA device")
     except cp.cuda.runtime.CUDARuntimeError as exc:
         pytest.skip("CUDA device unavailable: " + str(exc))
-    a = cp.array([[1., 2., 3., 4.], [2., 0., 0., 0.]])
-    b = cp.array([2., -1., 3., 1.])
+    a = cp.array([[1.0, 2.0, 3.0, 4.0], [2.0, 0.0, 0.0, 0.0]])
+    b = cp.array([2.0, -1.0, 3.0, 1.0])
     host_a, host_b = cp.asnumpy(a), cp.asnumpy(b)
     for fn in (ck.conjugate, ck.norm_sq, ck.inverse, ck.exp, ck.real, ck.imag):
         result = fn(a)
@@ -209,8 +211,14 @@ def test_gpu_helpers():
     for fn in (ck.right_div, ck.left_div, ck.inner):
         result = fn(a, b)
         assert isinstance(result, cp.ndarray)
-        expected = (reference(host_a, ck.inverse(host_b)) if fn is ck.right_div
-                    else reference(ck.inverse(host_a), host_b) if fn is ck.left_div
-                    else ck.inner(host_a, host_b))
+        expected = (
+            reference(host_a, ck.inverse(host_b))
+            if fn is ck.right_div
+            else reference(ck.inverse(host_a), host_b)
+            if fn is ck.left_div
+            else ck.inner(host_a, host_b)
+        )
         np.testing.assert_allclose(cp.asnumpy(result), expected, atol=1e-12)
-    np.testing.assert_allclose(cp.asnumpy(ck.power(a, 3)), reference(reference(host_a, host_a), host_a))
+    np.testing.assert_allclose(
+        cp.asnumpy(ck.power(a, 3)), reference(reference(host_a, host_a), host_a)
+    )

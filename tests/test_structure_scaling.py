@@ -1,4 +1,5 @@
 """CPU regression checks for the exact structural experiment."""
+
 import itertools
 import unittest
 
@@ -28,8 +29,12 @@ class StructureScalingTests(unittest.TestCase):
         x = s.add(s.e((1 << (n - 1)) | 5), s.e(3))
         y = s.add(s.e((1 << (n - 2)) | 2), s.e(1 << (n - 1)))
         r = s.residuals(x, y, s.e(7), n)
-        for name in ("anti_involution", "scalar_norm", "cd_doubling_consistency",
-                     "dimagma_direct_product_anti_involution"):
+        for name in (
+            "anti_involution",
+            "scalar_norm",
+            "cd_doubling_consistency",
+            "dimagma_direct_product_anti_involution",
+        ):
             self.assertEqual(r[name], {})
 
     def test_selected_dimagma_is_direct_product(self):

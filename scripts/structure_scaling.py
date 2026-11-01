@@ -11,14 +11,14 @@ number of bitwise operations in the basis formula. Full tables cost D**2.
 
 import argparse
 import csv
-from functools import lru_cache
 import hashlib
 import itertools
 import json
-from pathlib import Path
 import platform
 import random
 import sys
+from functools import lru_cache
+from pathlib import Path
 from time import perf_counter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -208,6 +208,7 @@ def low_witness():
 def gpu_check(level, samples, rng):
     """Optional comparison; failures to load CUDA remain visible as errors."""
     import numpy as np
+
     from CayleyKernel import multiply
     d = 1 << level
     start = perf_counter()

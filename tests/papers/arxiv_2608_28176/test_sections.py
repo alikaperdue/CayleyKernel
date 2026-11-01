@@ -8,15 +8,31 @@ are explicitly reference-only. CUDA tests skip only for missing prerequisites.
 import itertools as it
 import random
 import unittest
-from functools import lru_cache
 from fractions import Fraction
+from functools import lru_cache
 
 import CayleyKernel as CK
 from tests.papers.type_replay import replay_product
-from .algebra import (Algebra, e, add, neg, scale, conj, pair, parts, line,
-                      rank, nullity, graph, vector, witness, double_hexagon,
-                      recursive_basis)
-from .tables import table1, quaternion_table, octonion_table
+
+from .algebra import (
+    Algebra,
+    add,
+    conj,
+    double_hexagon,
+    e,
+    graph,
+    line,
+    neg,
+    nullity,
+    pair,
+    parts,
+    rank,
+    recursive_basis,
+    scale,
+    vector,
+    witness,
+)
+from .tables import octonion_table, quaternion_table, table1
 
 try:
     import pytest

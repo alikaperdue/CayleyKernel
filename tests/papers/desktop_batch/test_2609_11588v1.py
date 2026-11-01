@@ -1,9 +1,11 @@
 """Section-ordered verification of the quasilinear multiplication schedule."""
+import time
+import unittest
 from itertools import product
-import math,time,unittest
+
 import CayleyKernel as CK
 from tests.papers.type_replay import replay_product
-from .common import e,mul,gpu_replay
+
 try:
     import numpy as np
 except ImportError:np=None
@@ -12,7 +14,13 @@ try:
     pytestmark=pytest.mark.cpu
 except ImportError:pass
 if np is not None:
-    from scripts.quasilinear_cd import multiply,complex_cross,real_cross,direct,arithmetic_counts
+    from scripts.quasilinear_cd import (
+        arithmetic_counts,
+        complex_cross,
+        direct,
+        multiply,
+        real_cross,
+    )
 MEASUREMENTS={}
 
 
@@ -111,7 +119,7 @@ class Sections(unittest.TestCase):
             np.testing.assert_array_equal(CK.cp.asnumpy(replay_product(a,b)),multiply(a,b))
 
     def test_08_gpu_complex_quasilinear_extension(self):
-        from tests.papers.type_replay import require_gpu, host
+        from tests.papers.type_replay import host, require_gpu
         require_gpu(self)
         rng=np.random.default_rng(260911594)
         for n in (3,4,5):

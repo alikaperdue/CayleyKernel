@@ -1,18 +1,38 @@
 """Paper-ordered exact finite loop tests and explicitly bounded algebra checks."""
+import unittest
 from collections import Counter
 from fractions import Fraction as F
 from itertools import product
-import unittest
 
 import numpy as np
+
 import CayleyKernel as CK
 from tests.papers.type_replay import replay_product
-from .loops import (REPS, SIGNS, TABLE, ELEMENTS, POSITION, INVERSES,
-                    support_mask, indices, labels, independent_sign, signed_product,
-                    sparse_mul, sparse_add, sparse_scale, all_spaces, coordinates,
-                    invariant, gl_maps, find_isomorphism, verify_isomorphism,
-                    classification, norm_composition_defect, zero_divisor, lattice_data)
-from .tables import TABLE_IMAGES, TABLE1_ROWS, decode, rows
+
+from .loops import (
+    ELEMENTS,
+    INVERSES,
+    REPS,
+    SIGNS,
+    TABLE,
+    all_spaces,
+    classification,
+    gl_maps,
+    independent_sign,
+    indices,
+    invariant,
+    labels,
+    lattice_data,
+    norm_composition_defect,
+    signed_product,
+    sparse_add,
+    sparse_mul,
+    sparse_scale,
+    support_mask,
+    verify_isomorphism,
+    zero_divisor,
+)
+from .tables import TABLE1_ROWS, TABLE_IMAGES, decode, rows
 
 OBSERVATIONS = {}
 

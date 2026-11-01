@@ -1,26 +1,35 @@
 """GPU baseline measurement and comparison, independent of pytest/CuPy imports."""
 
 import hashlib
-from datetime import datetime, timezone
 import json
 import math
 import os
-from pathlib import Path
 import platform
 import statistics
 import subprocess
 import time
-
+from datetime import datetime, timezone
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROTOCOL = {
-    "warmup": 3, "trials": 5, "statistic": "median",
-    "timer": "synchronized_batched_wall_seconds", "seed": 2026,
-    "target_sample_seconds": 0.1, "max_repetitions": 16384,
+    "warmup": 3,
+    "trials": 5,
+    "statistic": "median",
+    "timer": "synchronized_batched_wall_seconds",
+    "seed": 2026,
+    "target_sample_seconds": 0.1,
+    "max_repetitions": 16384,
 }
 ENVIRONMENT_KEYS = (
-    "gpu_name", "pci_bus_id", "compute_capability", "cuda_runtime_version",
-    "cuda_driver_version", "cupy_version", "python_version", "platform",
+    "gpu_name",
+    "pci_bus_id",
+    "compute_capability",
+    "cuda_runtime_version",
+    "cuda_driver_version",
+    "cupy_version",
+    "python_version",
+    "platform",
 )
 CASE_SHAPES = {
     "single_2pow20": [2**20],
@@ -35,10 +44,17 @@ CASE_SHAPES = {
 
 
 def validate_baseline(report, environment):
-    if not isinstance(report, dict) or report.get("schema_version") != 1 or report.get("protocol") != PROTOCOL:
+    if (
+        not isinstance(report, dict)
+        or report.get("schema_version") != 1
+        or report.get("protocol") != PROTOCOL
+    ):
         raise ValueError("Baseline schema/timing protocol differs; record a new baseline.")
-    mismatch = [key for key in ENVIRONMENT_KEYS
-                if report.get("environment", {}).get(key) != environment.get(key)]
+    mismatch = [
+        key
+        for key in ENVIRONMENT_KEYS
+        if report.get("environment", {}).get(key) != environment.get(key)
+    ]
     if mismatch:
         raise ValueError("Baseline environment differs: " + ", ".join(mismatch))
     if set(report.get("cases", {})) != set(CASE_SHAPES):
@@ -47,12 +63,16 @@ def validate_baseline(report, environment):
         case = report["cases"][name]
         samples = case.get("samples_seconds", [])
         repetitions = case.get("repetitions")
-        if (case.get("shape") != shape or case.get("dtype") != "float32"
-                or type(repetitions) is not int
-                or not 1 <= repetitions <= PROTOCOL["max_repetitions"]
-                or len(samples) != PROTOCOL["trials"]
-                or any(not isinstance(s, (float, int)) or not math.isfinite(s) or s <= 0
-                       for s in samples)):
+        if (
+            case.get("shape") != shape
+            or case.get("dtype") != "float32"
+            or type(repetitions) is not int
+            or not 1 <= repetitions <= PROTOCOL["max_repetitions"]
+            or len(samples) != PROTOCOL["trials"]
+            or any(
+                not isinstance(s, (float, int)) or not math.isfinite(s) or s <= 0 for s in samples
+            )
+        ):
             raise ValueError("Invalid baseline workload/samples: " + name)
         if case.get("median_seconds") != statistics.median(samples):
             raise ValueError("Baseline median does not match its samples: " + name)
@@ -80,22 +100,25 @@ def environment_info(cp):
 
 def provenance():
     import CayleyKernel as ck
+
     native_path = Path(ck._lib._name).resolve()
     paths = [ROOT / "cuda/cuda_kernel.cu", ROOT / "CayleyKernel/__init__.py", native_path]
+
     def git(*args):
         return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
+
     def label(path):
         try:
             return str(path.relative_to(ROOT))
         except ValueError:
             return path.name
+
     return {
         "git_head": git("rev-parse", "HEAD"),
         "working_tree_dirty": bool(git("status", "--porcelain")),
         "kernel_abi": ck.abi_version(),
         "launch_block_size": os.environ.get("CAYLEY_KERNEL_BLOCK_SIZE", "auto"),
-        "sha256": {label(p):
-                   hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
+        "sha256": {label(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths},
     }
 
 
@@ -149,20 +172,28 @@ class BenchmarkSession:
         repetitions = 1
         while True:
             elapsed = self._time_calls(multiply, x, y, stream, repetitions)
-            if (elapsed >= PROTOCOL["target_sample_seconds"]
-                    or repetitions >= PROTOCOL["max_repetitions"]):
+            if (
+                elapsed >= PROTOCOL["target_sample_seconds"]
+                or repetitions >= PROTOCOL["max_repetitions"]
+            ):
                 break
             repetitions *= 2
         samples = []
         for _ in range(PROTOCOL["trials"]):
             elapsed = self._time_calls(multiply, x, y, stream, repetitions)
             samples.append(elapsed / repetitions)
-        case = {"shape": list(shape), "dtype": "float32", "samples_seconds": samples,
-                "repetitions": repetitions,
-                "median_seconds": statistics.median(samples)}
+        case = {
+            "shape": list(shape),
+            "dtype": "float32",
+            "samples_seconds": samples,
+            "repetitions": repetitions,
+            "median_seconds": statistics.median(samples),
+        }
         self.report["cases"][name] = case
-        print(f"\n{name}: {case['median_seconds']:.6f}s median per call; "
-              f"{repetitions} calls/sample; samples={samples}")
+        print(
+            f"\n{name}: {case['median_seconds']:.6f}s median per call; "
+            f"{repetitions} calls/sample; samples={samples}"
+        )
         if self.baseline is not None:
             reference = self.baseline["cases"][name]
             limit = regression_limit(reference, self.max_regression)

@@ -47,35 +47,37 @@ import numpy as np
 # ---- CayleyKernel (CPU path; swap to GPU multiply on a CUDA machine) ----
 from CayleyKernel import cpu_multiply
 
-a = np.array([1.0, 2.0, 3.0, 4.0])   # coefficient order (e0, e1, e2, e3) = (w, x, y, z)
+a = np.array([1.0, 2.0, 3.0, 4.0])  # coefficient order (e0, e1, e2, e3) = (w, x, y, z)
 b = np.array([5.0, 6.0, 7.0, 8.0])
-ck = cpu_multiply(a, b)              # raw bilinear Hamilton product, dim 4
+ck = cpu_multiply(a, b)  # raw bilinear Hamilton product, dim 4
+
 
 # ---- Reference: hand-rolled bilinear Hamilton product (no normalisation) ----
 # Same (w, x, y, z) order; this is what the `quaternion` PyPI package returns.
 def hamilton(p, q):
-    return np.array([
-         p[0]*q[0] - p[1]*q[1] - p[2]*q[2] - p[3]*q[3],
-         p[0]*q[1] + p[1]*q[0] + p[2]*q[3] - p[3]*q[2],
-         p[0]*q[2] - p[1]*q[3] + p[2]*q[0] + p[3]*q[1],
-         p[0]*q[3] + p[1]*q[2] - p[2]*q[1] + p[3]*q[0],
-    ])
+    return np.array(
+        [
+            p[0] * q[0] - p[1] * q[1] - p[2] * q[2] - p[3] * q[3],
+            p[0] * q[1] + p[1] * q[0] + p[2] * q[3] - p[3] * q[2],
+            p[0] * q[2] - p[1] * q[3] + p[2] * q[0] + p[3] * q[1],
+            p[0] * q[3] + p[1] * q[2] - p[2] * q[1] + p[3] * q[0],
+        ]
+    )
+
 
 ref = hamilton(a, b)
-np.testing.assert_allclose(ck, ref)   # exact bilinear agreement, no normalisation
+np.testing.assert_allclose(ck, ref)  # exact bilinear agreement, no normalisation
 
 # ---- scipy: quaternion product via Rotation (SO(3), unit-normalised) ----
 from scipy.spatial.transform import Rotation
+
 # scipy uses (x, y, z, w) ordering; reorder from (w, x, y, z)
 q_a = Rotation.from_quat([a[1], a[2], a[3], a[0]])
 q_b = Rotation.from_quat([b[1], b[2], b[3], b[0]])
-q_c = q_a * q_b                       # group composition, then normalised to unit length
-scipy = np.array([q_c.as_quat()[3], q_c.as_quat()[0],
-                  q_c.as_quat()[1], q_c.as_quat()[2]])
+q_c = q_a * q_b  # group composition, then normalised to unit length
+scipy = np.array([q_c.as_quat()[3], q_c.as_quat()[0], q_c.as_quat()[1], q_c.as_quat()[2]])
 # scipy result == ck result / (|a| * |b|), i.e. equal direction, unit magnitude.
-np.testing.assert_allclose(
-    scipy, ck / (np.linalg.norm(a) * np.linalg.norm(b))
-)
+np.testing.assert_allclose(scipy, ck / (np.linalg.norm(a) * np.linalg.norm(b)))
 ```
 
 > **Note:** `scipy`'s `Rotation` composes in the `SO(3)` group and **normalises** the

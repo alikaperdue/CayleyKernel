@@ -8,17 +8,24 @@ Python >= 3.10; standard library and the local CayleyKernel package only.
 """
 
 import argparse
-from functools import lru_cache
 import json
-from pathlib import Path
 import random
 import sys
+from functools import lru_cache
+from pathlib import Path
 from time import perf_counter
 from uuid import uuid4
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts.relation_graphs import (build_graphs, candidates, maximum_clique,
-                                    positive, levels_arg, budget, verify_clique)
+from scripts.relation_graphs import (
+    budget,
+    build_graphs,
+    candidates,
+    levels_arg,
+    maximum_clique,
+    positive,
+    verify_clique,
+)
 
 BASELINE = Path(__file__).resolve().parent / "results/relation_graphs_clique69.json"
 

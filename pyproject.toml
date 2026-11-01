@@ -76,7 +76,10 @@ CayleyKernel = ["*.so"]
 # Rule selection rationale:
 #   E/W/F - the safe, zero-surprise baseline (pycodestyle + pyflakes).
 #   I     - isort import ordering; the most common "style noise" in PRs.
-#   B     - flake8-bugbear; catches real bugs at near-zero false-positive cost.
+#   B (flake8-bugbear) is deliberately OFF for now. It flags code-quality
+#   patterns (B905 zip strict=, B904 raise-from, etc.) that require human
+#   judgement and are the wrong scope for a formatting pass. Add it back as
+#   a deliberate code-quality PR once the tree is clean on E/W/F/I.
 #
 #   ANN (type hints) and D (docstrings) are deliberately OFF: the codebase
 #   does not use type hints on internal helpers and does not require
@@ -93,6 +96,10 @@ CayleyKernel = ["*.so"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+extend-exclude = [
+    "tests/papers",  # per-paper research scratch: skip lint AND format
+    "scripts",       # user-invoked research tooling: skip lint AND format
+]
 
 [tool.ruff.lint]
 select = [
@@ -100,16 +107,14 @@ select = [
     "W",
     "F",
     "I",
-    "B",
 ]
 ignore = [
-    "E501",
-    "B008",
+    "E501",  # line length handled by the formatter
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"scripts/*" = ["E402"]  # module-level imports not at top (common in benchmark scripts)
-"tests/*"  = ["E402"]  # module-level imports not at top (conftest-style fixtures)
+"CayleyKernel/__init__.py" = ["E402", "F401"]  # package init: deferred imports + public re-exports
+"tests/*" = ["E402", "E702", "E731"]  # some inline-style helpers in the main test suite
 
 [tool.ruff.format]
 quote-style = "double"   # match the existing docstring style

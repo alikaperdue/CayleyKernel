@@ -1,14 +1,14 @@
 """Verify balanced budgets, independent histories, and embedding controls."""
 
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from scripts import clique_level_comparison as comparison
 from scripts import clique_growth as growth
+from scripts import clique_level_comparison as comparison
 from tests.test_clique_growth import small_anchor
 
 pytestmark = pytest.mark.cpu
@@ -53,8 +53,20 @@ def test_equal_budgets_no_cross_arm_carry_and_exact_embedding(tmp_path, monkeypa
         return original(anchor, pool, seconds)
 
     monkeypatch.setattr(growth, "extend_with_pool", spy)
-    args = ["--baseline", str(path), "--levels", "4,5", "--vertices", "2",
-            "--steps", "2", "--replicates", "2", "--output-dir", str(tmp_path)]
+    args = [
+        "--baseline",
+        str(path),
+        "--levels",
+        "4,5",
+        "--vertices",
+        "2",
+        "--steps",
+        "2",
+        "--replicates",
+        "2",
+        "--output-dir",
+        str(tmp_path),
+    ]
     summary = comparison.main(args)
     directory = Path(summary["output_directory"])
     rows = [json.loads(line) for line in (directory / "trials.jsonl").read_text().splitlines()]
@@ -82,11 +94,19 @@ def test_equal_budgets_no_cross_arm_carry_and_exact_embedding(tmp_path, monkeypa
 
 def test_partial_blocks_are_excluded_from_endpoint_differences():
     arms = comparison.make_arms([32, 33], 32)
-    rows = [{"replicate": 0, "step": 0, "arm": arm["id"],
-             "size": 75 if arm["id"] == "native-33" else 70, "history_exact": True}
-            for arm in arms]
-    rows.append({"replicate": 0, "step": 1, "arm": "native-32", "size": 1000,
-                 "history_exact": True})
+    rows = [
+        {
+            "replicate": 0,
+            "step": 0,
+            "arm": arm["id"],
+            "size": 75 if arm["id"] == "native-33" else 70,
+            "history_exact": True,
+        }
+        for arm in arms
+    ]
+    rows.append(
+        {"replicate": 0, "step": 1, "arm": "native-32", "size": 1000, "history_exact": True}
+    )
     summary = comparison.comparison_summary(rows, arms, 32)
     assert summary["complete_matched_blocks"] == 1
     assert summary["partial_blocks_excluded"] == 1
