@@ -127,5 +127,5 @@ markers = [
     "benchmark: GPU timing checks (opt-in: --run-benchmarks with a local baseline)",
 ]
 filterwarnings = [
-    "ignore::DeprecationWarning",
+    "ignore::DeprecationWarning:ml_dtypes",
 ]

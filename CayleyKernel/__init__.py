@@ -35,6 +35,17 @@ import ctypes
 import os
 import warnings
 
+
+class LegacyDtypeWarning(UserWarning):
+    """Emit a one-time notice for the legacy real-list -> float32 default.
+
+    Intentionally a ``UserWarning`` subclass (not ``DeprecationWarning``)
+    so that it is visible by default in end-user code and can be filtered
+    independently in test suites without suppressing real deprecation
+    warnings from third-party packages.
+    """
+
+
 # GPU / array runtime.  Imports are lazy so that ``help(CayleyKernel)``
 # works even on machines without CUDA, and so the error message below is the
 # one users see for the actual failure.
@@ -65,6 +76,7 @@ __all__ = [
     "library_path",
     "loaded",
     "abi_version",
+    "LegacyDtypeWarning",
     "__version__",
     "twist",
     "basis",
@@ -201,28 +213,37 @@ _DTYPE_TO_SUFFIX = {
 # library is loaded.
 _KERNELS = {}
 
-if _KERNEL_LOADED:
-    for _suffix in _TYPE_SUFFIXES:
-        _legacy = getattr(_lib, "mult_%s" % _suffix, None)
-        if _legacy is None:
+
+def _register_kernels(lib, dtype_to_suffix, kernels):
+    """Populate *kernels* with one ``(legacy_fn, nd_fn)`` pair per dtype.
+
+    ``lib``          -- the loaded ``ctypes.CDLL`` handle.
+    ``dtype_to_suffix`` -- the module-level ``_DTYPE_TO_SUFFIX`` mapping.
+    ``kernels``      -- the module-level ``_KERNELS`` dict to fill.
+    """
+    for suffix in _TYPE_SUFFIXES:
+        legacy = getattr(lib, "mult_%s" % suffix, None)
+        if legacy is None:
             continue
-        _legacy.argtypes = _LEGACY_ARGTYPES
-        _legacy.restype = None
+        legacy.argtypes = _LEGACY_ARGTYPES
+        legacy.restype = None
 
         # The batched symbol only exists in kernels built from the current
         # sources.  Older shared objects fall back to a per-vector loop.
         try:
-            _nd = getattr(_lib, "mult_%s_nd" % _suffix)
-            _nd.argtypes = _ND_ARGTYPES
-            _nd.restype = None
+            nd = getattr(lib, "mult_%s_nd" % suffix)
+            nd.argtypes = _ND_ARGTYPES
+            nd.restype = None
         except AttributeError:
-            _nd = None
+            nd = None
 
-        for _name, _mapped in _DTYPE_TO_SUFFIX.items():
-            if _mapped == _suffix:
-                _KERNELS[_name] = (_legacy, _nd)
+        for name, mapped in dtype_to_suffix.items():
+            if mapped == suffix:
+                kernels[name] = (legacy, nd)
 
-    del _suffix, _legacy, _nd, _name, _mapped
+
+if _KERNEL_LOADED:
+    _register_kernels(_lib, _DTYPE_TO_SUFFIX, _KERNELS)
 
 
 # =============================================================================
@@ -301,7 +322,7 @@ def _as_cupy(x, ref_dtype=None):
                 "NumPy's float64 default in a future release; pass "
                 "cp.asarray(x, dtype=...) (or a NumPy array) to pin the dtype "
                 "explicitly.",
-                DeprecationWarning,
+                LegacyDtypeWarning,
                 stacklevel=3,
             )
             dtype = cp.float32
@@ -467,7 +488,7 @@ def multiply(a, b, out=None, stream=None):
     Mixed BF16 inputs widen to float32 before CuPy result_type promotion;
     all other mixed inputs follow CuPy result_type promotion directly.
     A real list as the first operand defaults to float32 (legacy; see the
-    ``DeprecationWarning``). As the second operand, it follows a
+    ``LegacyDtypeWarning``). As the second operand, it follows a
     floating/complex first operand's precision, or promotes with an integral
     first operand to preserve fractional values.  Complex lists always
     promote to preserve imaginary coefficients.

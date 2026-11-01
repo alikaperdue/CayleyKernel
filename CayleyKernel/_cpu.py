@@ -72,7 +72,7 @@ def _python_basis(r, c):
 # u - union
 # p - parity
 #
-def _python_muliply_aio(a, b):
+def _python_multiply_aio(a, b):
     import numpy as np
 
     dim = len(a)
@@ -97,10 +97,6 @@ def _python_muliply_aio(a, b):
             t += s * a[r] * b[c]
         o[i] = t
     return o
-
-
-# Correct spelling for discovery; retain the original function and name.
-_python_multiply_aio = _python_muliply_aio
 
 
 _requested = os.environ.get("CAYLEY_KERNEL_CPU_BACKEND", "auto").lower()

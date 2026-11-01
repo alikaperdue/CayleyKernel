@@ -1,0 +1,12 @@
+# Clippy configuration for the Rust CPU backend.
+#
+# `avoid-breaking-exported-api` is the single setting that matters for a
+# library crate that exposes a public API surface. It tells Clippy to treat
+# `pub` items as part of a stable contract, which enables the
+# `clippy::uninlined_format_args`, `clippy::needless_return`, and
+# `clippy::redundant_clone` heuristics that would otherwise be unsafe to
+# apply to a library (they would rewrite or delete public signatures).
+#
+# Keep this file in sync with the lint job in
+# `.github/workflows/cpu.yml` if the lint invocation changes.
+avoid-breaking-exported-api = true
