@@ -5,21 +5,22 @@ renderings. Default operation does not probe a CUDA device or call multiply().
 """
 import argparse
 import csv
-from datetime import datetime,timezone
-from fractions import Fraction
 import hashlib
 import io
 import json
-from pathlib import Path
 import platform
 import subprocess
 import sys
 import time
 import unittest
+from datetime import datetime, timezone
+from fractions import Fraction
+from pathlib import Path
 
 import CayleyKernel as CK
+
 from . import test_sections
-from .emanation import labels,table,recipe_rules
+from .emanation import labels, table
 
 
 class RecordedResult(unittest.TextTestResult):

@@ -1,7 +1,9 @@
 """Cayley matrix transform: Stiefel identities and finite-iteration limits."""
 import unittest
-from .common import e, mul, scale, add, close, gpu_replay
+
+from .common import close, e, gpu_replay, mul
 from .test_1703_00144v4 import left_matrix, np
+
 try:
     import pytest
     pytestmark=pytest.mark.cpu

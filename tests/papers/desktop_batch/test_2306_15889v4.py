@@ -1,10 +1,12 @@
 """Alternating roots, scalar norm equation, and doubling correspondence."""
-from fractions import Fraction as Q
-from itertools import product
 import random
 import unittest
-from .common import add,conj,e,mul,neg,pair,scale,rank,close,gpu_replay
-from tests.papers.arxiv_2608_28176.algebra import witness,Algebra
+from fractions import Fraction as Q
+
+from tests.papers.arxiv_2608_28176.algebra import Algebra, witness
+
+from .common import add, close, conj, e, gpu_replay, mul, neg, pair, rank, scale
+
 try:
     import pytest
     pytestmark=pytest.mark.cpu

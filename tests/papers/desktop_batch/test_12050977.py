@@ -1,8 +1,10 @@
 """US12050977B2: permutation encoder, and limits of CD substitution."""
-from itertools import product
 import random
 import unittest
-from .common import e, mul, neg, gpu_replay
+from itertools import product
+
+from .common import e, gpu_replay, mul, neg
+
 try:
     import pytest
     pytestmark = pytest.mark.cpu

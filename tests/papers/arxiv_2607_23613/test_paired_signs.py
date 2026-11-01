@@ -5,6 +5,7 @@ from argparse import Namespace
 
 import numpy as np
 import pytest
+
 from scripts import survey_eigen_frontier as survey
 
 pytestmark = pytest.mark.cpu

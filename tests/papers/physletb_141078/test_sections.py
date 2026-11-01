@@ -4,17 +4,39 @@ import itertools as it
 import random
 import unittest
 from fractions import Fraction
+
 try:
     import numpy as np
     import sympy as s
 except ModuleNotFoundError as exc:
     raise unittest.SkipTest("paper companion requires NumPy and SymPy: " + str(exc))
 import CayleyKernel as CK
+
 from .algebra import (
-    PAPER, TRIPLES, basis_product, mul, add, neg, scale, conj, e,
-    vector, operator, operators, words, flat, span_rank, comm, centralizer,
-    lie_model, physical, phases, embedding, hopf, oracle,
+    PAPER,
+    TRIPLES,
+    add,
+    basis_product,
+    centralizer,
+    comm,
+    conj,
+    e,
+    embedding,
+    flat,
+    hopf,
+    lie_model,
+    mul,
+    operator,
+    operators,
+    oracle,
+    phases,
+    physical,
+    scale,
+    span_rank,
+    vector,
+    words,
 )
+
 try:
     import pytest
     pytestmark = pytest.mark.cpu

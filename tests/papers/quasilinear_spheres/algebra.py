@@ -5,9 +5,10 @@ means dimension 2**n. Kernels/ranks are computed from actual products.
 The sparse arithmetic and RREF implementation follow the earlier paper suite;
 this package is standalone and imports no other paper package.
 """
+import random
 from fractions import Fraction as F
 from functools import lru_cache
-import random
+
 import CayleyKernel as CK
 
 

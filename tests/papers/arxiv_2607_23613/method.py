@@ -6,7 +6,8 @@ and singular spheres. This is a research verifier, not a certified general solve
 """
 import numpy as np
 import sympy as sp
-from tests.papers.desktop_batch.common import mul, add, scale, e, conj
+
+from tests.papers.desktop_batch.common import add, e, mul
 
 
 def dense(x, dim):

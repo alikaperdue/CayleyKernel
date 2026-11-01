@@ -10,9 +10,10 @@ from collections import Counter
 from pathlib import Path
 
 import numpy as np
-from scripts.paper_quadratic_frontier import Products, coefficient, encoded
+
 from scripts.batched_eigen_frontier import solve_batch
 from scripts.benchmark_eigen_frontier import heartbeat
+from scripts.paper_quadratic_frontier import Products, coefficient, encoded
 
 
 def atomic_json(path, value):

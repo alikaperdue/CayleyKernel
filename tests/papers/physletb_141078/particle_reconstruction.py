@@ -6,8 +6,9 @@ The C2 quaternion representation is faithful for H; tensor products here are
 operator tensor products, never a claim that C tensor H tensor O is a CD algebra.
 """
 from functools import lru_cache
-from itertools import combinations
+
 import sympy as s
+
 from .algebra import operators
 
 

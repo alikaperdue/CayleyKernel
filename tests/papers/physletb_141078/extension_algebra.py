@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 """Exact finite classification and signed-permutation centralizer calculations."""
-from collections import Counter
-from itertools import combinations, product, islice
 import random
+from collections import Counter
+from itertools import combinations, islice, product
+
 import numpy as np
-import sympy as sp
+
 import CayleyKernel as CK
+
 from .algebra import basis_product, oracle
 
 

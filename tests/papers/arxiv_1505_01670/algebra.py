@@ -3,12 +3,13 @@
 Elements use zero-based coordinate lists. Signed one-based labels are confined
 here. No CPU function is presented as execution of the GPU multiply() routine.
 """
+import math
 from dataclasses import dataclass
 from fractions import Fraction
 from functools import lru_cache
-import math
 
 import numpy as np
+
 import CayleyKernel as CK
 
 

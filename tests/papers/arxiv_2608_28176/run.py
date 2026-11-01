@@ -4,12 +4,13 @@ import hashlib
 import io
 import json
 import platform
-from pathlib import Path
 import sys
 import time
 import unittest
+from pathlib import Path
 
 import CayleyKernel as CK
+
 from . import test_sections
 
 

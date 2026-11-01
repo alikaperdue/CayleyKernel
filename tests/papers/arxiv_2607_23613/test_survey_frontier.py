@@ -6,6 +6,7 @@ from argparse import Namespace
 
 import numpy as np
 import pytest
+
 from scripts import survey_eigen_frontier as survey
 from scripts.batched_eigen_frontier import solve_batch
 

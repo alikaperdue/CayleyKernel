@@ -1,18 +1,51 @@
 """Paper-ordered exact tests. B=sqrt(2)*paper braces; no irrational rank guesses."""
-from fractions import Fraction as F
-from itertools import product
 import random
 import unittest
+from fractions import Fraction as F
+from itertools import product
 
 import numpy as np
+
 import CayleyKernel as CK
 from tests.papers.type_replay import replay_product
-from .algebra import (e,add,scale,conj,dot,norm2,mul,oracle_sign,imaginary_unit,
-                      pc,perp,h_indices,hermitian,pair,parts,B,split_B,tilde,J,
-                      cspan_projection,rows_from_columns,nullspace,span_rank,same_span,
-                      ann,ann_dimension,coordinate_intersection,in_D,divide,
-                      constraint_columns,predicted_ann_h,d_decomposition,max_ann,
-                      maximal_pair,modular_rank)
+
+from .algebra import (
+    B,
+    J,
+    add,
+    ann,
+    ann_dimension,
+    conj,
+    constraint_columns,
+    coordinate_intersection,
+    cspan_projection,
+    d_decomposition,
+    divide,
+    dot,
+    e,
+    h_indices,
+    hermitian,
+    imaginary_unit,
+    in_D,
+    max_ann,
+    maximal_pair,
+    modular_rank,
+    mul,
+    norm2,
+    nullspace,
+    oracle_sign,
+    pair,
+    parts,
+    pc,
+    perp,
+    predicted_ann_h,
+    rows_from_columns,
+    same_span,
+    scale,
+    span_rank,
+    split_B,
+    tilde,
+)
 
 OBSERVATIONS={}
 CERTIFICATES={}

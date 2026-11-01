@@ -65,11 +65,11 @@ def ref_sign(row, col):
     tx = _ffs(ur ^ uc) - 1
 
     if tc < tr:
-        s = (~uc >> tr)
+        s = ~uc >> tr
     elif tc < tx:
-        s = (~ur >> tx)
+        s = ~ur >> tx
     else:
-        s = (ur >> tc)
+        s = ur >> tc
 
     m = max(tc, tx, tr)
     parity = s ^ _popcount((ur | uc) >> m)

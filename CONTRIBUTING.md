@@ -69,6 +69,13 @@ for faster local iteration. AMD: `make kernel-amd` (requires ROCm/HIP).
 **Enforced by CI (`.github/workflows/cpu.yml`):**
 
 ```bash
+# Python (ruff: linter + formatter)
+ruff check .            # style + bugbear + isort
+ruff format --check .   # formatter drift check
+
+# C/CUDA (clang-format, Google base + project overrides)
+clang-format --dry-run --Werror cuda/cuda_kernel.cu cuda/amd_kernel.cu cuda/tools/compare_sign_tables.cpp
+
 # Rust (format + lint + tests + no_std)
 cargo fmt     --manifest-path rust/Cargo.toml --check
 cargo clippy  --manifest-path rust/Cargo.toml --locked --all-targets \
@@ -78,27 +85,48 @@ cargo check   --manifest-path rust/Cargo.toml --locked \
               --no-default-features --features no_std
 ```
 
-The one-liner for all of the above is `make rust-check`.
+The one-liner for the Python + C/CUDA checks is `make lint`.
+The one-liner for the Rust checks is `make rust-check`.
+The one-liner to auto-fix Python + C/CUDA drift is `make format`
+(do **not** use it to fix Rust drift; run `cargo fmt --manifest-path rust/Cargo.toml` separately if Rust drift ever appears).
 
-**Python and C/CUDA:** no formatter or linter is currently configured in
-`pyproject.toml`, `rust/`, or the repository root, and CI does not run one.
-New contributions should match the surrounding style by hand. If you add a
-new Python or CUDA file, please keep:
+### Python (ruff)
 
-- Python: 4-space indentation, double-quoted docstrings, `# SPDX-License-Identifier: Apache-2.0`
-  header, no trailing whitespace, no type hints on internal helpers (the
-  existing code does not use them).
-- C/CUDA: `// SPDX-License-Identifier: Apache-2.0` header, 4-space
-  indentation, `//` comments, no tabs, `constexpr` for compile-time constants.
+Configuration lives in `pyproject.toml` under `[tool.ruff]`. Rules enabled:
+`E` (pycodestyle errors), `W` (pycodestyle warnings), `F` (pyflakes),
+`I` (isort), `B` (flake8-bugbear). Rules deliberately **off**:
+`ANN` (type hints) and `D` (docstrings) — the codebase does not use type
+hints on internal helpers and does not require docstrings on every helper;
+forcing them would be a separate policy change. Line length is 100;
+the formatter owns wrapping (`E501` is ignored so the linter and formatter
+don't fight).
 
-**Recommended (not required, not in CI):**
+Style notes for new code:
 
-- [ruff](https://docs.astral.sh/ruff/) for Python, with the default rule set.
-- [clang-format](https://clang.llvm.org/docs/ClangFormat.html) for the CUDA
-  sources, using the `Google` style as a starting point.
+- 4-space indentation, double-quoted docstrings.
+- `# SPDX-License-Identifier: Apache-2.0` header on every new `.py` file.
+- No trailing whitespace, no type hints on internal helpers (the existing
+  code does not use them).
+- Import ordering follows `isort` (ruff's `I` rules); group stdlib / third-
+  party / local, alphabetical within group.
 
-If you want these enforced, add a config and a CI step in a separate PR; the
-rest of the repository should then conform to them.
+### C/CUDA (clang-format)
+
+Configuration lives in `.clang-format` (Google base with project overrides:
+`ColumnLimit: 100`, `SortIncludes: false`, `PointerAlignment: Left`,
+`DerivePointerAlignment: false`, `AlignTrailingComments: true`,
+`AllowShortFunctionsOnASingleLine: Inline`).
+
+Style notes for new code:
+
+- `// SPDX-License-Identifier: Apache-2.0` header on every new `.cu` / `.cpp` file.
+- 4-space indentation, `//` comments, no tabs.
+- `constexpr` for compile-time constants.
+- `const T* a` (pointer left-aligned) in signatures.
+- Preserve the existing include order in the kernel files (CUDA runtime
+  headers before project headers); do **not** add `#include <...>` in
+  alphabetical order — `.clang-format` is configured to not sort includes
+  for this reason.
 
 ## Testing
 
@@ -132,10 +160,11 @@ benchmark reproduction workflow.
 2. Keep the change focused. A PR that adds a dtype and also refactors the
    kernel should be two PRs.
 3. Update the relevant `docs/` page when user-visible behaviour changes.
-4. Run `make test` (or `make test-all` if you touched the slow path) and
-   `make rust-check` if you touched `rust/`.
-5. Open a PR against `main`. CI will run the CPU/Rust matrix and the wheel
-   builds.
+4. Run `make lint` (Python + C/CUDA) and `make rust-check` (Rust) before
+   pushing. Run `make test` (or `make test-all` if you touched the slow
+   path) if you touched the kernel, the Python wrapper, or `tests/`.
+5. Open a PR against `main`. CI will run the `lint` job, the CPU/Rust
+   matrix, and the wheel builds.
 
 ## Adding a supported dtype
 
@@ -176,7 +205,7 @@ from the NumPy/CuPy dtype name to that suffix in `_DTYPE_TO_SUFFIX`:
 ```python
 _TYPE_SUFFIXES = (
     # ... existing entries ...
-    "mynewtype",   # e.g. "float8_e4m3"
+    "mynewtype",  # e.g. "float8_e4m3"
 )
 
 _DTYPE_TO_SUFFIX = {
@@ -206,9 +235,9 @@ Copy the closest existing dtype test file (`test_half.py` or
 Run the full suite before pushing:
 
 ```bash
-make test
-# and, if you touched the Rust path:
-make rust-check
+make lint              # Python + C/CUDA format/lint
+make rust-check        # Rust format/lint/tests/no_std (if you touched rust/)
+make test              # or: make test-all for the slow path
 ```
 
 ## Things that are deliberately **not** in this repository

@@ -51,7 +51,7 @@ def test_batch_scaling(gpu_benchmark):
     print(f"\nPer item: batch 16={small / 16:.6g}s; batch 1024={large / 1024:.6g}s")
 
 
-@pytest.mark.parametrize('batch,dim', [(4096, 8), (16384, 16), (65535, 16), (70000, 4)])
+@pytest.mark.parametrize("batch,dim", [(4096, 8), (16384, 16), (65535, 16), (70000, 4)])
 def test_packed_small_vectors(gpu_benchmark, batch, dim):
     """Track shared-memory tiles over mid-range and large batches."""
     gpu_benchmark.measure(f"batch_{batch}_dim{dim}", multiply, (batch, dim))

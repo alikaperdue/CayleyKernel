@@ -10,12 +10,13 @@ import json
 import platform
 import time
 from datetime import datetime
-from zoneinfo import ZoneInfo
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import scipy
 from scipy.sparse.linalg import LinearOperator, gmres
+
 import CayleyKernel as CK
 
 

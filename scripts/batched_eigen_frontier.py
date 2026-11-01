@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """Coordinated real Newton/restarted GMRES searches; last axis is algebra."""
 from collections import Counter
+
 import numpy as np
+
 import CayleyKernel as CK
 from scripts.paper_quadratic_frontier import Products, reference_product
 

@@ -9,13 +9,14 @@ at the adapter to basis's signed, one-based encoding.
 
 import argparse
 import json
-from pathlib import Path
 import random
 import sys
+from pathlib import Path
 from time import perf_counter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from CayleyKernel import basis, twist
+
 
 def safe_getrandbits(rng, total_bits):
     """Bypasses Python's 32-bit C-boundary by chunking huge bit requests."""

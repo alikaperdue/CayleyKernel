@@ -15,6 +15,9 @@
 #   make rust-install    install the optional Rust CPU extension
 #   make rust-check      format/lint checks and standalone Rust tests
 #   make test-cpu        run CPU tests without requiring a GPU runtime
+#   make lint            check Python + C/CUDA + Rust formatting/lint (CI-equivalent)
+#   make lint-fix        auto-fix Python lint issues (ruff check --fix)
+#   make format          auto-fix Python + C/CUDA formatting (safe, no lint rules)
 #   make wheel           build a redistributable wheel (bundles the kernel)
 #   make clean           remove build artifacts and compiled binaries
 
@@ -24,6 +27,8 @@ HIPCC      ?= hipcc
 CXX        ?= g++
 CARGO      ?= cargo
 PYTHON     ?= python3
+RUFF       ?= ruff
+CLANG_FMT  ?= clang-format
 
 # Compilation flags for native optimizations (Targeting Zen 4 / Ryzen 9)
 CC ?= gcc
@@ -41,7 +46,7 @@ ARCHS ?= sm_75 sm_80 sm_86 sm_89 sm_90 sm_100 sm_110 sm_120
 NVCC_GENCODES := $(foreach a,$(ARCHS),-gencode arch=compute_$(subst sm_,,$(a)),code=$(a))
 
 .PHONY: all kernel kernel-amd sign-check test test-all test-sparse-zd zd-showcase wheel clean
-.PHONY: rust-install rust-check test-cpu benchmark benchmark-record
+.PHONY: rust-install rust-check test-cpu benchmark benchmark-record lint lint-fix format
 
 # The optional CPU extension is packaged separately; ordinary Python/GPU
 # installations never need a Rust toolchain.
@@ -53,6 +58,29 @@ rust-check:
 	$(CARGO) clippy --manifest-path rust/Cargo.toml --locked --all-targets --features python -- -D warnings
 	$(CARGO) test --manifest-path rust/Cargo.toml --locked
 	$(CARGO) check --manifest-path rust/Cargo.toml --locked --no-default-features --features no_std
+
+# ---------------------------------------------------------------------------
+# Lint / format
+#
+# `make lint`   is the CI-equivalent one-liner: check-only, fails on drift.
+# `make format` auto-fixes Python (ruff) and C/CUDA (clang-format). It does
+#                NOT run `cargo fmt` (Rust is checked separately via
+#                `make rust-check` because `cargo fmt` is idempotent and the
+#                project treats Rust style as already-conformed).
+#
+# The same commands are run by `.github/workflows/cpu.yml` (the `lint` job).
+# ---------------------------------------------------------------------------
+lint:
+	$(RUFF) check .
+	$(RUFF) format --check .
+	$(CLANG_FMT) --dry-run --Werror cuda/cuda_kernel.cu cuda/amd_kernel.cu cuda/tools/compare_sign_tables.cpp
+
+format:
+	$(RUFF) format .
+	$(CLANG_FMT) -i cuda/cuda_kernel.cu cuda/amd_kernel.cu cuda/tools/compare_sign_tables.cpp
+
+lint-fix:
+	$(RUFF) check --fix .
 
 test-cpu:
 	$(PYTHON) -m pytest -q -m cpu tests/

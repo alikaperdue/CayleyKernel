@@ -6,6 +6,7 @@ No GPU API is called here. The table recipe never calls the product oracle.
 """
 from functools import lru_cache
 from itertools import combinations
+
 import CayleyKernel as CK
 
 

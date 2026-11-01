@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: Apache-2.0
+# clang-format configuration for the CUDA / HIP / C++ sources in cuda/.
+#
+# Based on the Google style (the de-facto standard starting point for
+# C++/CUDA projects) with a few project-specific overrides:
+#
+#   - ColumnLimit: 100  (match the Python line length)
+#   - SortIncludes: false  (the kernel files have a deliberate include order:
+#                            CUDA runtime headers before project headers;
+#                            sorting would break it)
+#   - PointerAlignment: Left  (const T* a, matching the existing extern "C"
+#                              signatures)
+#   - DerivePointerAlignment: false  (do not infer from usage)
+#   - AlignTrailingComments: true  (existing code uses aligned trailing
+#                                   comments on the trait specializations)
+#   - AllowShortFunctionsOnASingleLine: Inline
+#       The kernel has small __device__ helpers (sign(), accum_traits,
+#       negation) that read better on one line than forced onto three.
+#
+# Version note: the `clang-format` in the Ubuntu GitHub Actions runner
+# (>= 14) handles CUDA's <<<grid, block>>> launch syntax and __global__ /
+# __device__ qualifiers correctly. Do not lower this below 14.
+
+BasedOnStyle: Google
+ColumnLimit: 100
+SortIncludes: false
+PointerAlignment: Left
+DerivePointerAlignment: false
+AlignTrailingComments: true
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+SpaceBeforeCpp11BracedList: false
+Standard: c++17

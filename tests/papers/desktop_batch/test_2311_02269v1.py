@@ -1,7 +1,9 @@
 """Independent Clifford blade algebra and the paper's modified products."""
-from itertools import product,combinations
 import unittest
-from .common import add,conj,e,neg,scale,mul,Algebra,gpu_replay
+from itertools import combinations, product
+
+from .common import Algebra, add, e, gpu_replay, mul, scale
+
 try:
     import pytest
     pytestmark=pytest.mark.cpu

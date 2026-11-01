@@ -1,9 +1,10 @@
 """Lupercio--Uribe: finite cochain models and U(1) phase identities."""
-from fractions import Fraction as Q
-from itertools import combinations, product
 import math
 import unittest
-from .common import add, e, mul, phase, close, gpu_replay
+from fractions import Fraction as Q
+from itertools import combinations, product
+
+from .common import close, e, gpu_replay, mul, phase
 
 try:
     import pytest
@@ -79,8 +80,9 @@ class Sections(unittest.TestCase):
 
     def test_06_gpu_native_complex_holonomy(self):
         import numpy as np
+
         import CayleyKernel as CK
-        from tests.papers.type_replay import require_gpu, host
+        from tests.papers.type_replay import host, require_gpu
         require_gpu(self)
         angles=np.array([-.8,0.,.3,1.2])
         for dtype,tol in ((np.complex64,2e-6),(np.complex128,1e-14)):

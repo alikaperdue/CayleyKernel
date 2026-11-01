@@ -1,10 +1,12 @@
 """Bales v4: enumerate 32 products; distinguish pseudo from octonion."""
-from itertools import combinations, product
-from functools import lru_cache
 import unittest
-from .common import add, conj, e, neg, gpu_replay
-from .test_1602_02843v3 import omega, kernel_shuffle
+from functools import lru_cache
+from itertools import combinations, product
+
+from .common import add, conj, e, gpu_replay
+from .test_1602_02843v3 import kernel_shuffle, omega
 from .test_1474295358 import tree2
+
 try:
     import pytest
     pytestmark=pytest.mark.cpu

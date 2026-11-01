@@ -1,9 +1,21 @@
 """Ren--Zhao explicit twist, independent doubling, and split correction."""
-from itertools import product
 import random
 import unittest
+from itertools import product
+
 import CayleyKernel as CK
-from .common import Algebra,add,conj,e,neg,pair,scale,mul,basis_product,recursive_basis,gpu_replay
+
+from .common import (
+    Algebra,
+    basis_product,
+    conj,
+    e,
+    gpu_replay,
+    mul,
+    neg,
+    recursive_basis,
+)
+
 try:
     import pytest
     pytestmark=pytest.mark.cpu

@@ -5,8 +5,8 @@ checking their original inputs. Additional replays check coefficient storage
 and complexification, not extensions of real norm/topology theorems.
 """
 import numpy as np
-import CayleyKernel as CK
 
+import CayleyKernel as CK
 
 DTYPES = (np.float16, np.complex64, np.complex128)
 
@@ -103,7 +103,7 @@ def signature_fixture(gammas):
     basis monomial gets the product of its generator phases. This is a
     complex coordinate embedding, not a real signature flag on multiply().
     """
-    from tests.papers.arxiv_2608_28176.algebra import Algebra, e
+    from tests.papers.arxiv_2608_28176.algebra import Algebra
     A = Algebra(len(gammas), gammas, reference=True)
     phase = np.array([1j ** sum(bool(i & (1 << k)) for k, g in enumerate(gammas) if g == 1)
                       for i in range(A.dim)])

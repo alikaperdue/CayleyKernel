@@ -6,7 +6,9 @@ signature argument to CayleyKernel. Tuple indices are mathematical e_i.
 """
 from functools import lru_cache
 from itertools import product
+
 import numpy as np
+
 import CayleyKernel as CK
 
 

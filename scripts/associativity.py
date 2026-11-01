@@ -14,22 +14,21 @@ The measurements are evidence, not a proof of a limiting law.
 """
 
 import argparse
-from collections import Counter, defaultdict
 import csv
-from fractions import Fraction
 import hashlib
 import itertools
 import json
 import math
-from pathlib import Path
 import platform
 import random
 import sys
+from collections import Counter, defaultdict
+from fractions import Fraction
+from pathlib import Path
 from time import perf_counter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from CayleyKernel import twist
-
 
 REGIMES = ("uniform", "dense", "sparse", "clustered")
 SOURCE = "https://arxiv.org/html/2505.11747v3#S3"

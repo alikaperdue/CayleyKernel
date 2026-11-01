@@ -77,7 +77,8 @@ def _gpu_batch(x):
 
 
 def _gpu_available():
-    from . import loaded, _library_path
+    from . import _library_path, loaded
+
     return _library_path is not None and loaded()
 
 
@@ -89,7 +90,7 @@ def _dispatch_conjugate(a, xp):
     or empty batch).  The caller should fall back to the generic
     expression in that case.
     """
-    from . import cp, _launch_conjugate
+    from . import _launch_conjugate, cp
 
     if cp is None or not isinstance(a, cp.ndarray):
         return None
@@ -117,7 +118,7 @@ def _dispatch_norm_sq(a, xp):
     Returns a fresh CuPy array of shape ``a.shape[:-1]`` (the algebra axis
     removed), or ``None`` when the dispatch is not possible.
     """
-    from . import cp, _launch_norm_sq
+    from . import _launch_norm_sq, cp
 
     if cp is None or not isinstance(a, cp.ndarray):
         return None
@@ -211,7 +212,8 @@ def inverse(a):
         warnings.warn(
             "Dimensions >= 16 admit zero divisors even with positive norm_sq; "
             "the conjugate/norm inverse does not guarantee cancellation.",
-            RuntimeWarning, stacklevel=2,
+            RuntimeWarning,
+            stacklevel=2,
         )
     result = _dispatch_conjugate(x, xp)
     if result is None:

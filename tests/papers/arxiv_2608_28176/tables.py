@@ -22,8 +22,9 @@ t6 2t7 0 0 2t5 -2t4 2t0 -f6 2f7 0 0 2f5 -2f4 -2f0
 
 
 def table1(f, t):
-    from .algebra import scale
     import re
+
+    from .algebra import scale
     rows = []
     for row in TABLE1.strip().splitlines():
         values = []

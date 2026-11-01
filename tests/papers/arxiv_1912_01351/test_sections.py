@@ -2,17 +2,39 @@
 
 Run with python3 -m tests.papers.arxiv_1912_01351.run.
 """
-from fractions import Fraction as F
-from itertools import product
 import random
 import unittest
+from fractions import Fraction as F
+from itertools import product
 
 import numpy as np
+
 import CayleyKernel as CK
 from tests.papers.type_replay import replay_product
-from .algebra import (PAPER_TABLE, PAPER_TO_KERNEL, e, add, scale, conj, norm,
-                      mul, recursive, inverse, q, dq, transformed, nmul, nq,
-                      ndq, lattice, zeta, wp, jacobian, dirac)
+
+from .algebra import (
+    PAPER_TABLE,
+    PAPER_TO_KERNEL,
+    add,
+    conj,
+    dirac,
+    dq,
+    e,
+    inverse,
+    jacobian,
+    lattice,
+    mul,
+    ndq,
+    nmul,
+    norm,
+    nq,
+    q,
+    recursive,
+    scale,
+    transformed,
+    wp,
+    zeta,
+)
 
 OBSERVATIONS = {}
 

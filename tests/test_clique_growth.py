@@ -1,9 +1,9 @@
 """CPU regression tests for free searches, anchored extensions, and output."""
 
 import json
-from pathlib import Path
 import random
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -44,8 +44,11 @@ def test_extension_maximum_matches_exhaustive_compatible_pool(anchor_size):
     anchor = small_anchor()[:anchor_size]
     result, record = growth.search_extension(anchor, 4, 100, 2026, 0, 5)
     all_vertices, _ = rg.candidates(4, 14, random.Random(7), xor_mask=9)
-    compatible = [x for x in all_vertices if x not in anchor
-                  and all(rg.related(x, y, "orthogonality") for y in anchor)]
+    compatible = [
+        x
+        for x in all_vertices
+        if x not in anchor and all(rg.related(x, y, "orthogonality") for y in anchor)
+    ]
     graph = rg.build_graphs(compatible, ["orthogonality"])["orthogonality"]
     expected = rg.maximum_clique(graph, 5)
     assert record["compatible_with_entire_anchor"] == len(compatible)
@@ -64,8 +67,18 @@ def test_free_search_reproduces_known_69():
 
 
 def test_main_checkpoints_budget_and_unique_output_directories(tmp_path):
-    common = ["--levels", "32", "--vertices", "8", "--trials", "1",
-              "--clique-seconds", "0", "--output-dir", str(tmp_path)]
+    common = [
+        "--levels",
+        "32",
+        "--vertices",
+        "8",
+        "--trials",
+        "1",
+        "--clique-seconds",
+        "0",
+        "--output-dir",
+        str(tmp_path),
+    ]
     summary = growth.main(common)
     assert summary["status"] == "plan_completed"
     assert summary["completed_phases"] == 2

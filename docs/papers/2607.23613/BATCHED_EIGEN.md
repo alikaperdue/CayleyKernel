@@ -24,8 +24,7 @@ Each Newton iteration computes and caches `BX = multiply(B, X)` and evaluates
 
 ```python
 F = multiply(X, BX) + multiply(X, A) - multiply(D, X) - C
-JH = (multiply(H, BX) + multiply(X, multiply(B, H))
-      + multiply(H, A) - multiply(D, H))
+JH = multiply(H, BX) + multiply(X, multiply(B, H)) + multiply(H, A) - multiply(D, H)
 ```
 
 Restarted GMRES maintains a separate Arnoldi basis, Hessenberg system, Givens

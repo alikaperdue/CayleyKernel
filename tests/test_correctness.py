@@ -16,7 +16,7 @@ import pytest
 
 cp = pytest.importorskip("cupy")
 
-from CayleyKernel import multiply, _select_kernel  # noqa: E402
+from CayleyKernel import _select_kernel, multiply  # noqa: E402
 from tests.reference import ref_mult, ref_sign  # noqa: E402
 
 
@@ -99,8 +99,7 @@ def FAILStest_sparse_high_dim_exact(dim):
     ix, vx = random_sparse(dim, 8, rng)
     iy, vy = random_sparse(dim, 8, rng)
 
-    got = multiply(as_dense(dim, ix, vx, np.float64),
-                   as_dense(dim, iy, vy, np.float64))
+    got = multiply(as_dense(dim, ix, vx, np.float64), as_dense(dim, iy, vy, np.float64))
     want = sparse_product(dim, ix, vx, iy, vy)
 
     cp.testing.assert_allclose(got, cp.asarray(want), rtol=1e-12, atol=1e-12)
@@ -113,12 +112,10 @@ def FAILStest_sparse_spot_2pow20():
     ix, vx = random_sparse(dim, 6, rng)
     iy, vy = random_sparse(dim, 6, rng)
 
-    got = multiply(as_dense(dim, ix, vx, np.float32),
-                   as_dense(dim, iy, vy, np.float32))
+    got = multiply(as_dense(dim, ix, vx, np.float32), as_dense(dim, iy, vy, np.float32))
     want = sparse_product(dim, ix, vx, iy, vy)
 
-    cp.testing.assert_allclose(got, cp.asarray(want.astype(np.float32)),
-                               rtol=1e-3, atol=1e-4)
+    cp.testing.assert_allclose(got, cp.asarray(want.astype(np.float32)), rtol=1e-3, atol=1e-4)
 
 
 # ---------------------------------------------------------------------------
@@ -154,9 +151,7 @@ def test_2d_batch_matches_1d(dim, batch):
     got = multiply(A, B)
     assert got.shape == (batch, dim)
     for i in range(batch):
-        cp.testing.assert_allclose(
-            got[i], multiply(A[i], B[i]), rtol=1e-4, atol=1e-5
-        )
+        cp.testing.assert_allclose(got[i], multiply(A[i], B[i]), rtol=1e-4, atol=1e-5)
 
 
 @pytest.mark.parametrize("dim", [4, 8])
@@ -166,9 +161,7 @@ def test_2d_batch_matches_recursive(dim):
     B = cp.random.randn(batch, dim).astype(cp.float64)
     got = multiply(A, B)
     for i in range(batch):
-        cp.testing.assert_allclose(
-            got[i], ref_mult(A[i], B[i]), rtol=1e-10, atol=1e-12
-        )
+        cp.testing.assert_allclose(got[i], ref_mult(A[i], B[i]), rtol=1e-10, atol=1e-12)
 
 
 def test_3d_batch_matches_1d():
@@ -179,9 +172,7 @@ def test_3d_batch_matches_1d():
     assert got.shape == (B, N, dim)
     for i in range(B):
         for j in range(N):
-            cp.testing.assert_allclose(
-                got[i, j], multiply(A[i, j], C[i, j]), rtol=1e-4, atol=1e-5
-            )
+            cp.testing.assert_allclose(got[i, j], multiply(A[i, j], C[i, j]), rtol=1e-4, atol=1e-5)
 
 
 def test_4d_batch_matches_1d():
@@ -210,9 +201,7 @@ def test_broadcast_stack_against_vector(dim):
     got = multiply(A, v)
     assert got.shape == (N, dim)
     for i in range(N):
-        cp.testing.assert_allclose(
-            got[i], multiply(A[i], v), rtol=1e-4, atol=1e-5
-        )
+        cp.testing.assert_allclose(got[i], multiply(A[i], v), rtol=1e-4, atol=1e-5)
 
 
 def test_broadcast_vector_against_stack():
@@ -222,9 +211,7 @@ def test_broadcast_vector_against_stack():
     got = multiply(v, A)
     assert got.shape == (N, dim)
     for i in range(N):
-        cp.testing.assert_allclose(
-            got[i], multiply(v, A[i]), rtol=1e-4, atol=1e-5
-        )
+        cp.testing.assert_allclose(got[i], multiply(v, A[i]), rtol=1e-4, atol=1e-5)
 
 
 def test_broadcast_3d_stack_against_vector():
@@ -235,9 +222,7 @@ def test_broadcast_3d_stack_against_vector():
     assert got.shape == (B, N, dim)
     for i in range(B):
         for j in range(N):
-            cp.testing.assert_allclose(
-                got[i, j], multiply(A[i, j], v), rtol=1e-4, atol=1e-5
-            )
+            cp.testing.assert_allclose(got[i, j], multiply(A[i, j], v), rtol=1e-4, atol=1e-5)
 
 
 # ---------------------------------------------------------------------------
@@ -251,9 +236,7 @@ def test_batch_exceeds_max_grid_y():
     got = multiply(A, B)
     assert got.shape == (batch, dim)
     for i in (0, 1, 65534, 65535, 65536, batch - 1):
-        cp.testing.assert_allclose(
-            got[i], multiply(A[i], B[i]), rtol=1e-4, atol=1e-5
-        )
+        cp.testing.assert_allclose(got[i], multiply(A[i], B[i]), rtol=1e-4, atol=1e-5)
 
 
 # ---------------------------------------------------------------------------
@@ -327,6 +310,4 @@ def test_2d_product_small_case():
     a = cp.array([3.0, 4.0], dtype=cp.float64)
     b = cp.array([1.0, 2.0], dtype=cp.float64)
     # (3 + 4i)(1 + 2i) = -5 + 10i
-    cp.testing.assert_allclose(
-        multiply(a, b), cp.array([-5.0, 10.0]), rtol=1e-12, atol=1e-14
-    )
+    cp.testing.assert_allclose(multiply(a, b), cp.array([-5.0, 10.0]), rtol=1e-12, atol=1e-14)

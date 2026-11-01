@@ -1,9 +1,12 @@
 """Bales 2016: P2 shuffle twist vs its independent doubling and tree."""
-from itertools import product
 import random
 import unittest
+from itertools import product
+
 from CayleyKernel import twist
+
 from .common import basis_product, e, gpu_replay, recursive_basis
+
 try:
     import pytest
     pytestmark = pytest.mark.cpu

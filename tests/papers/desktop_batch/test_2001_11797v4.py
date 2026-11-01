@@ -1,8 +1,11 @@
 """VSA comparison ingredients and a deliberately separate CD extension."""
-from itertools import product
 import unittest
-from .common import Algebra, add, conj, e, mul, neg, scale, pair, gpu_replay
+from itertools import product
+
 from tests.papers.arxiv_2608_28176.algebra import witness
+
+from .common import Algebra, add, conj, e, gpu_replay, mul, pair, scale
+
 try:
     import numpy as np
 except ImportError:

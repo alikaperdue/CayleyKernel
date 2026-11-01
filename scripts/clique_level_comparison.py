@@ -8,10 +8,10 @@ Default: levels 32--35, 512 candidates/step, 5 steps, 3 replicates, soft 10 min.
 
 import argparse
 import json
-from pathlib import Path
 import random
 import statistics
 import sys
+from pathlib import Path
 from time import perf_counter
 from uuid import uuid4
 

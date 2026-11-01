@@ -1,9 +1,10 @@
 """Zuest: exact exterior forms plus octonion-derived Clifford spinor actions."""
-from fractions import Fraction as Q
-from itertools import combinations,permutations,product
-import math
 import unittest
-from .common import add,conj,e,mul,neg,gpu_replay
+from fractions import Fraction as Q
+from itertools import combinations, permutations, product
+
+from .common import add, conj, e, gpu_replay, mul
+
 try:
     import pytest
     pytestmark=pytest.mark.cpu

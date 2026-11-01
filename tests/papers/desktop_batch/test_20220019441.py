@@ -1,8 +1,10 @@
 """Nine-part HDC patent: selected software primitives, no hardware claims."""
-from itertools import product
 import unittest
+from itertools import product
+
+from .common import e, gpu_replay, mul
 from .test_1703_00144v4 import np
-from .common import e,mul,gpu_replay
+
 try:
     import pytest
     pytestmark=pytest.mark.cpu

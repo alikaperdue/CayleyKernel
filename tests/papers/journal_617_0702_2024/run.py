@@ -5,22 +5,23 @@ runner defaults to CPU-only, without any CUDA-device probe or multiply call.
 """
 import argparse
 import csv
-from datetime import datetime,timezone
-from fractions import Fraction
 import hashlib
 import io
 import json
-from pathlib import Path
 import platform
 import subprocess
 import sys
 import time
 import unittest
+from datetime import datetime, timezone
+from fractions import Fraction
+from pathlib import Path
 
 import CayleyKernel as CK
+
 from . import test_sections
 from .figures import line_chart
-from .finite import correct_norm_zero, paper_zd, paper_units
+from .finite import correct_norm_zero, paper_units, paper_zd
 
 
 class RecordedResult(unittest.TextTestResult):

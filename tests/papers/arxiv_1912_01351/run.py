@@ -1,19 +1,21 @@
 """Run paper tests in section order; optionally save provenance and observations."""
 import argparse
 import hashlib
-from fractions import Fraction
 import io
 import json
-from pathlib import Path
 import platform
 import subprocess
 import sys
 import time
 import unittest
 from datetime import datetime, timezone
+from fractions import Fraction
+from pathlib import Path
 
 import numpy as np
+
 import CayleyKernel as CK
+
 from . import test_sections
 
 

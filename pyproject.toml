@@ -50,6 +50,9 @@ bfloat16 = ["ml_dtypes>=0.5", "numpy>=2.1.2", "cupy-cuda12x>=14"]
 test = [
     "pytest",
 ]
+dev = [
+    "ruff>=0.9,<1.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/alikaperdue/CayleyKernel"
@@ -63,6 +66,59 @@ packages = ["CayleyKernel"]
 # Wheels built via `make wheel` bundle the freshly compiled kernel binary.
 # The .so is never tracked in git; it is produced by `make kernel` first.
 CayleyKernel = ["*.so"]
+
+# ---------------------------------------------------------------------------
+# ruff (Python linter + formatter)
+#
+# Enforced by CI (`.github/workflows/cpu.yml` -> `lint` job).
+# Run `make lint` to check, `make format` to auto-fix.
+#
+# Rule selection rationale:
+#   E/W/F - the safe, zero-surprise baseline (pycodestyle + pyflakes).
+#   I     - isort import ordering; the most common "style noise" in PRs.
+#   B (flake8-bugbear) is deliberately OFF for now. It flags code-quality
+#   patterns (B905 zip strict=, B904 raise-from, etc.) that require human
+#   judgement and are the wrong scope for a formatting pass. Add it back as
+#   a deliberate code-quality PR once the tree is clean on E/W/F/I.
+#
+#   ANN (type hints) and D (docstrings) are deliberately OFF: the codebase
+#   does not use type hints on internal helpers and does not require
+#   docstrings on every helper. Forcing them would be a much larger change
+#   and belongs in a separate policy PR if desired.
+#
+#   E501 is ignored because ruff's formatter owns line wrapping; we don't
+#   want two systems fighting.
+#
+#   B008 is ignored because the ctypes glue in `CayleyKernel/__init__.py`
+#   intentionally calls `ctypes.c_int` / `ctypes.c_void_p` etc. in
+#   default-argument positions.
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = [
+    "tests/papers",  # per-paper research scratch: skip lint AND format
+    "scripts",       # user-invoked research tooling: skip lint AND format
+]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+]
+ignore = [
+    "E501",  # line length handled by the formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"CayleyKernel/__init__.py" = ["E402", "F401"]  # package init: deferred imports + public re-exports
+"tests/*" = ["E402", "E702", "E731"]  # some inline-style helpers in the main test suite
+
+[tool.ruff.format]
+quote-style = "double"   # match the existing docstring style
+line-ending = "lf"
 
 [tool.pytest.ini_options]
 markers = [

@@ -1,11 +1,12 @@
 """CPU backend parity, independent oracles, and optional-install behavior."""
+
 import importlib.util
 import itertools
 import os
-from pathlib import Path
 import random
 import subprocess
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -56,9 +57,17 @@ def test_word_boundaries_and_random_bigints(cpu):
     rng = random.Random(2026)
     for bits in (31, 32, 63, 64, 65, 127, 128, 129, 191, 192, 255, 256, 257, 1024, 4096):
         top = 1 << (bits - 1)
-        pairs = [(0, top), (top, 0), (top, top), (top, top - 1),
-                 ((1 << bits) - 1, top), (top + 1, top + 2),
-                 (top + 1, 1), (top + 1, (top << 1) + 1), (top, top << 1)]
+        pairs = [
+            (0, top),
+            (top, 0),
+            (top, top),
+            (top, top - 1),
+            ((1 << bits) - 1, top),
+            (top + 1, top + 2),
+            (top + 1, 1),
+            (top + 1, (top << 1) + 1),
+            (top, top << 1),
+        ]
         pairs += [(rng.getrandbits(bits), rng.getrandbits(bits)) for _ in range(16)]
         expected = [doubling_sign(a, b) for a, b in pairs]
         assert cpu.twist_many(iter(pairs)) == expected
@@ -69,10 +78,10 @@ def test_word_boundaries_and_random_bigints(cpu):
 
 def test_million_bit_indices(cpu):
     # Embedding small basis indices by a common bit shift preserves the sign.
-    pairs = [(a << 1_000_000, b << 1_000_000)
-             for a, b in ((0, 3), (3, 3), (3, 6), (6, 3), (7, 4))]
-    assert cpu.twist_many(pairs) == [doubling_sign(a, b)
-                                    for a, b in ((0, 3), (3, 3), (3, 6), (6, 3), (7, 4))]
+    pairs = [(a << 1_000_000, b << 1_000_000) for a, b in ((0, 3), (3, 3), (3, 6), (6, 3), (7, 4))]
+    assert cpu.twist_many(pairs) == [
+        doubling_sign(a, b) for a, b in ((0, 3), (3, 3), (3, 6), (6, 3), (7, 4))
+    ]
     rng = random.Random(81)
     a, b = rng.getrandbits(1_000_000), rng.getrandbits(1_000_000)
     assert cpu.twist(a, b) == cpu._python_twist(a, b)
@@ -103,8 +112,9 @@ def test_input_contract(cpu):
             cpu.basis_many([(1, 1), (r, c)])
 
 
-@pytest.mark.parametrize("backend, succeeds", [("auto", True), ("python", True),
-                                               ("rust", False), ("invalid", False)])
+@pytest.mark.parametrize(
+    "backend, succeeds", [("auto", True), ("python", True), ("rust", False), ("invalid", False)]
+)
 def test_import_without_optional_dependencies(backend, succeeds):
     code = """
 import sys
@@ -115,9 +125,13 @@ assert ck.cpu_backend() == 'python'
 assert ck.twist(3, 6) in (-1, 1)
 assert ck.basis_many([(1, 1)]) == [1]
 """
-    result = subprocess.run([sys.executable, "-c", code], cwd=ROOT,
-                            env={**os.environ, "CAYLEY_KERNEL_CPU_BACKEND": backend},
-                            capture_output=True, text=True)
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=ROOT,
+        env={**os.environ, "CAYLEY_KERNEL_CPU_BACKEND": backend},
+        capture_output=True,
+        text=True,
+    )
     assert (result.returncode == 0) == succeeds, result.stderr
     if backend == "rust":
         assert "Rust CPU backend requested but unavailable" in result.stderr
@@ -186,8 +200,9 @@ def test_cpu_multiply(cpu, dim):
         np.testing.assert_array_equal(actual, expected)
 
 
-@pytest.mark.parametrize("a,b", [([], []), ([1, 2], [1]), ([1]*3, [1]*3),
-                                  ([[1, 2]], [[3, 4]]), (1, 2)])
+@pytest.mark.parametrize(
+    "a,b", [([], []), ([1, 2], [1]), ([1] * 3, [1] * 3), ([[1, 2]], [[3, 4]]), (1, 2)]
+)
 def test_cpu_multiply_invalid_shapes(cpu, a, b):
     pytest.importorskip("numpy")
     with pytest.raises(ValueError):
@@ -211,7 +226,7 @@ def test_native_multiply():
             pytest.fail(message)
         pytest.skip(message)
     assert native.multiply([3, 4], [1, 2]) == [-5.0, 10.0]
-    for a, b in (([], []), ([1, 2], [1]), ([1]*3, [1]*3)):
+    for a, b in (([], []), ([1, 2], [1]), ([1] * 3, [1] * 3)):
         with pytest.raises(ValueError, match="same power-of-two length"):
             native.multiply(a, b)
 
@@ -228,5 +243,6 @@ def test_cpu_multiply_with_older_extension(cpu, monkeypatch):
 
 def test_cpu_multiply_export():
     import CayleyKernel as ck
+
     assert "cpu_multiply" in ck.__all__
     assert ck.cpu_multiply([3, 4], [1, 2]).tolist() == [-5.0, 10.0]
