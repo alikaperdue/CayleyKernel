@@ -50,6 +50,9 @@ bfloat16 = ["ml_dtypes>=0.5", "numpy>=2.1.2", "cupy-cuda12x>=14"]
 test = [
     "pytest",
 ]
+dev = [
+    "ruff>=0.9,<1.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/alikaperdue/CayleyKernel"
@@ -63,6 +66,54 @@ packages = ["CayleyKernel"]
 # Wheels built via `make wheel` bundle the freshly compiled kernel binary.
 # The .so is never tracked in git; it is produced by `make kernel` first.
 CayleyKernel = ["*.so"]
+
+# ---------------------------------------------------------------------------
+# ruff (Python linter + formatter)
+#
+# Enforced by CI (`.github/workflows/cpu.yml` -> `lint` job).
+# Run `make lint` to check, `make format` to auto-fix.
+#
+# Rule selection rationale:
+#   E/W/F - the safe, zero-surprise baseline (pycodestyle + pyflakes).
+#   I     - isort import ordering; the most common "style noise" in PRs.
+#   B     - flake8-bugbear; catches real bugs at near-zero false-positive cost.
+#
+#   ANN (type hints) and D (docstrings) are deliberately OFF: the codebase
+#   does not use type hints on internal helpers and does not require
+#   docstrings on every helper. Forcing them would be a much larger change
+#   and belongs in a separate policy PR if desired.
+#
+#   E501 is ignored because ruff's formatter owns line wrapping; we don't
+#   want two systems fighting.
+#
+#   B008 is ignored because the ctypes glue in `CayleyKernel/__init__.py`
+#   intentionally calls `ctypes.c_int` / `ctypes.c_void_p` etc. in
+#   default-argument positions.
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "B",
+]
+ignore = [
+    "E501",
+    "B008",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["E402"]  # module-level imports not at top (common in benchmark scripts)
+"tests/*"  = ["E402"]  # module-level imports not at top (conftest-style fixtures)
+
+[tool.ruff.format]
+quote-style = "double"   # match the existing docstring style
+line-ending = "lf"
 
 [tool.pytest.ini_options]
 markers = [

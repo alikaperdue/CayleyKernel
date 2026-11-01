@@ -8,6 +8,27 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    name: Lint and format (Python + C/CUDA)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ruff (version pinned for reproducibility)
+        run: python -m pip install ruff==0.9.7
+      - name: ruff check
+        run: ruff check .
+      - name: ruff format --check
+        run: ruff format --check .
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+      - name: clang-format --dry-run (CUDA / C++)
+        run: >
+          clang-format --dry-run --Werror
+          cuda/cuda_kernel.cu cuda/amd_kernel.cu cuda/tools/compare_sign_tables.cpp
+
   cpu:
     name: ${{ matrix.os }} / Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
