@@ -95,8 +95,16 @@ jobs:
       - name: Install build tooling
         run: |
           apt-get update
-          apt-get install -y python3 python3-pip make patchelf
-          python3 -m pip install build auditwheel wheel twine
+          # removed for next 4 lines...
+          #apt-get install -y python3 python3-pip make patchelf
+          #python3 -m pip install build auditwheel wheel twine
+          
+          apt-get install -y python3 python3-pip python3-venv make
+          # Ubuntu 22.04 ships patchelf 0.14.3; auditwheel needs >=0.14.5.
+          # wheel >=0.41 supports tags with alphanumeric build identifiers.
+          python3 -m pip install build auditwheel 'wheel>=0.41' twine 'patchelf>=0.14.5'
+          patchelf --version
+          python3 -m wheel tags --help
       - name: Compile and repair wheel
         env:
           ARCHS: ${{ matrix.archs }}
