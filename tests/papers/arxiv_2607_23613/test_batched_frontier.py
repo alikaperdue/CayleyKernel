@@ -278,9 +278,9 @@ def test_benchmark_heartbeat_stops(capsys):
     import time
 
     from scripts.benchmark_eigen_frontier import heartbeat
-    with heartbeat('test-measurement', .01):
-        time.sleep(.06)
+    with heartbeat('test-measurement', .05):
+        time.sleep(1.0)
     output = capsys.readouterr().out
     assert 'test-measurement RUNNING:' in output
-    time.sleep(.03)
+    time.sleep(.1)
     assert capsys.readouterr().out == ''
