@@ -221,10 +221,10 @@ static void launch_fma_mult(const T* a, const T* b, const T* c, T* o, int dim, l
 
 // Emits the single fused entry point; the Python wrapper dispatches the same
 // symbol with sign = +1 (add) or sign = -1 (subtract).
-#define DEFINE_FMA_ENTRIES(SUFFIX, TYPE)                                                        \
-  void fma_mult_##SUFFIX(const TYPE* a, const TYPE* b, const TYPE* c, TYPE* o, int dim,         \
-                         long long batch, int sign) {                                           \
-    launch_fma_mult<TYPE>(a, b, c, o, dim, batch, sign);                                        \
+#define DEFINE_FMA_ENTRIES(SUFFIX, TYPE)                                                \
+  void fma_mult_##SUFFIX(const TYPE* a, const TYPE* b, const TYPE* c, TYPE* o, int dim, \
+                         long long batch, int sign) {                                   \
+    launch_fma_mult<TYPE>(a, b, c, o, dim, batch, sign);                                \
   }
 
 extern "C" {

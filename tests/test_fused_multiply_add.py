@@ -58,13 +58,9 @@ def coefficients(shape, dtype, seed=2026):
     if np.dtype(dtype) in (np.dtype(np.float16),):
         return (rng.normal(size=shape) / 4).astype(np.float16)
     if np.dtype(dtype) == np.dtype(np.complex64):
-        return (rng.normal(size=shape) / 4 + 1j * rng.normal(size=shape) / 4).astype(
-            np.complex64
-        )
+        return (rng.normal(size=shape) / 4 + 1j * rng.normal(size=shape) / 4).astype(np.complex64)
     if np.dtype(dtype) == np.dtype(np.complex128):
-        return (rng.normal(size=shape) / 4 + 1j * rng.normal(size=shape) / 4).astype(
-            np.complex128
-        )
+        return (rng.normal(size=shape) / 4 + 1j * rng.normal(size=shape) / 4).astype(np.complex128)
     return rng.normal(size=shape).astype(dtype)
 
 

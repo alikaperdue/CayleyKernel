@@ -61,6 +61,7 @@ def test_packed_small_vectors(gpu_benchmark, batch, dim):
 # Fused multiply-add (ABI >= 4)
 # ---------------------------------------------------------------------------
 
+
 def test_fma_batch_65536_dim32_add(gpu_benchmark):
     """Fused a*b+c: 65536 algebras of dim 32, single kernel launch."""
     gpu_benchmark.measure_fma("fma_batch_65536_dim32_add", multiply_add, (65536, 32), +1)
@@ -84,6 +85,7 @@ def test_fma_batch_1024_dim16_sub(gpu_benchmark):
 # ---------------------------------------------------------------------------
 # Three-kernel baseline (multiply + elementwise add) for before/after
 # ---------------------------------------------------------------------------
+
 
 def test_baseline_multiply_then_add_65536_dim32(gpu_benchmark):
     """Three-kernel path (multiply, then elementwise add) at the same shape as

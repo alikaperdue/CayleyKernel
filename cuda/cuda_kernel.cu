@@ -279,10 +279,10 @@ static void launch_mult(const T* a, const T* b, T* o, int dim, long long batch) 
 // =============================================================================
 template <typename T, int Threads>
 __global__ __launch_bounds__(Threads, 1) void fma_mult_kernel(const T* __restrict__ a,
-                                                               const T* __restrict__ b,
-                                                               const T* __restrict__ c,
-                                                               T* __restrict__ out, int dim,
-                                                               long long total, int sign) {
+                                                              const T* __restrict__ b,
+                                                              const T* __restrict__ c,
+                                                              T* __restrict__ out, int dim,
+                                                              long long total, int sign) {
   typedef typename accum_traits<T>::type Acc;
   typedef arithmetic_traits<Acc> Ops;
   const long long stride = (long long)gridDim.x * Threads;
@@ -302,10 +302,10 @@ __global__ __launch_bounds__(Threads, 1) void fma_mult_kernel(const T* __restric
 
 template <typename T, int Threads>
 __global__ __launch_bounds__(Threads, 1) void fma_mult_small_kernel(const T* __restrict__ a,
-                                                                     const T* __restrict__ b,
-                                                                     const T* __restrict__ c,
-                                                                     T* __restrict__ out, int dim,
-                                                                     long long total, int sign) {
+                                                                    const T* __restrict__ b,
+                                                                    const T* __restrict__ c,
+                                                                    T* __restrict__ out, int dim,
+                                                                    long long total, int sign) {
   __shared__ T a_tile[Threads];
   __shared__ T b_tile[Threads];
   __shared__ T c_tile[Threads];
@@ -358,9 +358,9 @@ static void launch_fma_mult(const T* a, const T* b, const T* c, T* o, int dim, l
     sign = 1;
   const long long total = batch * (long long)dim;
   switch (launch_threads(dim, total)) {
-#define LAUNCH_CASE(N)                                          \
-  case N:                                                       \
-    launch_sized_fma<T, N>(a, b, c, o, dim, total, sign);       \
+#define LAUNCH_CASE(N)                                    \
+  case N:                                                 \
+    launch_sized_fma<T, N>(a, b, c, o, dim, total, sign); \
     break;
     LAUNCH_CASE(32)
     LAUNCH_CASE(64)
@@ -375,10 +375,10 @@ static void launch_fma_mult(const T* a, const T* b, const T* c, T* o, int dim, l
 
 // Emits the single fused entry point; the Python wrapper dispatches the same
 // symbol with sign = +1 (add) or sign = -1 (subtract).
-#define DEFINE_FMA_ENTRIES(SUFFIX, TYPE)                                                        \
-  void fma_mult_##SUFFIX(const TYPE* a, const TYPE* b, const TYPE* c, TYPE* o, int dim,         \
-                         long long batch, int sign) {                                           \
-    launch_fma_mult<TYPE>(a, b, c, o, dim, batch, sign);                                        \
+#define DEFINE_FMA_ENTRIES(SUFFIX, TYPE)                                                \
+  void fma_mult_##SUFFIX(const TYPE* a, const TYPE* b, const TYPE* c, TYPE* o, int dim, \
+                         long long batch, int sign) {                                   \
+    launch_fma_mult<TYPE>(a, b, c, o, dim, batch, sign);                                \
   }
 
 // =============================================================================

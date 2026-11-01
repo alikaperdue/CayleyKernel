@@ -438,8 +438,7 @@ def _select_fma(dtype):
     if fn is None:
         raise RuntimeError(
             "fused fma_mult CUDA entry point not present in %s; rebuild with "
-            "`make kernel` to enable multiply_add/multiply_subtract."
-            % _library_path
+            "`make kernel` to enable multiply_add/multiply_subtract." % _library_path
         )
     fn.argtypes = [
         ctypes.c_void_p,

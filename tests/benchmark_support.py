@@ -72,9 +72,7 @@ def _validate_case(name, case, shape, sign=None):
         or type(repetitions) is not int
         or not 1 <= repetitions <= PROTOCOL["max_repetitions"]
         or len(samples) != PROTOCOL["trials"]
-        or any(
-            not isinstance(s, (float, int)) or not math.isfinite(s) or s <= 0 for s in samples
-        )
+        or any(not isinstance(s, (float, int)) or not math.isfinite(s) or s <= 0 for s in samples)
     ):
         raise ValueError("Invalid baseline workload/samples: " + name)
     if case.get("median_seconds") != statistics.median(samples):
@@ -228,8 +226,10 @@ class BenchmarkSession:
         file so the before/after numbers in the PR description come from
         one consistent run.
         """
+
         def multiply_then_add(a, b, c):
             return multiply_fn(a, b) + c
+
         return self._measure(name, multiply_then_add, (shape, shape, shape), shape)
 
     def _measure(self, name, fn, operand_shapes, shape, sign=None):

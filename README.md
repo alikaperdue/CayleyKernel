@@ -247,7 +247,7 @@ import cupy as cp
 
 # Fused: a*b + c in one launch (equivalent to multiply(a, b) + c, but faster)
 c = cp.random.rand(65536, 32, dtype=cp.float32)
-result = multiply_add(a, b, c)       # a*b + c
+result = multiply_add(a, b, c)  # a*b + c
 result = multiply_subtract(a, b, c)  # a*b - c
 ```
 
