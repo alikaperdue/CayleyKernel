@@ -846,4 +846,4 @@ from ._cpu import basis, basis_many, cpu_backend, cpu_multiply, twist, twist_man
 
 # Sparse CSR path (experimental / research).  Import guarded so that the
 # dense API remains usable on machines without CuPy.
-from ._sparse import SparseVector, to_sparse, from_sparse, sparse_multiply, is_sparse_beneficial
+from ._sparse import SparseVector, from_sparse, is_sparse_beneficial, sparse_multiply, to_sparse

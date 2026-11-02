@@ -237,16 +237,25 @@ static void launch_fma_mult(const T* a, const T* b, const T* c, T* o, int dim, l
 // sparse kernel is future work and is explicitly out of scope for this
 // phase (see docs/sparse-csr-design.md §7 "Non-goals").
 
-#define SPARSE_STUB(SUFFIX)                                                        \
-  void sparse_mult_##SUFFIX(void* xs, void* xsg, void* xv, void* ys, void* ysg,   \
-                            void* yv, void* o, int K_a, int K_b, int dim,         \
-                            long long batch) {                                    \
-    (void)xs; (void)xsg; (void)xv; (void)ys; (void)ysg; (void)yv; (void)o;        \
-    (void)K_a; (void)K_b; (void)dim; (void)batch;                                 \
-    fprintf(stderr,                                                              \
-            "CayleyKernel sparse_mult_%s: sparse path is not implemented on HIP " \
-            "(NVIDIA-only, Phase C). See docs/sparse-csr-design.md \u00a77.\n", #SUFFIX); \
-    __builtin_unreachable();                                                     \
+#define SPARSE_STUB(SUFFIX)                                                                        \
+  void sparse_mult_##SUFFIX(void* xs, void* xsg, void* xv, void* ys, void* ysg, void* yv, void* o, \
+                            int K_a, int K_b, int dim, long long batch) {                          \
+    (void)xs;                                                                                      \
+    (void)xsg;                                                                                     \
+    (void)xv;                                                                                      \
+    (void)ys;                                                                                      \
+    (void)ysg;                                                                                     \
+    (void)yv;                                                                                      \
+    (void)o;                                                                                       \
+    (void)K_a;                                                                                     \
+    (void)K_b;                                                                                     \
+    (void)dim;                                                                                     \
+    (void)batch;                                                                                   \
+    fprintf(stderr,                                                                                \
+            "CayleyKernel sparse_mult_%s: sparse path is not implemented on HIP "                  \
+            "(NVIDIA-only, Phase C). See docs/sparse-csr-design.md \u00a77.\n",                    \
+            #SUFFIX);                                                                              \
+    __builtin_unreachable();                                                                       \
   }
 
 extern "C" {

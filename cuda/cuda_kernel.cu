@@ -553,8 +553,8 @@ template <typename T, int Threads>
 __global__ __launch_bounds__(Threads, 1) void sparse_mult_kernel(
     const int64_t* __restrict__ x_support, const int8_t* __restrict__ x_signs,
     const T* __restrict__ x_values, const int64_t* __restrict__ y_support,
-    const int8_t* __restrict__ y_signs, const T* __restrict__ y_values,
-    T* __restrict__ out, int K_a, int K_b, int dim, long long batch) {
+    const int8_t* __restrict__ y_signs, const T* __restrict__ y_values, T* __restrict__ out,
+    int K_a, int K_b, int dim, long long batch) {
   typedef typename accum_traits<T>::type Acc;
   typedef arithmetic_traits<Acc> Ops;
 
@@ -602,13 +602,13 @@ __global__ __launch_bounds__(Threads, 1) void sparse_mult_kernel(
 
 template <typename T, int Threads>
 static void launch_sized_sparse(const int64_t* xs, const int8_t* xsg, const T* xv,
-                                const int64_t* ys, const int8_t* ysg, const T* yv, T* o,
-                                int K_a, int K_b, int dim, long long batch) {
+                                const int64_t* ys, const int8_t* ysg, const T* yv, T* o, int K_a,
+                                int K_b, int dim, long long batch) {
   const long long total_warps = (long long)batch * (long long)dim;
   const long long needed = (total_warps * 32 - 1) / Threads + 1;
   const unsigned int blocks = (unsigned int)(needed < max_work_blocks ? needed : max_work_blocks);
-  sparse_mult_kernel<T, Threads><<<blocks, Threads>>>(xs, xsg, xv, ys, ysg, yv, o, K_a, K_b, dim,
-                                                       batch);
+  sparse_mult_kernel<T, Threads>
+      <<<blocks, Threads>>>(xs, xsg, xv, ys, ysg, yv, o, K_a, K_b, dim, batch);
 }
 
 template <typename T>
@@ -619,8 +619,8 @@ static void launch_sparse(const int64_t* xs, const int8_t* xsg, const T* xv, con
     return;
   const long long total = (long long)batch * (long long)dim;
   switch (launch_threads(dim, total)) {
-#define SPARSE_LAUNCH_CASE(N)                                                  \
-  case N:                                                                      \
+#define SPARSE_LAUNCH_CASE(N)                                                     \
+  case N:                                                                         \
     launch_sized_sparse<T, N>(xs, xsg, xv, ys, ysg, yv, o, K_a, K_b, dim, batch); \
     break;
     SPARSE_LAUNCH_CASE(32)
@@ -634,11 +634,11 @@ static void launch_sparse(const int64_t* xs, const int8_t* xsg, const T* xv, con
   cudaDeviceSynchronize();
 }
 
-#define DEFINE_SPARSE_ENTRIES(SUFFIX, TYPE)                                          \
-  void sparse_mult_##SUFFIX(const int64_t* xs, const int8_t* xsg, const TYPE* xv,  \
-                            const int64_t* ys, const int8_t* ysg, const TYPE* yv,  \
-                            TYPE* o, int K_a, int K_b, int dim, long long batch) { \
-    launch_sparse<TYPE>(xs, xsg, xv, ys, ysg, yv, o, K_a, K_b, dim, batch);         \
+#define DEFINE_SPARSE_ENTRIES(SUFFIX, TYPE)                                                \
+  void sparse_mult_##SUFFIX(const int64_t* xs, const int8_t* xsg, const TYPE* xv,          \
+                            const int64_t* ys, const int8_t* ysg, const TYPE* yv, TYPE* o, \
+                            int K_a, int K_b, int dim, long long batch) {                  \
+    launch_sparse<TYPE>(xs, xsg, xv, ys, ysg, yv, o, K_a, K_b, dim, batch);                \
   }
 
 extern "C" {
