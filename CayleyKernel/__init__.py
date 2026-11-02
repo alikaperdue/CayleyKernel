@@ -91,6 +91,12 @@ __all__ = [
     "basis_many",
     "cpu_backend",
     "cpu_multiply",
+    # Sparse CSR path (experimental / research) — docs/sparse-csr-design.md
+    "SparseVector",
+    "to_sparse",
+    "from_sparse",
+    "sparse_multiply",
+    "is_sparse_beneficial",
 ]
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -832,3 +838,7 @@ from ._cpu import _python_multiply as py_multiply
 # Preserve the existing Python reference entry points without duplicating logic.
 from ._cpu import _python_twist as py_sign
 from ._cpu import basis, basis_many, cpu_backend, cpu_multiply, twist, twist_many
+
+# Sparse CSR path (experimental / research).  Import guarded so that the
+# dense API remains usable on machines without CuPy.
+from ._sparse import SparseVector, to_sparse, from_sparse, sparse_multiply, is_sparse_beneficial
