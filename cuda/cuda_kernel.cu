@@ -484,6 +484,163 @@ static void launch_norm_sq(const T* a, typename accum_traits<T>::type* o, int di
     launch_norm_sq<TYPE>(a, o, dim, batch);                                           \
   }
 
+// =============================================================================
+// Sparse CSR product  --  Phase C of feat/sparse-csr
+//
+//   sparse_mult_<type>(x_support, x_signs, x_values,
+//                      y_support, y_signs, y_values,
+//                      out, K_a, K_b, dim, batch)
+//
+//   CSR layout (row-major contiguous across the batch axis, matching the
+//   dense _nd convention):
+//     x_support : int64, shape (batch, K_a)  -- padding sentinel: -1
+//     x_signs   : int8,  shape (batch, K_a)  -- padding sentinel:  0
+//     x_values  : T,     shape (batch, K_a)  -- padding sentinel:  0
+//     (same for y)
+//     out       : T,     shape (batch, dim)
+//
+//   Algorithm (docs/sparse-csr-design.md §3):
+//     One warp per (batch_index, output_index) work item.  The 32 lanes
+//     enumerate the K_a·K_b candidate pairs round-robin (pair_id % 32 == lane),
+//     each lane evaluates cayley_sign and the signed product term for the
+//     pairs it owns, and the warp reduces the partial sums with
+//     __shfl_down_sync.  Lane 0 writes out[b·dim + i].
+//
+//   Complexity per work item: O(K_a·K_b / 32 + log 32) — versus the dense
+//   kernel's O(dim) per output component.
+//
+//   Only real-float and complex dtypes are exported (the six in
+//   docs/sparse-csr-design.md §6).  Integer / bool sparse products are a
+//   separate research question and intentionally absent here.
+// =============================================================================
+
+// Warp-shuffle butterfly reduction.  The default template works for any
+// scalar accumulator (float, double, int, …).  Complex types need component
+// shuffles because __shfl_down_sync operates on 32-bit words.
+template <typename Acc>
+struct sparse_shuffle_reduce {
+  static __device__ __forceinline__ Acc apply(Acc acc, unsigned mask) {
+#pragma unroll
+    for (int offset = 16; offset > 0; offset >>= 1)
+      acc += __shfl_down_sync(mask, acc, offset);
+    return acc;
+  }
+};
+template <>
+struct sparse_shuffle_reduce<cuComplex> {
+  static __device__ __forceinline__ cuComplex apply(cuComplex acc, unsigned mask) {
+#pragma unroll
+    for (int offset = 16; offset > 0; offset >>= 1) {
+      acc.x += __shfl_down_sync(mask, acc.x, offset);
+      acc.y += __shfl_down_sync(mask, acc.y, offset);
+    }
+    return acc;
+  }
+};
+template <>
+struct sparse_shuffle_reduce<cuDoubleComplex> {
+  static __device__ __forceinline__ cuDoubleComplex apply(cuDoubleComplex acc, unsigned mask) {
+#pragma unroll
+    for (int offset = 16; offset > 0; offset >>= 1) {
+      acc.x += __shfl_down_sync(mask, acc.x, offset);
+      acc.y += __shfl_down_sync(mask, acc.y, offset);
+    }
+    return acc;
+  }
+};
+
+template <typename T, int Threads>
+__global__ __launch_bounds__(Threads, 1) void sparse_mult_kernel(
+    const int64_t* __restrict__ x_support, const int8_t* __restrict__ x_signs,
+    const T* __restrict__ x_values, const int64_t* __restrict__ y_support,
+    const int8_t* __restrict__ y_signs, const T* __restrict__ y_values,
+    T* __restrict__ out, int K_a, int K_b, int dim, long long batch) {
+  typedef typename accum_traits<T>::type Acc;
+  typedef arithmetic_traits<Acc> Ops;
+
+  const int lane = threadIdx.x % 32;
+  const int warp_in_block = threadIdx.x / 32;
+  const long long warps_per_block = Threads / 32;
+  const long long global_warp = (long long)blockIdx.x * warps_per_block + warp_in_block;
+  const long long total_warps = (long long)batch * (long long)dim;
+  const long long warp_stride = (long long)gridDim.x * warps_per_block;
+  const unsigned full_mask = 0xFFFFFFFFu;
+  const int total_pairs = K_a * K_b;
+
+  for (long long w = global_warp; w < total_warps; w += warp_stride) {
+    const long long b = w / (long long)dim;
+    const int i = (int)(w - b * (long long)dim);
+
+    const int64_t* xs = x_support + b * (long long)K_a;
+    const int8_t* xsg = x_signs + b * (long long)K_a;
+    const T* xv = x_values + b * (long long)K_a;
+    const int64_t* ys = y_support + b * (long long)K_b;
+    const int8_t* ysg = y_signs + b * (long long)K_b;
+    const T* yv = y_values + b * (long long)K_b;
+
+    Acc acc = Ops::zero();
+    for (int pair_id = lane; pair_id < total_pairs; pair_id += 32) {
+      const int ia = pair_id / K_b;
+      const int ib = pair_id - ia * K_b;
+      const int a = (int)xs[ia];
+      const int c = (int)ys[ib];
+      if (a < 0 || c < 0)
+        continue;  // padding sentinel
+      if ((a ^ c) != i)
+        continue;  // not this output index
+      const int s_ab = (cayley_sign(a, c) == 1) ? 1 : -1;
+      const int s_total = (int)xsg[ia] * (int)ysg[ib] * s_ab;
+      const Acc term = Ops::mul(Acc(xv[ia]), Acc(yv[ib]));
+      s_total > 0 ? Ops::add(acc, term) : Ops::sub(acc, term);
+    }
+
+    acc = sparse_shuffle_reduce<Acc>::apply(acc, full_mask);
+    if (lane == 0)
+      out[b * (long long)dim + i] = static_cast<T>(acc);
+  }
+}
+
+template <typename T, int Threads>
+static void launch_sized_sparse(const int64_t* xs, const int8_t* xsg, const T* xv,
+                                const int64_t* ys, const int8_t* ysg, const T* yv, T* o,
+                                int K_a, int K_b, int dim, long long batch) {
+  const long long total_warps = (long long)batch * (long long)dim;
+  const long long needed = (total_warps * 32 - 1) / Threads + 1;
+  const unsigned int blocks = (unsigned int)(needed < max_work_blocks ? needed : max_work_blocks);
+  sparse_mult_kernel<T, Threads><<<blocks, Threads>>>(xs, xsg, xv, ys, ysg, yv, o, K_a, K_b, dim,
+                                                       batch);
+}
+
+template <typename T>
+static void launch_sparse(const int64_t* xs, const int8_t* xsg, const T* xv, const int64_t* ys,
+                          const int8_t* ysg, const T* yv, T* o, int K_a, int K_b, int dim,
+                          long long batch) {
+  if (dim <= 0 || batch <= 0 || K_a <= 0 || K_b <= 0)
+    return;
+  const long long total = (long long)batch * (long long)dim;
+  switch (launch_threads(dim, total)) {
+#define SPARSE_LAUNCH_CASE(N)                                                  \
+  case N:                                                                      \
+    launch_sized_sparse<T, N>(xs, xsg, xv, ys, ysg, yv, o, K_a, K_b, dim, batch); \
+    break;
+    SPARSE_LAUNCH_CASE(32)
+    SPARSE_LAUNCH_CASE(64)
+    SPARSE_LAUNCH_CASE(128)
+    SPARSE_LAUNCH_CASE(256)
+    SPARSE_LAUNCH_CASE(512)
+    SPARSE_LAUNCH_CASE(1024)
+#undef SPARSE_LAUNCH_CASE
+  }
+  cudaDeviceSynchronize();
+}
+
+#define DEFINE_SPARSE_ENTRIES(SUFFIX, TYPE)                                          \
+  void sparse_mult_##SUFFIX(const int64_t* xs, const int8_t* xsg, const TYPE* xv,  \
+                            const int64_t* ys, const int8_t* ysg, const TYPE* yv,  \
+                            TYPE* o, int K_a, int K_b, int dim, long long batch) { \
+    launch_sparse<TYPE>(xs, xsg, xv, ys, ysg, yv, o, K_a, K_b, dim, batch);         \
+  }
+
 extern "C" {
 
 DEFINE_MULT_ENTRIES(float, float)
@@ -536,12 +693,24 @@ DEFINE_NORMSQ_ENTRIES(double, double)
 DEFINE_NORMSQ_ENTRIES(complex64, cuComplex)
 DEFINE_NORMSQ_ENTRIES(complex128, cuDoubleComplex)
 
+// Sparse CSR product (ABI-5 symbol family).  Only the real-float and
+// complex dtypes the design doc targets are exported; integer and bool
+// sparse products are a separate research question (see
+// docs/sparse-csr-design.md §7).
+DEFINE_SPARSE_ENTRIES(float, float)
+DEFINE_SPARSE_ENTRIES(double, double)
+DEFINE_SPARSE_ENTRIES(half, __half)
+DEFINE_SPARSE_ENTRIES(bfloat16, __nv_bfloat16)
+DEFINE_SPARSE_ENTRIES(complex64, cuComplex)
+DEFINE_SPARSE_ENTRIES(complex128, cuDoubleComplex)
+
 // ABI / feature version reported to the Python wrapper.
 //   1 -- legacy build (mult only)
 //   2 -- batched _nd entry points + diagnostics
 //   3 -- + conjugate_<type> and norm_sq_<type> entry points
 //   4 -- + fma_mult_<type> entry points (fused a*b + c / a*b - c)
+//   5 -- + sparse_mult_<type> entry points (CSR-style sparse product)
 int cayley_abi_version(void) {
-  return 4;
+  return 5;
 }
 }
