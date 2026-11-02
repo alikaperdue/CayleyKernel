@@ -14,6 +14,7 @@
 
 #include <hip/hip_runtime.h>
 #include <cstdint>
+#include <cstdio>
 #include <hip/hip_complex.h>
 #include <hip/hip_fp16.h>
 
@@ -227,6 +228,36 @@ static void launch_fma_mult(const T* a, const T* b, const T* c, T* o, int dim, l
     launch_fma_mult<TYPE>(a, b, c, o, dim, batch, sign);                                \
   }
 
+// Sparse CSR product (ABI-5 symbol family).
+//
+// The sparse path is NVIDIA-only (Phase C).  The HIP build must still
+// export the same symbols so that a shared .so built from either source
+// resolves in the Python wrapper.  Each entry point is an intentional
+// no-op that aborts the process with a clear message; a HIP build of the
+// sparse kernel is future work and is explicitly out of scope for this
+// phase (see docs/sparse-csr-design.md §7 "Non-goals").
+
+#define SPARSE_STUB(SUFFIX)                                                                        \
+  void sparse_mult_##SUFFIX(void* xs, void* xsg, void* xv, void* ys, void* ysg, void* yv, void* o, \
+                            int K_a, int K_b, int dim, long long batch) {                          \
+    (void)xs;                                                                                      \
+    (void)xsg;                                                                                     \
+    (void)xv;                                                                                      \
+    (void)ys;                                                                                      \
+    (void)ysg;                                                                                     \
+    (void)yv;                                                                                      \
+    (void)o;                                                                                       \
+    (void)K_a;                                                                                     \
+    (void)K_b;                                                                                     \
+    (void)dim;                                                                                     \
+    (void)batch;                                                                                   \
+    fprintf(stderr,                                                                                \
+            "CayleyKernel sparse_mult_%s: sparse path is not implemented on HIP "                  \
+            "(NVIDIA-only, Phase C). See docs/sparse-csr-design.md \u00a77.\n",                    \
+            #SUFFIX);                                                                              \
+    __builtin_unreachable();                                                                       \
+  }
+
 extern "C" {
 DEFINE_MULT_ENTRIES(float, float)
 DEFINE_MULT_ENTRIES(double, double)
@@ -266,7 +297,19 @@ DEFINE_FMA_ENTRIES(complex128, hipDoubleComplex)
 //   2 -- batched _nd entry points + diagnostics
 //   3 -- + conjugate_<type> and norm_sq_<type> entry points
 //   4 -- + fma_mult_<type> entry points (fused a*b + c / a*b - c)
+//   5 -- + sparse_mult_<type> entry points (CSR-style sparse product,
+//        NVIDIA only; HIP stubs are __builtin_trap() no-ops)
 int cayley_abi_version(void) {
-  return 4;
+  return 5;
 }
+
+// Sparse CSR product stubs (ABI-5).  These must exist so that the Python
+// wrapper's ctypes lookup does not fail on a HIP build, but the sparse
+// kernel itself is NVIDIA-only (see docs/sparse-csr-design.md §7).
+SPARSE_STUB(float)
+SPARSE_STUB(double)
+SPARSE_STUB(half)
+SPARSE_STUB(bfloat16)
+SPARSE_STUB(complex64)
+SPARSE_STUB(complex128)
 }

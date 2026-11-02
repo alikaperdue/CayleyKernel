@@ -91,6 +91,12 @@ __all__ = [
     "basis_many",
     "cpu_backend",
     "cpu_multiply",
+    # Sparse CSR path (experimental / research) — docs/sparse-csr-design.md
+    "SparseVector",
+    "to_sparse",
+    "from_sparse",
+    "sparse_multiply",
+    "is_sparse_beneficial",
 ]
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -151,6 +157,11 @@ def abi_version():
     * ``4`` -- adds fused ``fma_mult_<type>(a, b, c, out, dim, batch, sign)``
       entry points backing :func:`multiply_add` (``sign=+1``) and
       :func:`multiply_subtract` (``sign=-1``).
+    * ``5`` -- adds the CSR-style sparse product entry points
+      ``sparse_mult_<type>(xs, xsg, xv, ys, ysg, yv, out, K_a, K_b, dim,
+      batch)`` for float, double, half, bfloat16, complex64, complex128
+      (experimental / research; see :mod:`._sparse` and
+      ``docs/sparse-csr-design.md``).
     """
     return _ABI_VERSION
 
@@ -832,3 +843,7 @@ from ._cpu import _python_multiply as py_multiply
 # Preserve the existing Python reference entry points without duplicating logic.
 from ._cpu import _python_twist as py_sign
 from ._cpu import basis, basis_many, cpu_backend, cpu_multiply, twist, twist_many
+
+# Sparse CSR path (experimental / research).  Import guarded so that the
+# dense API remains usable on machines without CuPy.
+from ._sparse import SparseVector, from_sparse, is_sparse_beneficial, sparse_multiply, to_sparse
