@@ -237,6 +237,19 @@ with cp.cuda.stream(cp.cuda.Stream(non_blocking=True)):
     multiply(a, b)  # or pass stream=...
 ```
 
+### Sparse CSR path (experimental / research)
+
+**Experimental — design only, not yet implemented.** For dimensions ≥ 256
+with sparse inputs (few nonzero basis coefficients), a CSR-style
+representation and a dedicated warp-per-output CUDA kernel reduce per-product
+work from `O(dim^2)` (dense) to roughly `O(dim * K^2 / 32)`, where `K` is the
+support size. The design, crossover threshold, expected speedup range, and
+correctness guarantees (bit-for-bit against the dense kernel, using the same
+O(1) sign rule as `CayleyKernel/_cpu.py`) are documented in
+[sparse CSR design](docs/sparse-csr-design.md). This feature is **not** part
+of the stable API and must not be used in production workloads until the
+implementation PR lands with a measured benchmark table.
+
 ### Fused multiply-add
 
 In addition to the plain product, CayleyKernel exposes **fused multiply-add** and **fused multiply-subtract** kernels that compute `a * b + c` or `a * b − c` in a **single kernel launch**. The `±c` term is folded into the same per-thread accumulator as the basis-sign sum over `dim` terms, so no separate elementwise add/subtract kernel is required.
