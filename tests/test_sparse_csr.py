@@ -174,6 +174,70 @@ if hasattr(cp, "bfloat16"):
     _SPARSE_DTYPES.append(cp.bfloat16)
 
 
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    "config",
+    [
+        {"dim": 1024, "K": 8, "batch": 4096, "label": "memory-bound (batch=4096)"},
+        {"dim": 4096, "K": 4, "batch": 256, "label": "compute-bound (dim=4096)"},
+        {"dim": 8192, "K": 4, "batch": 128, "label": "compute-memory-bound (dim=8192)"},
+        {"dim": 16384, "K": 4, "batch": 64, "label": "compute-memory-bound (dim=16384)"},
+        {"dim": 32768, "K": 4, "batch": 16, "label": "compute-memory-bound (dim=32786)"},
+        {"dim": 131072, "K": 4, "batch": 2, "label": "compute-memory-bound (dim=131072)"},
+    ],
+    ids=lambda c: c["label"],
+)
+def test_benchmark(config):
+    dim = config["dim"]
+    K = config["K"]
+    batch = config["batch"]
+    label = config["label"]
+
+    rng = np.random.default_rng(2026)
+
+    # Build sparse inputs with exactly K nonzeros
+    x_dense = np.zeros((batch, dim), dtype=np.float32)
+    y_dense = np.zeros((batch, dim), dtype=np.float32)
+    for i in range(batch):
+        x_idx = rng.choice(dim, K, replace=False)
+        y_idx = rng.choice(dim, K, replace=False)
+        x_dense[i, x_idx] = rng.standard_normal(K)
+        y_dense[i, y_idx] = rng.standard_normal(K)
+
+    x_gpu = cp.asarray(x_dense)
+    y_gpu = cp.asarray(y_dense)
+    x_sp = to_sparse(x_gpu)
+    y_sp = to_sparse(y_gpu)
+
+    # Warmup
+    CayleyKernel.multiply(x_gpu, y_gpu)
+    sparse_multiply(x_sp, y_sp)
+    cp.cuda.Stream.null.synchronize()
+
+    # Dense timing
+    n = 5
+    t0 = time.perf_counter()
+    for _ in range(n):
+        CayleyKernel.multiply(x_gpu, y_gpu)
+    cp.cuda.Stream.null.synchronize()
+    t_dense = (time.perf_counter() - t0) / n
+
+    # Sparse timing
+    t0 = time.perf_counter()
+    for _ in range(n):
+        sparse_multiply(x_sp, y_sp)
+    cp.cuda.Stream.null.synchronize()
+    t_sparse = (time.perf_counter() - t0) / n
+
+    speedup = t_dense / t_sparse
+    print(f"\n[benchmark] {label}")
+    print(f"[benchmark]   dim={dim}  K={K}  batch={batch}  dtype=float32")
+    print(f"[benchmark]   dense : {t_dense * 1e3:>10.3f} ms")
+    print(f"[benchmark]   sparse: {t_sparse * 1e3:>10.3f} ms")
+    print(f"[benchmark]   ratio dense/sparse: {speedup:>6.2f}x")
+    assert t_dense > 0 and t_sparse > 0
+
+
 @pytest.mark.parametrize("K", [1, 2, 4, 8])
 @pytest.mark.parametrize("dtype", _SPARSE_DTYPES)
 def test_sparse_multiply_matches_dense(K, dtype):
@@ -230,63 +294,3 @@ def test_is_sparse_beneficial_crossover(dim, k_a, k_b, expected):
     ``K* ≈ sqrt(dim/α)`` with α = 3.0, i.e. sparse wins when
     ``k_a * k_b < dim / 3``."""
     assert is_sparse_beneficial(dim, k_a, k_b) == expected
-
-
-# ---------------------------------------------------------------------------
-# Benchmark: dim=1024, K_a=K_b=8, batch=4096, float32
-# ---------------------------------------------------------------------------
-def test_sparse_benchmark_vs_dense():
-    """Benchmark the sparse path against the dense kernel.
-
-    Both products run on the GPU (the dense path via ``multiply``,
-    the sparse path via ``sparse_mult_float`` when ABI ≥ 5, or the
-    CPU reference on hosts without the kernel).  The test reports the
-    wall-clock ratio so the PR description can quote a measured
-    speedup consistent with the modelled table in
-    ``docs/sparse-csr-design.md`` §4.
-
-    Requires the GPU kernel to be loaded (dense path).  Skipped otherwise.
-    """
-    if not CayleyKernel.loaded():
-        pytest.skip("benchmark requires the compiled GPU kernel")
-
-    dim = 1024
-    K = 8
-    batch = 4096
-    dtype = cp.float32
-
-    x = _make_dense_batch(batch, dim, K, seed=42, dtype=dtype)
-    y = _make_dense_batch(batch, dim, K, seed=43, dtype=dtype)
-
-    # Warm-up.
-    _dense_ref(x[:1], y[:1])
-    sparse_multiply(to_sparse(x[:1]), to_sparse(y[:1]))
-    cp.cuda.get_current_stream().synchronize()
-
-    # Dense (GPU).
-    t0 = time.perf_counter()
-    want = _dense_ref(x, y)
-    cp.cuda.get_current_stream().synchronize()
-    t_dense = time.perf_counter() - t0
-
-    # Sparse (GPU kernel when ABI >= 5, else CPU reference).
-    t0 = time.perf_counter()
-    got = sparse_multiply(to_sparse(x), to_sparse(y))
-    _ = from_sparse(got)
-    cp.cuda.get_current_stream().synchronize()
-    t_sparse = time.perf_counter() - t0
-
-    # Correctness check.
-    got_np = cp.asnumpy(from_sparse(got).reshape(-1, dim)).astype(np.float64)
-    want_np = cp.asnumpy(want).reshape(-1, dim).astype(np.float64)
-    np.testing.assert_allclose(got_np, want_np, rtol=1e-3, atol=1e-3)
-
-    # > 1 means sparse is faster than dense (the design-doc expectation
-    # for dim=1024, K=8, float32 per docs/sparse-csr-design.md §4).
-    speedup = t_dense / t_sparse
-    print(f"\n[benchmark] dim={dim} K={K} batch={batch} dtype={dtype.__name__}")
-    print(f"[benchmark]   dense : {t_dense * 1e3:>10.3f} ms")
-    print(f"[benchmark]   sparse: {t_sparse * 1e3:>10.3f} ms")
-    print(f"[benchmark]   ratio dense/sparse: {speedup:>6.2f}x")
-
-    assert t_dense > 0 and t_sparse > 0

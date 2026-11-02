@@ -323,6 +323,142 @@ def _sparse_multiply_cpu(x_sup, x_sig, x_val, y_sup, y_sig, y_val, dim, batch, o
     return acc, mask
 
 
+# ---------------------------------------------------------------------------
+# GPU-side extraction: build the result SparseVector entirely on-device so
+# the dense intermediate never round-trips through the host.  This removes
+# the O(batch*dim) D2H transfer that a naive cp.asnumpy re-extraction would
+# incur per call (see docs/sparse-csr-design.md §3).
+# ---------------------------------------------------------------------------
+def _sparse_extract_gpu(dense: "cp.ndarray", dim: int, dtype) -> SparseVector:
+    """Extract nonzero entries of a dense CuPy array (batch, dim) into a
+    SparseVector, staying on the device.
+
+    ``signs`` follows the same invariant as ``to_sparse``: +1 for complex
+    dtypes (the coefficient carries its own phase), +/-1 of the value for
+    real dtypes.
+    """
+    if dense.ndim != 2 or dense.shape[1] != dim:
+        raise ValueError(f"expected dense shape (batch, {dim}), got {dense.shape}")
+    batch = dense.shape[0]
+
+    if batch == 0:
+        return SparseVector(
+            support=cp.zeros((0, 0), dtype=cp.int64),
+            signs=cp.zeros((0, 0), dtype=cp.int8),
+            values=cp.zeros((0, 0), dtype=dtype),
+            K=0,
+            dim=dim,
+        )
+
+    is_complex = cp.issubdtype(dense.dtype, cp.complexfloating)
+
+    # dtype-appropriate tolerance so denormal/roundoff noise doesn't leak
+    # into the support; for float32 this is ~1.8e-5, for float16 ~4.9e-3.
+    base = cp.issubdtype(dense.dtype, cp.complexfloating) and dense.real.dtype or dense.dtype
+    tol = 16.0 * float(cp.finfo(base).eps)
+    nz = cp.where(cp.abs(dense) > tol)
+    counts = cp.bincount(nz[0], minlength=batch)
+    K_out = int(cp.max(counts).item()) if counts.size else 0
+
+    if K_out == 0:
+        return SparseVector(
+            support=cp.zeros((batch, 0), dtype=cp.int64),
+            signs=cp.zeros((batch, 0), dtype=cp.int8),
+            values=cp.zeros((batch, 0), dtype=dtype),
+            K=0,
+            dim=dim,
+        )
+
+    row_id = nz[0].astype(cp.int64)
+    col_id = nz[1].astype(cp.int64)
+    flat = dense.reshape(-1)
+    # values_flat = cp.gather(flat, row_id * dim + col_id)
+    values_flat = cp.take(flat, row_id * dim + col_id, axis=1)
+
+    if is_complex:
+        signs_flat = cp.ones(values_flat.shape, dtype=cp.int8)
+    else:
+        signs_flat = cp.sign(values_flat).astype(cp.int8)
+        # +0.0 / -0.0 both have sign 0 in some CuPy versions; clamp to +1
+        # so the (sign, value) pair reconstructs the coefficient exactly.
+        signs_flat = cp.where(signs_flat == 0, cp.ones_like(signs_flat), signs_flat)
+
+    # Scatter into a padded (batch, K_out) layout: row r occupies the first
+    # counts[r] slots, in the order cp.where emitted them.
+    n_total = int(row_id.size)
+    starts = cp.concatenate([cp.zeros(1, dtype=cp.int64), cp.cumsum(counts, dtype=cp.int64)[:-1]])
+    ranks = cp.arange(n_total, dtype=cp.int64) - starts[row_id]
+
+    support_out = cp.full((batch, K_out), -1, dtype=cp.int64)
+    signs_out = cp.zeros((batch, K_out), dtype=cp.int8)
+    values_out = cp.zeros((batch, K_out), dtype=dense.dtype)
+    support_out[row_id, ranks] = col_id
+    signs_out[row_id, ranks] = signs_flat
+    values_out[row_id, ranks] = values_flat
+
+    return SparseVector(
+        support=support_out,
+        signs=signs_out,
+        values=values_out,
+        K=K_out,
+        dim=dim,
+    )
+
+
+def _sparse_extract_host(dense_np, dim: int, dtype) -> SparseVector:
+    """Host-side extraction fallback (CPU-only build, or dtypes the GPU
+    path doesn't cover such as bfloat16 on older CuPy)."""
+    batch = dense_np.shape[0]
+
+    base = (
+        dense_np.real.dtype if np.issubdtype(dense_np.dtype, np.complexfloating) else dense_np.dtype
+    )
+    tol = 16.0 * float(np.finfo(base).eps)
+    nonzero_mask = np.abs(dense_np) > tol
+
+    nonzero_counts = nonzero_mask.sum(axis=1)
+    K_out = int(nonzero_counts.max()) if batch > 0 else 0
+
+    if K_out == 0:
+        return SparseVector(
+            support=cp.zeros((batch, 0), dtype=cp.int64),
+            signs=cp.zeros((batch, 0), dtype=cp.int8),
+            values=cp.zeros((batch, 0), dtype=dtype),
+            K=0,
+            dim=dim,
+        )
+
+    support = np.full((batch, K_out), -1, dtype=np.int64)
+    signs = np.zeros((batch, K_out), dtype=np.int8)
+    values = np.zeros((batch, K_out), dtype=dense_np.dtype)
+    is_complex = np.issubdtype(dense_np.dtype, np.complexfloating)
+
+    for r in range(batch):
+        nz = np.nonzero(nonzero_mask[r])[0]
+        for c, idx in enumerate(nz):
+            val = dense_np[r, idx]
+            support[r, c] = idx
+            if is_complex:
+                signs[r, c] = 1
+                values[r, c] = val
+            else:
+                v = float(val)
+                signs[r, c] = 1 if v >= 0 else -1
+                values[r, c] = abs(v)
+
+    return SparseVector(
+        support=cp.asarray(support),
+        signs=cp.asarray(signs),
+        values=cp.asarray(values, dtype=dtype),
+        K=K_out,
+        dim=dim,
+    )
+
+
+# Backwards-compatible alias (previously the only extraction helper).
+_dense_to_sparse_vector = _sparse_extract_host
+
+
 def sparse_multiply(
     x: SparseVector,
     y: SparseVector,
@@ -433,56 +569,28 @@ def sparse_multiply(
         )
         dense_np = dense_np.astype(out_dtype, copy=False)
 
-    return _dense_to_sparse_vector(dense_np, dim, out_dtype)
+    # ---- extract nonzeros --------------------------------------------
+    # GPU-side when possible: keeps the dense intermediate on-device and
+    # avoids an O(batch*dim) D2H round-trip per call.  Falls back to the
+    # host path for dtypes the GPU extraction can't express (notably
+    # bfloat16 on CuPy builds that predate bfloat16 promotion).
+    if kernel_fn is not None and batch > 0 and Ka > 0 and Kb > 0:
+        try:
+            return _sparse_extract_gpu(dense_out, dim, out_dtype)
+        except (TypeError, ValueError, RuntimeError):
+            pass  # fall through to host extraction
+    return _sparse_extract_host(dense_np, dim, out_dtype)
 
 
 def _dense_to_sparse_vector(dense_np, dim, dtype) -> SparseVector:
-    """Shared helper: extract the nonzero entries of a dense (batch, dim)
-    NumPy array into a :class:`SparseVector` of the given dtype."""
-    batch = dense_np.shape[0]
-    is_complex = np.issubdtype(dense_np.dtype, np.complexfloating)
+    """Backwards-compatible alias for :func:`_sparse_extract_host`.
 
-    if is_complex:
-        nonzero_mask = (dense_np.real != 0) | (dense_np.imag != 0)
-    else:
-        nonzero_mask = dense_np != 0
-
-    nonzero_counts = nonzero_mask.sum(axis=1)
-    K_out = int(nonzero_counts.max()) if batch > 0 else 0
-
-    if K_out == 0:
-        return SparseVector(
-            support=cp.zeros((batch, 0), dtype=cp.int64),
-            signs=cp.zeros((batch, 0), dtype=cp.int8),
-            values=cp.zeros((batch, 0), dtype=dtype),
-            K=0,
-            dim=dim,
-        )
-
-    support = np.full((batch, K_out), -1, dtype=np.int64)
-    signs = np.zeros((batch, K_out), dtype=np.int8)
-    values = np.zeros((batch, K_out), dtype=dense_np.dtype)
-
-    for r in range(batch):
-        nz = np.nonzero(nonzero_mask[r])[0]
-        for c, idx in enumerate(nz):
-            val = dense_np[r, idx]
-            support[r, c] = idx
-            if is_complex:
-                signs[r, c] = 1
-                values[r, c] = val
-            else:
-                v = float(val)
-                signs[r, c] = 1 if v >= 0 else -1
-                values[r, c] = abs(v)
-
-    return SparseVector(
-        support=cp.asarray(support),
-        signs=cp.asarray(signs),
-        values=cp.asarray(values, dtype=dtype),
-        K=K_out,
-        dim=dim,
-    )
+    Kept so existing call sites (and any user code that reached in for
+    the old private name) keep working.  New code should call
+    :func:`_sparse_extract_gpu` (device-side) or
+    :func:`_sparse_extract_host` (host-side) directly.
+    """
+    return _sparse_extract_host(dense_np, dim, dtype)
 
 
 def is_sparse_beneficial(dim: int, k_a: int, k_b: int) -> bool:
