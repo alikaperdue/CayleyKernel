@@ -249,6 +249,62 @@ make rust-check        # Rust format/lint/tests/no_std (if you touched rust/)
 make test              # or: make test-all for the slow path
 ```
 
+## Multi-GPU
+
+`CayleyKernel/_distributed.py` (`visible_devices` / `split_batch`) ships a
+zero-dependency multi-GPU batch split built on CuPy's `cp.cuda.Device`
+context manager and one non-blocking `cp.cuda.Stream` per device. The CPU
+queues work on every device before calling
+`cp.cuda.runtime.deviceSynchronize()` at the end, and `gather_into`
+copies each chunk back onto the caller's current device in the original
+batch order.
+
+Guidance for adding a new device topology (NVLink vs. PCIe, or a specific
+GPU pair) without breaking the helper:
+
+1. **Do not hard-code device IDs or interconnect bandwidth in the helper.**
+   `visible_devices()` reads `cp.cuda.runtime.getDeviceCount()` and
+   `split_batch` only uses `len(devices)` to compute chunk sizes. A new
+   topology is therefore a *deployment* change (set `CUDA_VISIBLE_DEVICES`
+   before starting Python), not a code change.
+
+2. **The one place topology matters is the gather cost.** The helper
+   copies one chunk per device. NVLink makes this ~2–5× cheaper than
+   PCIe 3.0. If you are profiling a new GPU pair:
+
+   ```bash
+   nvidia-smi topo -m          # show the link type (NV# vs. SYS/PHB)
+   ```
+
+   and, if the D2D copy is a significant fraction of `split_batch` time
+   on PCIe-only machines, raise it as a separate PR that adds an optional
+   `devices=` policy (e.g. a user-supplied `gather` callback) rather than
+   silently changing the default.
+
+3. **Keep the kernel launch path identical.** `split_batch` calls the same
+   private `_launch` entry point that `multiply` uses. Do not add a
+   per-topology kernel or stream flag here; topology should influence
+   *which devices are used* and *how results are gathered*, never *how a
+   single device's kernel is launched*.
+
+4. **Tests.** Any new topology-related test belongs in
+   `tests/test_multi_gpu.py` and must keep the module-level
+   `skipif(len(visible_devices()) < 2, ...)` guard so single-GPU CI
+   runners and the `cpu.yml` lint matrix stay green. CI runs
+   `tests/test_multi_gpu.py` with `continue-on-error: true` on
+   single-GPU runners.
+
+5. **Documentation.** Update `docs/multi-gpu.md` with a new row in the
+   "When split_batch wins / does not" tables and, if the topology changes
+   the recommended `CUDA_VISIBLE_DEVICES` ordering, add a short note in
+   the `CUDA_VISIBLE_DEVICES` workflow section. The README "Multi-GPU"
+   paragraph and the `split_batch` docstring must remain accurate.
+
+6. **No new dependencies.** Do not introduce `torch.distributed`,
+   `mpi4py`, `pynvml`, or `nvidia-ml-py`. CuPy's `cp.cuda.Device`,
+   `cp.cuda.Stream`, `cp.cuda.runtime.getDeviceCount`, and
+   `cp.cuda.runtime.deviceSynchronize` are the only sanctioned primitives.
+
 ## Things that are deliberately **not** in this repository
 
 - Precompiled `*.so`, `*.whl`, `*.pyd` binaries (built by `make kernel` /

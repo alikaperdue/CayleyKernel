@@ -297,6 +297,31 @@ The fused path avoids the intermediate allocation and second kernel launch for t
 See `tests/test_fused_multiply_add.py` for the correctness matrix and
 `benchmark-results/gpu-fma.json` for the benchmark baseline.
 
+### Multi-GPU
+
+For batches that do not fit in one GPU's memory, `split_batch` distributes
+the leading batch axis across multiple visible CUDA devices using only
+CuPy's `cp.cuda.Device` context manager (no torch.distributed / mpi4py
+required). Each device gets a contiguous chunk with its own non-blocking
+stream; the CPU queues all launches before synchronising at the end, so
+GPU work on different devices overlaps. The result is reassembled in the
+original batch order on the caller's current device. It wins when the
+batch exceeds roughly 2× a single GPU's capacity; see
+[multi-GPU guide](docs/multi-gpu.md) for the memory budget, win/lose
+conditions, and a worked example.
+
+```python
+import CayleyKernel as ck
+import cupy as cp
+
+ck.visible_devices()  # -> [0, 1] on a 2-GPU box
+A = cp.random.rand(1_000_000, 32, dtype=cp.float32)
+B = cp.random.rand(1_000_000, 32, dtype=cp.float32)
+C = ck.split_batch(A, B)  # batch split across all visible devices
+# Restrict to specific devices:
+C = ck.split_batch(A, B, devices=[0, 1])
+```
+
 ### Diagnostics
 
 Three read-only helpers are exposed for debugging integration issues. They

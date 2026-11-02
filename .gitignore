@@ -51,6 +51,7 @@ __pycache__/
 !/docs/benchmark-methodology.md
 !/docs/comparison.md
 !/docs/rust-cpu-benchmarks.md
+!/docs/multi-gpu.md
 !/docs/papers/
 /docs/papers/**
 !/docs/papers/**/
