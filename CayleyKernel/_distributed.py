@@ -23,12 +23,12 @@ See ``docs/multi-gpu.md`` for the full usage guide, memory-budget
 guidance, and a worked example.
 """
 
-import numpy as np
-
 try:
     import cupy as cp
+    import numpy as np
 except ImportError:  # pragma: no cover
     cp = None
+    np = None
 
 from . import (  # noqa: E402  (imported after the guarded cupy import)
     _as_cupy,
