@@ -79,10 +79,13 @@ class SparseVector:
         Zero-based basis indices of the nonzero coefficients.
         Padded (empty) slots use ``-1`` (the sentinel the kernel reads).
     signs : cp.ndarray, dtype int8, shape (batch, K)
-        Sign of each nonzero coefficient (``+1`` or ``-1``).  For complex
-        dtypes this is the sign of the real part (the coefficient is
-        ``sign * value`` where ``value`` carries the full magnitude and
-        imaginary part); padded slots are ``0``.
+        Sign of each nonzero coefficient (``+1`` or ``-1``).  For real
+        dtypes this is the sign of the coefficient; for complex dtypes
+        it is always ``+1`` (the kernel multiplies
+        ``sign_a * sign_b * sign(a,b) * value_a * value_b`` which
+        requires ``sign * value == coefficient``; a complex number has
+        a phase, not a sign, so the full coefficient is stored in
+        ``values``).  Padded slots are ``0``.
     values : cp.ndarray, shape (batch, K), dtype = the input dtype
         Magnitude of each nonzero coefficient (for real dtypes); the full
         coefficient for complex dtypes.  Padded slots are ``0``.
@@ -114,8 +117,7 @@ def _require_cupy():
 def _require_numpy():
     if np is None:
         raise ImportError(
-            "CayleyKernel sparse API requires NumPy.  "
-            "Install it with, e.g.:  pip install numpy"
+            "CayleyKernel sparse API requires NumPy.  Install it with, e.g.:  pip install numpy"
         )
 
 
@@ -145,7 +147,7 @@ def _sparse_kernel_handle(dtype_name):
     The handle is configured with ``argtypes``/``restype`` so repeated
     calls are safe.
     """
-    from . import _lib, _KERNEL_LOADED
+    from . import _KERNEL_LOADED, _lib
 
     if not _KERNEL_LOADED or _lib is None:
         return None
@@ -163,9 +165,9 @@ def _sparse_kernel_handle(dtype_name):
         ctypes.c_void_p,  # y_signs
         ctypes.c_void_p,  # y_values
         ctypes.c_void_p,  # out
-        ctypes.c_int,     # K_a
-        ctypes.c_int,     # K_b
-        ctypes.c_int,     # dim
+        ctypes.c_int,  # K_a
+        ctypes.c_int,  # K_b
+        ctypes.c_int,  # dim
         ctypes.c_longlong,  # batch
     ]
     fn.restype = None
@@ -200,7 +202,7 @@ def to_sparse(x) -> SparseVector:
     dim = int(x.shape[-1])
     if dim & (dim - 1):
         raise ValueError(f"algebra dimension must be a power of two, got {dim}")
-    dtype_name = _check_supported(x.dtype)
+    _check_supported(x.dtype)
 
     batch = int(np.prod(x.shape[:-1])) if x.ndim > 1 else 1
     xn = cp.asnumpy(x).reshape(batch, dim)
@@ -211,7 +213,8 @@ def to_sparse(x) -> SparseVector:
             support=cp.zeros((0, 0), dtype=cp.int64),
             signs=cp.zeros((0, 0), dtype=cp.int8),
             values=cp.zeros((0, 0), dtype=x.dtype),
-            K=0, dim=dim,
+            K=0,
+            dim=dim,
         )
 
     nonzero_counts = np.count_nonzero(xn, axis=1)
@@ -221,7 +224,8 @@ def to_sparse(x) -> SparseVector:
             support=cp.zeros((batch, 0), dtype=cp.int64),
             signs=cp.zeros((batch, 0), dtype=cp.int8),
             values=cp.zeros((batch, 0), dtype=x.dtype),
-            K=0, dim=dim,
+            K=0,
+            dim=dim,
         )
 
     support = np.full((batch, K), -1, dtype=np.int64)
@@ -234,11 +238,14 @@ def to_sparse(x) -> SparseVector:
             val = xn[r, idx]
             support[r, c] = idx
             if is_complex:
-                # Store the full complex coefficient; sign is the sign of
-                # the real part (kernel multiplies sign_a*sign_b*value_a*value_b
-                # which equals the coefficient product for the bilinear
-                # complex case we support).
-                signs[r, c] = 1 if np.real(val) >= 0 else -1
+                # For complex dtypes the kernel computes
+                #   sa * sb * sign(a,b) * va * vb
+                # which equals the correct Cayley-Dickson product only when
+                #   sa * va == coeff_a   (the original coefficient).
+                # A complex coefficient has a phase, not a sign, so the
+                # only safe encoding is sign = +1 and value = coeff.
+                # (sign = -1 would flip the imaginary part as well.)
+                signs[r, c] = 1
                 values[r, c] = val
             else:
                 v = float(val)
@@ -249,7 +256,8 @@ def to_sparse(x) -> SparseVector:
         support=cp.asarray(support),
         signs=cp.asarray(signs),
         values=cp.asarray(values, dtype=x.dtype),
-        K=K, dim=dim,
+        K=K,
+        dim=dim,
     )
 
 
@@ -277,9 +285,7 @@ def from_sparse(sv: SparseVector):
     return cp.asarray(out, dtype=sv.values.dtype)
 
 
-def _sparse_multiply_cpu(
-    x_sup, x_sig, x_val, y_sup, y_sig, y_val, dim, batch, out_dtype
-):
+def _sparse_multiply_cpu(x_sup, x_sig, x_val, y_sup, y_sig, y_val, dim, batch, out_dtype):
     """CPU reference implementation; used when the kernel is unavailable.
 
     Operates on NumPy arrays (already device-free); returns a NumPy array
@@ -365,8 +371,7 @@ def sparse_multiply(
         raise ValueError(f"dimension mismatch: x.dim={x.dim}, y.dim={y.dim}")
     if x.support.shape[0] != y.support.shape[0]:
         raise ValueError(
-            f"batch mismatch: x batch={x.support.shape[0]}, "
-            f"y batch={y.support.shape[0]}"
+            f"batch mismatch: x batch={x.support.shape[0]}, y batch={y.support.shape[0]}"
         )
     dim = x.dim
     batch = x.support.shape[0]
@@ -383,9 +388,7 @@ def sparse_multiply(
     out_dtype = x_val.dtype  # same as y_val for a homogeneous call
     out_dtype_name = _dtype_name(out_dtype)
     if out_dtype_name not in SPARSE_SUPPORTED_DTYPES:
-        raise TypeError(
-            f"sparse_multiply requires a supported dtype; got {out_dtype}"
-        )
+        raise TypeError(f"sparse_multiply requires a supported dtype; got {out_dtype}")
 
     kernel_fn = _sparse_kernel_handle(out_dtype_name)
 
@@ -452,7 +455,8 @@ def _dense_to_sparse_vector(dense_np, dim, dtype) -> SparseVector:
             support=cp.zeros((batch, 0), dtype=cp.int64),
             signs=cp.zeros((batch, 0), dtype=cp.int8),
             values=cp.zeros((batch, 0), dtype=dtype),
-            K=0, dim=dim,
+            K=0,
+            dim=dim,
         )
 
     support = np.full((batch, K_out), -1, dtype=np.int64)
@@ -465,7 +469,7 @@ def _dense_to_sparse_vector(dense_np, dim, dtype) -> SparseVector:
             val = dense_np[r, idx]
             support[r, c] = idx
             if is_complex:
-                signs[r, c] = 1 if np.real(val) >= 0 else -1
+                signs[r, c] = 1
                 values[r, c] = val
             else:
                 v = float(val)
@@ -476,7 +480,8 @@ def _dense_to_sparse_vector(dense_np, dim, dtype) -> SparseVector:
         support=cp.asarray(support),
         signs=cp.asarray(signs),
         values=cp.asarray(values, dtype=dtype),
-        K=K_out, dim=dim,
+        K=K_out,
+        dim=dim,
     )
 
 

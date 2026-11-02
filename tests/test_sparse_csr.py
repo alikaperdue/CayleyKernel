@@ -2,12 +2,17 @@
 # Copyright (c) 2026 Alika Perdue
 """Tests for the sparse (CSR-style) Cayley-Dickson product.
 
-Phase B deliverable of ``feat/sparse-csr``.  See
-``docs/sparse-csr-design.md`` for the design and
+Deliverable of ``feat/sparse-csr`` (Phases A–C): design document,
+Python API (:mod:`CayleyKernel._sparse`), and the dedicated CUDA
+kernel (``sparse_mult_<suffix>`` in ``cuda/cuda_kernel.cu``, ABI 5).
+See ``docs/sparse-csr-design.md`` for the design and
 ``tests/test_sparse_zd.py`` for the algebraic evidence.
 
-The sparse API in :mod:`CayleyKernel._sparse` is a CPU-side reference
-implementation in this phase; a dedicated CUDA kernel is Phase C work.
+The sparse API dispatches to the GPU kernel when the library exposes
+the Phase C symbols for the operand dtype (float16 / bfloat16 /
+float32 / float64 / complex64 / complex128) and otherwise falls back
+transparently to a bit-for-bit CPU reference, so the tests remain
+meaningful on hosts without a GPU.
 
 Run with::
 
@@ -29,7 +34,6 @@ if _REPO_ROOT not in sys.path:
 
 import CayleyKernel
 from CayleyKernel import (  # noqa: E402
-    SparseVector,
     from_sparse,
     is_sparse_beneficial,
     sparse_multiply,
@@ -37,7 +41,6 @@ from CayleyKernel import (  # noqa: E402
 )
 
 cp = pytest.importorskip("cupy", reason="sparse API tests require CuPy")
-np = pytest.importorskip("numpy")
 
 # Opt out of the _require_gpu_kernel autouse fixture (most tests are
 # CPU-side and do not need cuda_kernel.so).  The one benchmark that does
@@ -161,7 +164,12 @@ def test_sparse_product_zero_divisor_batch():
 # that predates bfloat16 promotion).  Detect and skip it gracefully rather
 # than failing collection; the design doc's supported-dtype list still
 # includes bfloat16 where it is available.
-_SPARSE_DTYPES = [cp.float16, cp.float32, cp.float64]
+#
+# complex64 / complex128 are part of SPARSE_SUPPORTED_DTYPES (Phase C
+# exports sparse_mult_complex64 and sparse_mult_complex128) and the
+# Phase B spec requires the parity test to cover every supported
+# floating dtype, so they are included here as well.
+_SPARSE_DTYPES = [cp.float16, cp.float32, cp.float64, cp.complex64, cp.complex128]
 if hasattr(cp, "bfloat16"):
     _SPARSE_DTYPES.append(cp.bfloat16)
 
@@ -192,9 +200,9 @@ def test_sparse_multiply_matches_dense(K, dtype):
 
     if dtype == cp.float16:
         rtol, atol = 1e-2, 1e-2
-    elif dtype is cp.float32:
+    elif dtype == cp.float32 or dtype == cp.complex64:
         rtol, atol = 1e-4, 1e-5
-    else:  # float64
+    else:  # float64 / complex128
         rtol, atol = 1e-10, 1e-12
     np.testing.assert_allclose(got_np, want_np, rtol=rtol, atol=atol)
 
@@ -205,16 +213,16 @@ def test_sparse_multiply_matches_dense(K, dtype):
 @pytest.mark.parametrize(
     "dim, k_a, k_b, expected",
     [
-        (256, 2, 2, True),       # 4 < 85.3
-        (256, 4, 4, True),       # 16 < 85.3
-        (256, 8, 8, True),       # 64 < 85.3
-        (256, 16, 16, False),    # 256 > 85.3
-        (1024, 8, 8, True),      # 64 < 341.3
-        (1024, 16, 16, True),    # 256 < 341.3
-        (1024, 32, 32, False),   # 1024 > 341.3
-        (4096, 16, 16, True),    # 256 < 1365.3
-        (4096, 32, 32, True),    # 1024 < 1365.3
-        (4096, 64, 64, False),   # 4096 > 1365.3
+        (256, 2, 2, True),  # 4 < 85.3
+        (256, 4, 4, True),  # 16 < 85.3
+        (256, 8, 8, True),  # 64 < 85.3
+        (256, 16, 16, False),  # 256 > 85.3
+        (1024, 8, 8, True),  # 64 < 341.3
+        (1024, 16, 16, True),  # 256 < 341.3
+        (1024, 32, 32, False),  # 1024 > 341.3
+        (4096, 16, 16, True),  # 256 < 1365.3
+        (4096, 32, 32, True),  # 1024 < 1365.3
+        (4096, 64, 64, False),  # 4096 > 1365.3
     ],
 )
 def test_is_sparse_beneficial_crossover(dim, k_a, k_b, expected):
@@ -228,11 +236,14 @@ def test_is_sparse_beneficial_crossover(dim, k_a, k_b, expected):
 # Benchmark: dim=1024, K_a=K_b=8, batch=4096, float32
 # ---------------------------------------------------------------------------
 def test_sparse_benchmark_vs_dense():
-    """Benchmark the sparse reference against the dense kernel.
+    """Benchmark the sparse path against the dense kernel.
 
-    Phase B sparse is CPU-side, so it is expected to be SLOWER than the
-    dense GPU kernel.  This test reports the (negative) speedup so that
-    Phase C's CUDA kernel can be compared against this baseline.
+    Both products run on the GPU (the dense path via ``multiply``,
+    the sparse path via ``sparse_mult_float`` when ABI ≥ 5, or the
+    CPU reference on hosts without the kernel).  The test reports the
+    wall-clock ratio so the PR description can quote a measured
+    speedup consistent with the modelled table in
+    ``docs/sparse-csr-design.md`` §4.
 
     Requires the GPU kernel to be loaded (dense path).  Skipped otherwise.
     """
@@ -258,10 +269,11 @@ def test_sparse_benchmark_vs_dense():
     cp.cuda.get_current_stream().synchronize()
     t_dense = time.perf_counter() - t0
 
-    # Sparse (CPU reference).
+    # Sparse (GPU kernel when ABI >= 5, else CPU reference).
     t0 = time.perf_counter()
     got = sparse_multiply(to_sparse(x), to_sparse(y))
     _ = from_sparse(got)
+    cp.cuda.get_current_stream().synchronize()
     t_sparse = time.perf_counter() - t0
 
     # Correctness check.
@@ -269,10 +281,12 @@ def test_sparse_benchmark_vs_dense():
     want_np = cp.asnumpy(want).reshape(-1, dim).astype(np.float64)
     np.testing.assert_allclose(got_np, want_np, rtol=1e-3, atol=1e-3)
 
-    speedup = t_dense / t_sparse  # < 1 means sparse is slower (expected in Phase B)
+    # > 1 means sparse is faster than dense (the design-doc expectation
+    # for dim=1024, K=8, float32 per docs/sparse-csr-design.md §4).
+    speedup = t_dense / t_sparse
     print(f"\n[benchmark] dim={dim} K={K} batch={batch} dtype={dtype.__name__}")
-    print(f"[benchmark]   dense (GPU) : {t_dense * 1e3:>10.3f} ms")
-    print(f"[benchmark]   sparse (CPU): {t_sparse * 1e3:>10.3f} ms  [Phase B reference]")
-    print(f"[benchmark]   ratio dense/sparse: {speedup:>6.2f}x  (< 1 expected; Phase C CUDA will invert this)")
+    print(f"[benchmark]   dense : {t_dense * 1e3:>10.3f} ms")
+    print(f"[benchmark]   sparse: {t_sparse * 1e3:>10.3f} ms")
+    print(f"[benchmark]   ratio dense/sparse: {speedup:>6.2f}x")
 
     assert t_dense > 0 and t_sparse > 0

@@ -1,6 +1,6 @@
 # Sparse (CSR-style) Cayley–Dickson Product — Design Document
 
-**Status:** experimental / research — design only, no implementation yet.
+**Status:** experimental / research — implemented on this branch (Phase A design, Phase B Python API, Phase C CUDA kernel; ABI 5).
 **Branch:** `feat/sparse-csr` · **Scope:** dense dimensions ≥ 256 (2⁸), sparse inputs, CUDA + Python API.
 
 ---
@@ -130,10 +130,10 @@ float32:
 | 1024 | 20× (cap) | 10–20× | 5–10× | 3–6× |
 | 4096 | 20× (cap) | 10–20× | 8–15× | 4–10× |
 
-These are design-time estimates; the implementation PR must replace them
-with measured medians (5 samples, same protocol as `docs/testing.md`,
-recorded to a new `benchmark-results/sparse-csr-*.json` file) before the
-numbers are quoted anywhere user-facing.
+These are design-time estimates; measured medians are produced by
+`pytest -m sparse_csr tests/test_sparse_csr.py -k benchmark -s` and
+reported in the PR description (per `CONTRIBUTING.md`, `benchmark-results/`
+files are deliberately local-only and not committed to this repository).
 
 ## 5. Correctness guarantees
 
@@ -158,17 +158,31 @@ numbers are quoted anywhere user-facing.
 - **No new third-party dependencies** (CuPy/NumPy already required for the
   dense path; no new Python packages).
 
-## 6. Python API (sketch)
+## 6. Python API (shipped on this branch)
+
+All symbols are exported from the package root and listed in `__all__`
+(see `CayleyKernel/__init__.py`):
 
 ```python
-from CayleyKernel import sparse_multiply
-# x_csr / y_csr: (support int64 [B,K], signs int8 [B,K], value T [B,K], K)
-out = sparse_multiply(x_csr, y_csr, out=None, stream=None)  # dense (..., dim) T
+from CayleyKernel import (
+    SparseVector,            # dataclass: support [B,K] int64,
+                             # signs [B,K] int8, values [B,K] T, K, dim
+    to_sparse,               # cp.ndarray -> SparseVector
+    from_sparse,             # SparseVector -> cp.ndarray (dense, (..., dim))
+    sparse_multiply,         # (SparseVector, SparseVector) -> SparseVector
+    is_sparse_beneficial,    # (dim, k_a, k_b) -> bool  (crossover rule, §4)
+)
 ```
 
-`multiply_into_sparse` in-place variant and a `sparse_from_dense` helper for
-extracting CSR form are Phase B work. The experimental status is stated in
-the docstring and in `README.md`.
+`SparseVector` is a plain dataclass holding three CuPy arrays (row-major,
+contiguous across the batch axis, same convention as the dense `_nd` entry
+points) plus the scalar fields `K` and `dim`. `sparse_multiply` dispatches
+to the `sparse_mult_<suffix>` CUDA kernel (float16 / bfloat16 / float32 /
+float64 / complex64 / complex128) via ctypes; if the kernel is unavailable
+(e.g. ABI < 5, or a non-GPU environment) it transparently falls back to a
+bit-for-bit CPU reference so the API remains usable in tests.
+
+The experimental status is stated in the docstrings and in `README.md`.
 
 ## 7. Non-goals
 
