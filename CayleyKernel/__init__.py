@@ -397,8 +397,9 @@ def _launch(kernel_pair, a, b, o, dim, batch):
     # by the caller) completes before the kernel starts on the default
     # stream.  Non-blocking CuPy streams have no implicit ordering with the
     # legacy default stream, so without this the kernel may read uninitialised
-    # device memory.
-    cp.cuda.get_current_stream().synchronize()
+    # device memory.  Skipped when CuPy is unavailable (CPU-fallback tests).
+    if cp is not None:
+        cp.cuda.get_current_stream().synchronize()
     legacy_fn, nd_fn = kernel_pair
 
     if nd_fn is not None:
@@ -457,8 +458,9 @@ def _launch_fma(dtype, a, b, c, o, dim, batch, sign):
     """Dispatch ``fma_mult_<suffix>(a, b, c, o, dim, batch, sign)``."""
     # Same stream-ordering guard as _launch: the C kernel runs on the
     # default stream, so pending H2D copies on a non-blocking stream must
-    # be flushed first.
-    cp.cuda.get_current_stream().synchronize()
+    # be flushed first.  Skipped when CuPy is unavailable (CPU-fallback tests).
+    if cp is not None:
+        cp.cuda.get_current_stream().synchronize()
     _select_fma(dtype)(
         a.data.ptr,
         b.data.ptr,
