@@ -29,7 +29,7 @@ proof of asymptotic scaling. Baselines are never updated by comparison.
 import pytest
 
 cp = pytest.importorskip("cupy")
-from CayleyKernel import multiply
+from CayleyKernel import multiply, multiply_add, multiply_subtract
 
 pytestmark = pytest.mark.benchmark
 
@@ -55,3 +55,48 @@ def test_batch_scaling(gpu_benchmark):
 def test_packed_small_vectors(gpu_benchmark, batch, dim):
     """Track shared-memory tiles over mid-range and large batches."""
     gpu_benchmark.measure(f"batch_{batch}_dim{dim}", multiply, (batch, dim))
+
+
+# ---------------------------------------------------------------------------
+# Fused multiply-add (ABI >= 4)
+# ---------------------------------------------------------------------------
+
+
+def test_fma_batch_65536_dim32_add(gpu_benchmark):
+    """Fused a*b+c: 65536 algebras of dim 32, single kernel launch."""
+    gpu_benchmark.measure_fma("fma_batch_65536_dim32_add", multiply_add, (65536, 32), +1)
+
+
+def test_fma_batch_65536_dim32_sub(gpu_benchmark):
+    """Fused a*b-c: 65536 algebras of dim 32, single kernel launch."""
+    gpu_benchmark.measure_fma("fma_batch_65536_dim32_sub", multiply_subtract, (65536, 32), -1)
+
+
+def test_fma_batch_1024_dim16_add(gpu_benchmark):
+    """Fused a*b+c: 1024 algebras of dim 16, single kernel launch."""
+    gpu_benchmark.measure_fma("fma_batch_1024_dim16_add", multiply_add, (1024, 16), +1)
+
+
+def test_fma_batch_1024_dim16_sub(gpu_benchmark):
+    """Fused a*b-c: 1024 algebras of dim 16, single kernel launch."""
+    gpu_benchmark.measure_fma("fma_batch_1024_dim16_sub", multiply_subtract, (1024, 16), -1)
+
+
+# ---------------------------------------------------------------------------
+# Three-kernel baseline (multiply + elementwise add) for before/after
+# ---------------------------------------------------------------------------
+
+
+def test_baseline_multiply_then_add_65536_dim32(gpu_benchmark):
+    """Three-kernel path (multiply, then elementwise add) at the same shape as
+    the fused FMA case, so the PR description can report a before/after
+    throughput comparison (three-kernel vs. single-kernel).
+
+    Recorded alongside the fused cases in the same baseline file so the
+    before/after numbers come from one consistent run.
+    """
+    from CayleyKernel import multiply as multiply_fn
+
+    gpu_benchmark.measure_fma_baseline(
+        "baseline_multiply_add_batch_65536_dim32", multiply_fn, (65536, 32)
+    )

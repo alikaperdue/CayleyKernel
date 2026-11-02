@@ -21,6 +21,11 @@ Public API:
                             -- Cayley-Dickson product, O(1) per element on GPU.
                                ``out`` reuses a caller-allocated buffer; ``stream``
                                selects the CUDA stream used for the launch.
+    multiply_add(a, b, c, out=None, stream=None)
+                            -- Fused ``a*b + c``: the ``+ c`` term is folded into
+                               the product kernel (single launch, no extra add).
+    multiply_subtract(a, b, c, out=None, stream=None)
+                            -- Fused ``a*b - c``; same launch path as multiply_add.
     multiply_into(a, b, out)  -- explicit alias for ``multiply(a, b, out=out)``
     conjugate(a)         -- standard Cayley-Dickson conjugation
     norm_sq(a), inverse(a), right_div(a, b), left_div(a, b)
@@ -62,6 +67,8 @@ except ImportError:  # pragma: no cover
 __version__ = "0.3.0"
 __all__ = [
     "multiply",
+    "multiply_add",
+    "multiply_subtract",
     "multiply_into",
     "conjugate",
     "norm_sq",
@@ -141,6 +148,9 @@ def abi_version():
     * ``2`` -- batched ``mult_<type>_nd`` entry points + diagnostics.
     * ``3`` -- adds ``conjugate_<type>`` and ``norm_sq_<type>`` entry points
       used by the GPU-dispatched algebra helpers in :mod:`_algebra`.
+    * ``4`` -- adds fused ``fma_mult_<type>(a, b, c, out, dim, batch, sign)``
+      entry points backing :func:`multiply_add` (``sign=+1``) and
+      :func:`multiply_subtract` (``sign=-1``).
     """
     return _ABI_VERSION
 
@@ -383,6 +393,13 @@ def _launch(kernel_pair, a, b, o, dim, batch):
     block_size = os.environ.get("CAYLEY_KERNEL_BLOCK_SIZE")
     if block_size is not None and block_size not in ("32", "64", "128", "256", "512", "1024"):
         raise ValueError("CAYLEY_KERNEL_BLOCK_SIZE must be one of 32, 64, 128, 256, 512, 1024")
+    # Ensure all pending work on the current stream (e.g. H2D copies queued
+    # by the caller) completes before the kernel starts on the default
+    # stream.  Non-blocking CuPy streams have no implicit ordering with the
+    # legacy default stream, so without this the kernel may read uninitialised
+    # device memory.  Skipped when CuPy is unavailable (CPU-fallback tests).
+    if cp is not None:
+        cp.cuda.get_current_stream().synchronize()
     legacy_fn, nd_fn = kernel_pair
 
     if nd_fn is not None:
@@ -400,6 +417,59 @@ def _launch(kernel_pair, a, b, o, dim, batch):
             o.data.ptr + i * stride,
             ctypes.c_int(dim),
         )
+
+
+def _select_fma(dtype):
+    """Return the ``fma_mult_<suffix>`` ctypes handle for *dtype*.
+
+    Raises :class:`TypeError` when the dtype is unsupported and
+    :class:`RuntimeError` when the loaded shared object does not export the
+    fused entry point (ABI < 4).  ``argtypes``/``restype`` are configured so
+    the handle is safe to call repeatedly from :func:`_launch_fma`.
+    """
+    key = dtype.name
+    suffix = _DTYPE_TO_SUFFIX.get(key)
+    if suffix is None:
+        raise TypeError(
+            "Unsupported precision for multiply_add: %s! Use float16, bfloat16 "
+            "(CUDA), float32, float64, integer, complex64, complex128, or boolean "
+            "variants. Rebuild the kernel if the requested type is missing." % dtype
+        )
+    fn = getattr(_lib, "fma_mult_%s" % suffix, None)
+    if fn is None:
+        raise RuntimeError(
+            "fused fma_mult CUDA entry point not present in %s; rebuild with "
+            "`make kernel` to enable multiply_add/multiply_subtract." % _library_path
+        )
+    fn.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_int,
+        ctypes.c_longlong,
+        ctypes.c_int,
+    ]
+    fn.restype = None
+    return fn
+
+
+def _launch_fma(dtype, a, b, c, o, dim, batch, sign):
+    """Dispatch ``fma_mult_<suffix>(a, b, c, o, dim, batch, sign)``."""
+    # Same stream-ordering guard as _launch: the C kernel runs on the
+    # default stream, so pending H2D copies on a non-blocking stream must
+    # be flushed first.  Skipped when CuPy is unavailable (CPU-fallback tests).
+    if cp is not None:
+        cp.cuda.get_current_stream().synchronize()
+    _select_fma(dtype)(
+        a.data.ptr,
+        b.data.ptr,
+        c.data.ptr,
+        o.data.ptr,
+        ctypes.c_int(dim),
+        ctypes.c_longlong(batch),
+        ctypes.c_int(sign),
+    )
 
 
 def _launch_conjugate(dtype, a, o, dim, batch):
@@ -603,6 +673,142 @@ def multiply_into(a, b, out):
     if out is None:
         raise TypeError("multiply_into requires an 'out' buffer")
     return multiply(a, b, out=out)
+
+
+def _resolve_fma_dtype(a, b, c):
+    """Promote three operands to the homogeneous dtype used by the kernel."""
+    dtype = _result_dtype(a, b)
+    dtype = _result_dtype(dtype, c)
+    return dtype
+
+
+def _launch_fused_multiply(a, b, c, out, stream, sign):
+    """Validate operands, allocate/validate ``out`` and launch the fused
+    ``a*b + sign*c`` kernel.
+
+    ``sign`` must be ``+1`` for ``a*b + c`` or ``-1`` for ``a*b - c``.
+    """
+    _require_gpu_runtime()
+    _require_kernel()
+
+    if out is not None and not isinstance(out, cp.ndarray):
+        raise TypeError("out must be a cupy.ndarray when provided")
+    stream_ctx = _resolve_stream(stream)
+
+    if isinstance(a, cp.ndarray) or isinstance(b, cp.ndarray) or isinstance(c, cp.ndarray):
+        return_type = "cupy"
+    elif isinstance(a, np.ndarray) or isinstance(b, np.ndarray) or isinstance(c, np.ndarray):
+        return_type = "numpy"
+    else:
+        return_type = "list"
+
+    a = _as_cupy(a)
+    b = _as_cupy(b, ref_dtype=a.dtype)
+    c = _as_cupy(c, ref_dtype=a.dtype)
+
+    if a.ndim == 0 or b.ndim == 0 or c.ndim == 0:
+        raise ValueError(
+            "Inputs must have at least one axis; the last axis is the "
+            "Cayley-Dickson algebra dimension (2^n)."
+        )
+
+    out_dtype = _resolve_fma_dtype(a.dtype, b.dtype, c.dtype)
+    if a.dtype != out_dtype:
+        a = a.astype(out_dtype)
+    if b.dtype != out_dtype:
+        b = b.astype(out_dtype)
+    if c.dtype != out_dtype:
+        c = c.astype(out_dtype)
+
+    _select_fma(out_dtype)  # fail early when the kernel lacks the ABI-4 symbol
+
+    dim = a.shape[-1]
+    if b.shape[-1] != dim or c.shape[-1] != dim:
+        raise ValueError(
+            "Algebra dimension mismatch: a.shape[-1] (%d) != b.shape[-1] (%d) != "
+            "c.shape[-1] (%d). The last axis must be identical for all operands."
+            % (dim, b.shape[-1], c.shape[-1])
+        )
+    if not is_power_of_two(dim):
+        raise ValueError("Algebra dimension (last axis = %d) must be a power of two (2^n)." % dim)
+
+    batch_shape = _broadcast_shapes([a.shape[:-1], b.shape[:-1], c.shape[:-1]])
+    out_shape = tuple(batch_shape) + (dim,)
+
+    if a.shape != out_shape:
+        a = cp.broadcast_to(a, out_shape)
+    if b.shape != out_shape:
+        b = cp.broadcast_to(b, out_shape)
+    if c.shape != out_shape:
+        c = cp.broadcast_to(c, out_shape)
+
+    a = cp.ascontiguousarray(a)
+    b = cp.ascontiguousarray(b)
+    c = cp.ascontiguousarray(c)
+
+    batch = 1
+    for s in batch_shape:
+        batch *= int(s)
+
+    if out is not None:
+        if out.dtype != out_dtype:
+            raise TypeError(
+                "out.dtype (%s) must equal the promoted dtype (%s). "
+                "The CUDA kernel is dtype-homogeneous." % (out.dtype, out_dtype)
+            )
+        if tuple(out.shape) != out_shape:
+            raise ValueError(
+                "out.shape %s does not match the broadcast result shape %s. "
+                % (tuple(out.shape), out_shape)
+            )
+        o = cp.ascontiguousarray(out)
+    else:
+        o = cp.zeros(out_shape, dtype=out_dtype)
+
+    if batch > 0:
+        with stream_ctx:
+            _launch_fma(out_dtype, a, b, c, o, int(dim), int(batch), int(sign))
+
+    if out is not None:
+        return o
+    if return_type == "list":
+        return cp.asnumpy(o).tolist()
+    if return_type == "numpy":
+        return cp.asnumpy(o)
+    return o
+
+
+def multiply_add(a, b, c, out=None, stream=None):
+    """Fused Cayley-Dickson product ``a * b + c``, executed on the GPU.
+
+    The ``+ c`` term is folded into the same per-thread accumulator as the
+    basis-sign sum that produces ``a * b``; the whole expression executes in
+    one kernel launch (no separate elementwise add kernel is issued).
+
+    The LAST axis is the algebra dimension and must be a power of two (2^n).
+    All leading axes are treated as a batch and the three operands are
+    broadcast against each other over the batch axes (standard NumPy/CuPy
+    right-aligned rules), so a single vector can be added to a whole stack
+    of products::
+
+        multiply_add(A, B, c)
+
+    The output has the broadcast shape and the promoted dtype of all three
+    operands, matching the input container type (list -> list, NumPy ->
+    NumPy, CuPy -> CuPy).  ``out`` and ``stream`` follow the same rules as
+    :func:`multiply`.
+    """
+    return _launch_fused_multiply(a, b, c, out, stream, +1)
+
+
+def multiply_subtract(a, b, c, out=None, stream=None):
+    """Fused Cayley-Dickson product ``a * b - c``, executed on the GPU.
+
+    Same launch path as :func:`multiply_add`, with the sign of the ``c``
+    term negated inside the kernel.  All broadcasting, dtype-promotion,
+    ``out=`` and ``stream=`` rules are identical to :func:`multiply_add`.
+    """
+    return _launch_fused_multiply(a, b, c, out, stream, -1)
 
 
 # CPU operations have an independent optional Rust backend. GPU entry points

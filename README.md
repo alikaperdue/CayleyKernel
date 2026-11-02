@@ -173,6 +173,8 @@ PyPI package, and the in-repo recursive reference, see
 | Function | Description |
 | --- | --- |
 | `multiply(a, b, out=None, stream=None)` | Cayley-Dickson product; last axis = algebra dimension `2^n`, leading axes batched + broadcast. `out` reuses a caller-allocated buffer; `stream` selects the CUDA stream |
+| `multiply_add(a, b, c, out=None, stream=None)` | Fused `a*b + c` in a single kernel launch |
+| `multiply_subtract(a, b, c, out=None, stream=None)` | Fused `a*b − c` in a single kernel launch |
 | `multiply_into(a, b, out)` | Explicit alias for `multiply(a, b, out=out)`; unambiguous in-place intent |
 | `conjugate(a)` | Standard basis conjugation `(a0, −a1, …, −a_{n−1})` |
 | `norm_sq(a)` | Sum of coefficient squares over the last axis |
@@ -186,7 +188,7 @@ PyPI package, and the in-repo recursive reference, see
 | `imag(a)` | Copy with `e0` set to zero, preserving the algebra axis |
 | `library_path()` | Path of the loaded `cuda_kernel.so` |
 | `loaded()` | `True` once the kernel library has been found |
-| `abi_version()` | Kernel ABI version (`0` = no kernel library, `1` = legacy, `2` = batched, `3` = +conjugate/norm_sq) |
+| `abi_version()` | Kernel ABI version (`0` = no kernel library, `1` = legacy, `2` = batched, `3` = +conjugate/norm_sq, `4` = +fused multiply-add) |
 | `twist(r, c)` | Exact CPU basis sign; nonnegative, zero-based integer indices |
 | `basis(r, c)` | Exact CPU basis product; nonzero, signed one-based integer labels |
 | `twist_many(pairs)`, `basis_many(pairs)` | Ordered CPU batch operations for iterables of pairs |
@@ -235,6 +237,53 @@ with cp.cuda.stream(cp.cuda.Stream(non_blocking=True)):
     multiply(a, b)  # or pass stream=...
 ```
 
+### Fused multiply-add
+
+In addition to the plain product, CayleyKernel exposes **fused multiply-add** and **fused multiply-subtract** kernels that compute `a * b + c` or `a * b − c` in a **single kernel launch**. The `±c` term is folded into the same per-thread accumulator as the basis-sign sum over `dim` terms, so no separate elementwise add/subtract kernel is required.
+
+```python
+from CayleyKernel import multiply_add, multiply_subtract
+import cupy as cp
+
+# Fused: a*b + c in one launch (equivalent to multiply(a, b) + c, but faster)
+c = cp.random.rand(65536, 32, dtype=cp.float32)
+result = multiply_add(a, b, c)  # a*b + c
+result = multiply_subtract(a, b, c)  # a*b - c
+```
+
+Broadcast rules, dtype promotion, `out=` buffer validation, and `stream=` semantics are identical to `multiply`.
+
+**C entry points (ABI 4):**
+
+```
+extern "C" void fma_mult_<suffix>(const void* a, const void* b,
+                                  const void* c, void* out,
+                                  int dim, long long batch, int sign);
+// sign = +1  →  out[i] = a*b + c
+// sign = -1  →  out[i] = a*b - c
+```
+
+One `fma_mult_<suffix>` symbol is emitted for every supported dtype
+(`float`, `double`, `int32`, `int64`, `uint32`, `uint64`, `int16`, `uint16`,
+`int8`, `uint8`, `bool`, `half`, `bfloat16`, `complex64`, `complex128`),
+in both `cuda/cuda_kernel.cu` and `cuda/amd_kernel.cu`.
+
+`cayley_abi_version()` returns **4** on ABI-4 builds. The `abi_version()`
+Python helper reports the same value.
+
+**Performance (RTX 5070 Ti, dim=32, batch=65536, float32):**
+
+| Path | Median |
+|---|---|
+| `multiply(a,b)` + `add` (two launches) | 0.168 ms |
+| `multiply_add(a,b,c)` (one launch) | 0.161 ms |
+| `multiply_subtract(a,b,c)` (one launch) | 0.155 ms |
+
+The fused path avoids the intermediate allocation and second kernel launch for the elementwise `±c` step.
+
+See `tests/test_fused_multiply_add.py` for the correctness matrix and
+`benchmark-results/gpu-fma.json` for the benchmark baseline.
+
 ### Diagnostics
 
 Three read-only helpers are exposed for debugging integration issues. They
@@ -247,7 +296,7 @@ import CayleyKernel as ck
 ck.loaded()  # -> bool; True once cuda_kernel.so is found and loaded
 ck.library_path()  # -> str | None; absolute path of the loaded shared object
 ck.abi_version()  # -> int; 0 = no library, 1 = legacy, 2 = batched,
-#         3 = +conjugate/norm_sq entry points
+#         3 = +conjugate/norm_sq entry points, 4 = +fused multiply-add
 ```
 
 A typical debugging snippet when a kernel call raises an unexpected error:
@@ -377,7 +426,7 @@ For research-specific checks, see the [paper verification index](docs/papers/REA
 | Python package / import | `CayleyKernel` |
 | Wheel / PyPI project name | `cayley_kernel` |
 | Compiled kernel binary | `cuda_kernel.so` |
-| C ABI symbols | `mult_<type>`, `mult_<type>_nd` (stable) |
+| C ABI symbols | `mult_<type>`, `mult_<type>_nd`, `fma_mult_<type>` (stable) |
 
 The **O(1) (constant-order)** designation refers to determining the sign at
 a given row and column of the Cayley-Dickson sign table. For fixed-width GPU

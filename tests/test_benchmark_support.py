@@ -76,7 +76,7 @@ def test_measured_regression_fails_without_changing_baseline(tmp_path, monkeypat
     clock = iter(range(0, 120, 10))
     monkeypatch.setattr(bs.time, "perf_counter", lambda: next(clock))
     with pytest.raises(AssertionError, match="exceeds baseline"):
-        session.measure("single_2pow20", lambda x, y: object(), (2**20,))
+        session.measure("single_2pow20", lambda *args, **kwargs: object(), (2**20,))
     assert session.report["cases"]["single_2pow20"]["repetitions"] == 1
     session.finish()
     assert path.read_text() == original
@@ -89,7 +89,7 @@ def test_short_workloads_amortize_sync_overhead_but_detect_slowdown(tmp_path, mo
     def synchronize():
         clock["now"] += clock["sync"]
 
-    def multiply(x, y):
+    def multiply(*args, **kwargs):
         clock["now"] += clock["work"]
         return object()
 
