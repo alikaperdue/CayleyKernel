@@ -157,6 +157,11 @@ def abi_version():
     * ``4`` -- adds fused ``fma_mult_<type>(a, b, c, out, dim, batch, sign)``
       entry points backing :func:`multiply_add` (``sign=+1``) and
       :func:`multiply_subtract` (``sign=-1``).
+    * ``5`` -- adds the CSR-style sparse product entry points
+      ``sparse_mult_<type>(xs, xsg, xv, ys, ysg, yv, out, K_a, K_b, dim,
+      batch)`` for float, double, half, bfloat16, complex64, complex128
+      (experimental / research; see :mod:`._sparse` and
+      ``docs/sparse-csr-design.md``).
     """
     return _ABI_VERSION
 
