@@ -299,6 +299,15 @@ See `tests/test_fused_multiply_add.py` for the correctness matrix and
 
 ### Multi-GPU
 
+> **Experimental.** `split_batch` is new and its performance is
+> topology-dependent.  On systems with peer-to-peer (NVLink, Tesla
+> PCIe) it is typically **1.3–1.9× faster** than single-GPU.  On
+> systems without P2P (e.g. consumer GeForce) cross-device copies
+> route through host RAM and the multi-GPU path is **slower** than
+> single-GPU; use it there only for **memory partitioning** (batch
+> exceeds one GPU's VRAM).  See the
+> [multi-GPU guide](docs/multi-gpu.md) for full details.
+
 For batches that do not fit in one GPU's memory, `split_batch` distributes
 the leading batch axis across multiple visible CUDA devices using only
 CuPy's `cp.cuda.Device` context manager (no torch.distributed / mpi4py

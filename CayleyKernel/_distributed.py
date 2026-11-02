@@ -71,6 +71,20 @@ def visible_devices():
 def split_batch(a, b, devices=None, axis=0, out=None, stream=None):
     """Distribute a batch of Cayley-Dickson products across N CUDA devices.
 
+    .. warning::
+       **Experimental.** This API is new and may change in a future
+       release.  Performance is **topology-dependent**:
+
+       * With peer-to-peer (P2P) access (NVLink, Tesla PCIe) a
+         2-device configuration is typically **1.3–1.9× faster** than
+         single-GPU for memory- or compute-bound batches.
+       * Without P2P (e.g. consumer GeForce cards), every cross-device
+         copy bounces through host RAM and the multi-GPU path is
+         **slower** than single-GPU.  Use it on such systems only for
+         **memory partitioning** (batch does not fit in one GPU's VRAM).
+
+       See ``docs/multi-gpu.md`` for a full discussion.
+
     The leading batch axis (``axis=0``) is split into ``len(devices)``
     contiguous, roughly-equal chunks.  Each chunk is launched on its own
     device via a ``cp.cuda.Device`` context manager and a dedicated

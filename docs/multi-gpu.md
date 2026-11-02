@@ -1,5 +1,19 @@
 # Multi-GPU Batch Splitting
 
+> **Experimental.** `split_batch` is new and its performance is
+> topology-dependent:
+>
+> * **With peer-to-peer (P2P)** — NVLink, Tesla PCIe — a 2-device
+>   configuration is typically **1.3–1.9× faster** than single-GPU for
+>   memory- or compute-bound batches.
+> * **Without P2P** — consumer GeForce cards — every cross-device
+>   copy bounces through host RAM and the multi-GPU path is
+>   **slower** than single-GPU.  On such systems use `split_batch`
+>   only for **memory partitioning** (batch exceeds one GPU's VRAM).
+>
+> See [When `split_batch` wins vs. does not](#when-split_batch-wins-vs-does-not)
+> below for the full discussion and measured numbers.
+
 CayleyKernel ships a lightweight multi-GPU helper —
 `CayleyKernel.split_batch` — that distributes a large batch of
 Cayley-Dickson products across all (or a subset of) visible CUDA devices
@@ -115,7 +129,36 @@ dominates and `split_batch` is **slower** than a single `multiply` call.
 | Small batches (`B < 4096` at dim 32, f32) | Copy + launch overhead > compute time |
 | `dim` ≥ 4096 (memory-bound regime) | Each thread already touches `dim` coefficients; the kernel is memory-bound, and splitting does not reduce per-device memory traffic proportionally |
 | Single-GPU machine | `visible_devices()` returns `[0]`; the helper falls back to a single device with extra copy overhead |
+| **No peer-to-peer (consumer GeForce)** | Every cross-device copy routes through host RAM (~1.6 GB/s measured); see measured numbers below |
 | PCIe 3.0 GPUs with tight VRAM | D2D copy bandwidth is the bottleneck; use NVLink or a larger single GPU |
+
+### Measured: 2× RTX 5070 Ti (PCIe, **no P2P**)
+
+| batch    | 1× GPU (ms) | 2× GPU (ms) | ratio   |
+|---------:|-----------:|-----------:|:-------:|
+|   65,536 |     0.17   |     8.52   | **0.02×** |
+|  1,000,000 |    2.25   |   121.81   | **0.02×** |
+|  1,048,576 |    2.36   |   127.72   | **0.02×** |
+
+`nvidia-smi topo -m` shows `PIX` (PCIe switch) between the two devices and
+`nvidia-smi topo -p2p` confirms **no peer-to-peer access**. The dominant
+cost is the host-RAM bounce for input copies:
+
+```
+copy in  (a, b → GPU 1):   ~80 ms   ← 1.6 GB/s effective (PCIe through host)
+kernel (half batch, GPU 1): ~11 ms
+copy out (GPU 1 → GPU 0):  ~0.7 ms
+total  (one half):         ~92 ms
+```
+
+**On this topology `split_batch` is ~50× slower than a single-GPU
+call.** The API is correct, order-preserving, and zero-dep, but it is
+**not a performance win** on consumer GeForce hardware. Use it here only
+when the batch exceeds one GPU's VRAM.
+
+On data-center boxes with NVLink (A100/H100) or Tesla PCIe P2P (V100,
+A100), the same code path delivers **1.3–1.9×** speedup because D2D
+bandwidth is ~200 GB/s instead of ~1.6 GB/s.
 
 ---
 
