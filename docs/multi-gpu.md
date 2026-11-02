@@ -18,10 +18,10 @@ import CayleyKernel as ck
 import cupy as cp
 
 # List visible CUDA device IDs
-ck.visible_devices()          # -> [0, 1]  (example: two GPUs)
+ck.visible_devices()  # -> [0, 1]  (example: two GPUs)
 
 # Split a batch across all visible devices
-C = ck.split_batch(A, B)      # A, B: (batch, dim) arrays
+C = ck.split_batch(A, B)  # A, B: (batch, dim) arrays
 
 # Restrict to specific devices (e.g. the first two)
 C = ck.split_batch(A, B, devices=[0, 1])
@@ -128,8 +128,8 @@ import CayleyKernel as ck
 
 # --- Setup: 2 GPUs, 65536 independent 32-dim float32 products ---
 batch = 65_536
-dim   = 32
-rng   = np.random.default_rng(42)
+dim = 32
+rng = np.random.default_rng(42)
 
 a = cp.asarray(rng.normal(size=(batch, dim)).astype(np.float32))
 b = cp.asarray(rng.normal(size=(batch, dim)).astype(np.float32))
@@ -139,24 +139,24 @@ print("Visible devices:", ck.visible_devices())  # [0, 1]
 
 # Single-GPU baseline
 import time
+
 cp.cuda.runtime.deviceSynchronize()
 t0 = time.perf_counter()
 c_single = ck.multiply(a, b)
 cp.cuda.runtime.deviceSynchronize()
 t_single = time.perf_counter() - t0
-print(f"Single GPU: {t_single*1e3:.2f} ms")
+print(f"Single GPU: {t_single * 1e3:.2f} ms")
 
 # Multi-GPU
 t0 = time.perf_counter()
-c_multi = ck.split_batch(a, b)          # uses all visible devices
+c_multi = ck.split_batch(a, b)  # uses all visible devices
 cp.cuda.runtime.deviceSynchronize()
 t_multi = time.perf_counter() - t0
-print(f"Multi GPU:  {t_multi*1e3:.2f} ms")
-print(f"Speedup:    {t_single/t_multi:.2f}x")
+print(f"Multi GPU:  {t_multi * 1e3:.2f} ms")
+print(f"Speedup:    {t_single / t_multi:.2f}x")
 
 # Results are identical (within float32 tolerance)
-np.testing.assert_allclose(cp.asnumpy(c_multi), cp.asnumpy(c_single),
-                           rtol=1e-6, atol=1e-6)
+np.testing.assert_allclose(cp.asnumpy(c_multi), cp.asnumpy(c_single), rtol=1e-6, atol=1e-6)
 ```
 
 Expected: on a 2-GPU NVLink machine, `t_multi ≈ t_single / 1.7–1.9`

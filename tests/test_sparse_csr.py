@@ -259,11 +259,23 @@ def test_sparse_multiply_matches_dense(K, dtype):
     got = sparse_multiply(xs, ys)
     want = _dense_ref(x, y)
 
-    got_np = cp.asnumpy(from_sparse(got).reshape(-1, dim)).astype(np.float64)
-    want_np = cp.asnumpy(want).reshape(-1, dim).astype(np.float64)
+    got_np = cp.asnumpy(from_sparse(got).reshape(-1, dim))
+    want_np = cp.asnumpy(want).reshape(-1, dim)
+    # Promote to full precision for stable comparison (avoids ComplexWarning
+    # by using complex128 for complex dtypes instead of casting to float64).
+    if np.issubdtype(got_np.dtype, np.complexfloating):
+        got_np = got_np.astype(np.complex128)
+        want_np = want_np.astype(np.complex128)
+    else:
+        got_np = got_np.astype(np.float64)
+        want_np = want_np.astype(np.float64)
 
     if dtype == cp.float16:
-        rtol, atol = 1e-2, 1e-2
+        # float16 has ~3 significant digits; when cancellation drives the
+        # result near zero the dense path (accumulated in float16) can
+        # legitimately differ from the sparse path (accumulated in float64)
+        # by up to O(eps_f16 * n_terms) ~ 1e-2..1e-1 in absolute terms.
+        rtol, atol = 1e-1, 1e-1
     elif dtype == cp.float32 or dtype == cp.complex64:
         rtol, atol = 1e-4, 1e-5
     else:  # float64 / complex128
