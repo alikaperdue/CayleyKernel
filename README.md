@@ -416,8 +416,42 @@ ck.torch.multiply_into(a, b, o)  # -> o, identity preserved
 Install with: ``pip install 'cayley-kernel[torch,cuda12]'``.
 
 Supported dtypes: ``float16``, ``bfloat16``, ``float32``, ``float64``,
-``complex64``, ``complex128``. JAX interop is a separate branch
-(``feat/jax-interop``).
+``complex64``, ``complex128``.
+
+### JAX interop
+
+CayleyKernel ships a thin, optional JAX adapter at
+``CayleyKernel.jax.multiply``. The adapter calls the same CUDA kernel via
+the CuPy API and is **fully differentiable** through
+``jax.custom_vjp`` (bilinear VJP, no associativity assumed) and
+**``jax.jit``-traceable** via ``jax.pure_callback``. Both operands must
+share shape, dtype, and ``dim ≤ 256`` (the dense kernel is O(dim²) and
+JAX's tracing cost does not amortise at larger sizes in v1).
+
+Supported dtypes: ``float32``, ``float64``, ``complex64``. Inputs may be
+any ``jax.Array``; a D2H copy to NumPy is performed before the kernel call
+and the result is re-uploaded. (Future: zero-copy via shared CUDA memory.)
+
+```python
+import CayleyKernel as ck
+import jax, jax.numpy as jnp
+
+a = jnp.random.randn(1024, 8).astype(jnp.float32)
+b = jnp.random.randn(1024, 8).astype(jnp.float32)
+c = ck.jax.multiply(a, b)  # -> jax.Array (float32)
+g = jax.grad(lambda x: jnp.real(ck.jax.multiply(x, b)).sum())(a)
+f = jax.jit(lambda x, y: ck.jax.multiply(x, y))
+```
+
+**VJP (closed form).** The product is bilinear, so
+``vjp_a(g) = g * conj(b)`` and ``vjp_b(g) = conj(a) * g`` — each a single
+Cayley-Dickson product (with the other operand conjugated), no associativity
+required. See ``CayleyKernel/_jax.py`` docstring for the derivation and
+``scripts/ASSOCIATIVITY.md`` for the cyclic-law counter-examples that a
+triple-product derivation would run into at dim ≥ 8.
+
+Install with: ``pip install 'cayley-kernel[jax,cuda12]'``. For CUDA
+JAX: ``pip install 'jax[cuda]' jaxlib[cuda]``.
 
 ### Optional Rust CPU acceleration
 
