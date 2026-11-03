@@ -67,6 +67,8 @@ except ImportError:  # pragma: no cover
 __version__ = "0.3.0"
 __all__ = [
     "multiply",
+    "visible_devices",
+    "split_batch",
     "multiply_add",
     "multiply_subtract",
     "multiply_into",
@@ -846,4 +848,5 @@ from ._cpu import basis, basis_many, cpu_backend, cpu_multiply, twist, twist_man
 
 # Sparse CSR path (experimental / research).  Import guarded so that the
 # dense API remains usable on machines without CuPy.
+from ._distributed import split_batch, visible_devices  # noqa: E402
 from ._sparse import SparseVector, from_sparse, is_sparse_beneficial, sparse_multiply, to_sparse
