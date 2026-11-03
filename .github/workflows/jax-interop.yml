@@ -40,7 +40,7 @@ jobs:
           # On a CUDA runner this pulls in the CUDA-enabled jaxlib wheel;
           # on a CUDA-less runner the CPU jaxlib is installed and the
           # tests still run (or self-skip where CuPy is unavailable).
-        python -m pip install 'jax[cuda]' 'jaxlib[cuda]' || python -m pip install 'jax>=0.4' jaxlib>=0.4
+          python -m pip install 'jax[cuda]' 'jaxlib[cuda]' || python -m pip install 'jax>=0.4' 'jaxlib>=0.4'
           # CuPy needs a matching CUDA toolkit at runtime; on a CUDA-less
           # runner the import fails and the tests self-skip, which is
           # exactly what we want.
