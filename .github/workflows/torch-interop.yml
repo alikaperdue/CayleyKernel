@@ -1,0 +1,71 @@
+name: PyTorch interop
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/torch-interop.yml'
+      - 'CayleyKernel/_torch.py'
+      - 'CayleyKernel/__init__.py'
+      - 'tests/test_torch_interop.py'
+      - 'pyproject.toml'
+      - 'Makefile'
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Runs on a CUDA-enabled runner when the org has one (label e.g. `gpu-cuda`);
+# otherwise falls back to the standard `ubuntu-latest` runner, which has no
+# CUDA devices — the tests self-skip via the module-level
+# `pytest.importorskip("torch")` and the per-test `torch.cuda.is_available()`
+# guards, and the job is marked `continue-on-error: true` so a CUDA-less CI
+# box still passes.
+jobs:
+  torch-interop:
+    name: tests/test_torch_interop.py on CUDA runner (else self-skip)
+    runs-on: ${{ vars.CI_GPU_LABEL || 'ubuntu-latest' }}
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies (torch + CuPy + pytest)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest numpy
+          # Torch CPU build is fine on a CUDA-less runner (tests self-skip).
+          # On a CUDA runner pip pulls in the CUDA-enabled wheel.
+          python -m pip install 'torch>=2.0' || true
+          # CuPy needs a matching CUDA toolkit at runtime; on a CUDA-less
+          # runner the import fails and the tests self-skip, which is
+          # exactly what we want.
+          python -m pip install cupy-cuda12x || true
+          python -m pip install --no-deps -e .
+
+      - name: Build the CUDA kernel (skipped automatically when nvcc is missing)
+        run: |
+          if command -v nvcc >/dev/null 2>&1; then
+            make kernel
+          else
+            echo "nvcc not found on this runner; GPU tests will self-skip"
+          fi
+
+      - name: Run the PyTorch interop test file
+        run: |
+          python -m pytest -v tests/test_torch_interop.py
+        env:
+          CAYLEY_KERNEL_BLOCK_SIZE: '256'
+
+      - name: Show GPU (informational)
+        if: always()
+        run: |
+          if command -v nvidia-smi >/dev/null 2>&1; then
+            nvidia-smi -L || true
+          else
+            echo "nvidia-smi not present on this runner"
+          fi
