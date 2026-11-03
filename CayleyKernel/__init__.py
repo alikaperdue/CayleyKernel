@@ -852,10 +852,56 @@ from ._distributed import split_batch, visible_devices  # noqa: E402
 from ._sparse import SparseVector, from_sparse, is_sparse_beneficial, sparse_multiply, to_sparse
 
 # ---------------------------------------------------------------------------
+# Optional JAX interop (CayleyKernel.jax.multiply)
+#
+# JAX interop is intentionally on its own branch (feat/jax-interop) and is
+# exposed only when ``jax`` is importable.  Unlike the PyTorch adapter,
+# the JAX path is differentiable via jax.custom_vjp (bilinear VJP) and
+# jit-traceable via jax.pure_callback.
+# ---------------------------------------------------------------------------
+try:
+    # NOTE: probe under a name that does NOT shadow the adapter submodule
+    # (_jax).  Using `import jax as _jax` here would bind the jax *package*
+    # to `_jax`, causing the `from . import _jax` below to reuse that
+    # attribute instead of importing CayleyKernel/_jax.py -- leaving
+    # `CayleyKernel.jax` pointing at the jax package itself.
+    import jax as _jax_probe
+except ImportError:  # pragma: no cover - exercised only without jax
+    _jax_probe = None
+
+if _jax_probe is not None:  # pragma: no cover - exercised only when jax is installed
+    from . import _jax  # noqa: E402  (the adapter submodule, NOT the jax package)
+
+    jax = _jax  # exposes CayleyKernel.jax as the adapter namespace
+    __all__.append("jax")
+else:  # pragma: no cover - exercised only without jax
+
+    def _jax_missing(*args, **kwargs):
+        raise ImportError(
+            "CayleyKernel.jax.multiply is not available because jax is not "
+            "installed. Install it with:  pip install 'cayley-kernel[jax]'"
+        )
+
+    class _JaxUnavailableModule:
+        """Stub that raises ImportError on attribute access.
+
+        This lets ``import CayleyKernel`` succeed without jax, while any
+        attempt to use ``CayleyKernel.jax.multiply`` gives a clear message.
+        """
+
+        def __getattr__(self, name):
+            raise ImportError(
+                "CayleyKernel.jax requires jax. Install it with: pip install 'cayley-kernel[jax]'"
+            )
+
+    jax = _JaxUnavailableModule()
+    __all__.append("jax")
+
+# ---------------------------------------------------------------------------
 # Optional PyTorch interop (CayleyKernel.torch.multiply / multiply_into)
 #
-# Only exposed when torch is importable.  JAX is intentionally a separate
-# branch (feat/jax-interop).  Autograd is out of scope in v1 (see README).
+# Only exposed when torch is importable.  Autograd is out of scope in v1
+# (see README).
 # ---------------------------------------------------------------------------
 try:
     # NOTE: probe under a name that does NOT shadow the adapter submodule
