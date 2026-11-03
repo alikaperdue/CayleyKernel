@@ -145,10 +145,10 @@ dominates and `split_batch` is **slower** than a single `multiply` call.
 cost is the host-RAM bounce for input copies:
 
 ```
-copy in  (a, b → GPU 1):   ~80 ms   ← 1.6 GB/s effective (PCIe through host)
-kernel (half batch, GPU 1): ~11 ms
-copy out (GPU 1 → GPU 0):  ~0.7 ms
-total  (one half):         ~92 ms
+copy-in  dev0->dev1 :    80.07 ms
+kernel   dev1       :     2.32 ms   (expected ~1.1 ms if linear)
+copy-out dev1->dev0 :    37.95 ms
+per-GPU total       :   120.34 ms
 ```
 
 **On this topology `split_batch` is ~50× slower than a single-GPU
