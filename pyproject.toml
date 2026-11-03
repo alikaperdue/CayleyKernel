@@ -44,6 +44,7 @@ dependencies = [
 
 [project.optional-dependencies]
 rust = ["cayley-kernel-rust==0.1.0"]
+torch = ["torch>=2.0"]
 cuda11 = ["cupy-cuda11x>=13,<14"]
 cuda12 = ["cupy-cuda12x>=13"]
 bfloat16 = ["ml_dtypes>=0.5", "numpy>=2.1.2", "cupy-cuda12x>=14"]

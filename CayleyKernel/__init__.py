@@ -850,3 +850,25 @@ from ._cpu import basis, basis_many, cpu_backend, cpu_multiply, twist, twist_man
 # dense API remains usable on machines without CuPy.
 from ._distributed import split_batch, visible_devices  # noqa: E402
 from ._sparse import SparseVector, from_sparse, is_sparse_beneficial, sparse_multiply, to_sparse
+
+# ---------------------------------------------------------------------------
+# Optional PyTorch interop (CayleyKernel.torch.multiply / multiply_into)
+#
+# Only exposed when torch is importable.  JAX is intentionally a separate
+# branch (feat/jax-interop).  Autograd is out of scope in v1 (see README).
+# ---------------------------------------------------------------------------
+try:
+    # NOTE: probe under a name that does NOT shadow the adapter submodule
+    # (_torch).  Using `import torch as _torch` here would bind the torch
+    # *package* to `_torch`, causing the `from . import _torch` below to reuse
+    # that attribute instead of importing CayleyKernel/_torch.py -- leaving
+    # `CayleyKernel.torch` pointing at the torch module itself.
+    import torch as _torch_module
+except ImportError:  # pragma: no cover - exercised only without torch
+    _torch_module = None
+
+if _torch_module is not None:  # pragma: no cover - exercised only when torch is installed
+    from . import _torch  # noqa: E402  (the adapter submodule, NOT the torch package)
+
+    torch = _torch  # exposes CayleyKernel.torch as the adapter namespace
+    __all__.append("torch")

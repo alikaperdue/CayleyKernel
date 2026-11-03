@@ -389,6 +389,36 @@ python3 -m pip install numpy pytest scipy sympy
 make test-cpu
 ```
 
+### PyTorch interop
+
+CayleyKernel ships a thin, optional PyTorch adapter that calls the same
+CUDA kernel over your ``torch.Tensor`` storage. Inputs and outputs are
+CUDA ``torch.Tensor``; the adapter wraps the caller's storage in
+``cupy.cuda.UnownedMemory`` so **no D2H round-trip** occurs for CUDA
+inputs. ``out=`` identity is preserved, and dtypes pass through unchanged.
+
+**Autograd is out of scope in v1** — passing a ``requires_grad=True``
+tensor raises ``NotImplementedError``. Use ``torch.no_grad()`` for
+differentiable pipelines, or wrap your own backward through the CuPy API.
+
+```python
+import CayleyKernel as ck
+import torch
+
+a = torch.randn(1024, 32, device="cuda", dtype=torch.float32)
+b = torch.randn(1024, 32, device="cuda", dtype=torch.float32)
+c = ck.torch.multiply(a, b)  # -> torch.Tensor (float32, cuda)
+
+o = torch.empty_like(a)
+ck.torch.multiply_into(a, b, o)  # -> o, identity preserved
+```
+
+Install with: ``pip install 'cayley-kernel[torch,cuda12]'``.
+
+Supported dtypes: ``float16``, ``bfloat16``, ``float32``, ``float64``,
+``complex64``, ``complex128``. JAX interop is a separate branch
+(``feat/jax-interop``).
+
 ### Optional Rust CPU acceleration
 
 The sparse CPU operations used by the research scripts can use a Rust extension
