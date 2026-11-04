@@ -12,6 +12,50 @@ python3 -m pip install build auditwheel
 make wheel
 ```
 
+## HIP / ROCm build (AMD GPUs)
+
+The HIP/ROCm build targets `gfx908` (MI100/MI200/MI300) and `gfx1100`
+(RDNA3) architectures. Build it with:
+
+```bash
+make kernel-amd
+```
+
+This produces the same `CayleyKernel/cuda_kernel.so` from `cuda/amd_kernel.cu`
+using the `hipcc` compiler.  The HIP build exports the same symbol set as the
+CUDA build **for all supported dtypes except bfloat16**:
+
+| Kernel family  | CUDA build | HIP/ROCm build |
+|----------------|-----------|----------------|
+| `mult_*`       | ✓ (15 dtypes incl. bf16) | ✓ (14 dtypes, no bf16) |
+| `fma_mult_*`   | ✓ (15 dtypes incl. bf16) | ✓ (14 dtypes, no bf16) |
+| `conjugate_*`  | ✓ (float, double, complex64, complex128) | ✓ (same) |
+| `norm_sq_*`    | ✓ (float, double, complex64, complex128) | ✓ (same) |
+| `sparse_mult_*`| ✓ (float, double, half, bf16, complex64, complex128) | ✓ (float, double, half, complex64, complex128) |
+
+### bfloat16: CUDA-only capability
+
+The HIP/ROCm build (gfx908, gfx1100) does **not** export bfloat16 kernels.
+This is a platform limitation: RDNA3 (gfx1100) has no hardware bf16 support,
+and the ROCm `hip_fp16.h` header does not provide a `__nv_bfloat16`-equivalent
+type for the device code.  All other families — `mult`, `fma_mult`,
+`conjugate`, `norm_sq`, `sparse_mult` — are present in both builds.
+
+The Python wrapper probes for bf16 symbols with `getattr(lib, "mult_bfloat16",
+None)` (equivalent to `hasattr`) during kernel registration and skips the
+suffix when the symbol is absent.  Consequently:
+
+* `ck.multiply(a_bf16, b_bf16)` on a HIP build raises a clear `TypeError`
+  ("Unsupported precision: bfloat16 … Rebuild the kernel").
+* No segfault, no undefined behaviour, no silent miscomputation.
+* On a CUDA build the same call works transparently.
+
+Both builds report `cayley_abi_version() == 5`.  The ABI version indicates
+feature families, not per-dtype presence; the wrapper's per-dtype registration
+(`_register_kernels`) handles the bf16 gap.
+
+## CUDA build
+
 The kernel is built directly into `CayleyKernel/cuda_kernel.so` and bundled in
 the wheel in `dist/`. The wheel is tagged for the build platform (for example,
 `py3-none-linux_x86_64`), because its native library uses `ctypes` rather than

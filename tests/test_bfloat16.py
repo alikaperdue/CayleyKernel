@@ -65,6 +65,8 @@ def test_registry_and_missing_library(monkeypatch):
 def test_library_abi_and_empty_launch():
     if not ck.loaded():
         pytest.skip("Build the shared library first: make kernel")
+    if "bfloat16" not in ck._KERNELS:
+        pytest.skip("bfloat16 kernel not present in this build (HIP/ROCm — no hardware bf16)")
     legacy, batched = ck._select_kernel(SimpleNamespace(name="bfloat16"))
     assert legacy.argtypes == [ctypes.c_void_p] * 3 + [ctypes.c_int]
     assert batched is not None
