@@ -3,22 +3,13 @@
 """Shared pytest fixtures and guards for the CayleyKernel test suite."""
 
 import math
-import os
-import sys
 from pathlib import Path
 
+import numpy as np
 import pytest
 
-# Make the repository root importable regardless of where pytest is launched
-# from, so that `import CayleyKernel` resolves to the local package.
-_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _REPO_ROOT not in sys.path:
-    sys.path.insert(0, _REPO_ROOT)
-
-import numpy as np
-
 import CayleyKernel
-from tests.gpu_support import GPUUnavailable, check_compiled_kernel, device_count
+from tests.support.gpu_support import GPUUnavailable, check_compiled_kernel, device_count
 
 
 def pytest_addoption(parser):
@@ -109,7 +100,7 @@ def pytest_collection_modifyitems(config, items):
         if baseline_mode and not baseline_workloads:
             raise pytest.UsageError(
                 "Benchmark recording/comparison requires selecting baseline workloads "
-                "(see tests/test_benchmark.py)"
+                "(see tests/performance/test_benchmark.py)"
             )
     if not config.getoption("--run-sparse-zd"):
         skip = pytest.mark.skip(reason="opt-in: use make test-sparse-zd")
@@ -175,6 +166,20 @@ def gpu_kernel(pytestconfig, gpu_device_count):
     return CayleyKernel.cp
 
 
+@pytest.fixture(scope="module")
+def two_gpu_devices(gpu_device_count):
+    if gpu_device_count < 2:
+        pytest.skip("Multi-GPU tests require at least two visible devices")
+
+
+@pytest.fixture
+def torch_cuda(pytestconfig, gpu_kernel):
+    import torch
+
+    if not torch.cuda.is_available():
+        _gpu_unavailable(pytestconfig, "PyTorch CUDA is unavailable")
+
+
 @pytest.fixture(autouse=True)
 def _prepare_gpu_test(request):
     if request.node.get_closest_marker("cpu"):
@@ -190,7 +195,7 @@ def _prepare_gpu_test(request):
 
 @pytest.fixture(scope="session")
 def gpu_benchmark(request, gpu_kernel):
-    from tests.benchmark_support import BenchmarkSession
+    from tests.performance.benchmark_support import BenchmarkSession
 
     session = BenchmarkSession(
         gpu_kernel,

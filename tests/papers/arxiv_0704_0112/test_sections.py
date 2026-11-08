@@ -6,7 +6,7 @@ from fractions import Fraction
 from itertools import combinations, product
 
 import CayleyKernel as CK
-from tests.gpu_support import require_gpu
+from tests.support.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 
 from .emanation import (
@@ -514,3 +514,10 @@ except ImportError:
     pass
 else:
     PaperVerification=pytest.mark.cpu(PaperVerification)
+    # Each audit checks over two million cells.
+    PaperVerification.test_05_02_cookbook_literal_preparation_exhaustive_finite_audit = (
+        pytest.mark.slow(PaperVerification.test_05_02_cookbook_literal_preparation_exhaustive_finite_audit)
+    )
+    PaperVerification.test_05_03_proposed_trailing_bit_correction_exhaustive_finite_audit = (
+        pytest.mark.slow(PaperVerification.test_05_03_proposed_trailing_bit_correction_exhaustive_finite_audit)
+    )

@@ -225,5 +225,5 @@ including any necessary zero/equality/XOR-dependence states.
 Run the CPU-only checks with:
 
 ```bash
-python3 -m pytest tests/test_associativity.py -q
+python3 -m pytest tests/research/test_associativity.py -q
 ```

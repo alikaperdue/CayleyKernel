@@ -28,13 +28,12 @@ __pycache__/
 *.swo
 *~
 
-# Generated research runs; the clique baseline is an input fixture.
+# Generated research runs. The checked-in clique input lives in tests/research/fixtures/.
 /clique_growth_results/
 /clique_level_comparison_results/
 /structure_scaling_results/
 /relation_graphs_witnesses.jsonl
 /scripts/results/*
-!/scripts/results/relation_graphs_clique69.json
 /benchmark-results/
 
 # Public documentation. Everything under docs/ stays local by default;

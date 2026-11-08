@@ -73,6 +73,7 @@ def test_audit_reports_different_successful_starts(tmp_path):
 
 
 def test_default_eigen_pipeline_is_batched(tmp_path, monkeypatch):
+    pytest.importorskip("scipy")
     from scripts.paper_quadratic_frontier import main
     output = tmp_path/'eigen'
     monkeypatch.setattr('sys.argv', ['frontier','--experiment','eigen','--levels','2',
@@ -86,6 +87,7 @@ def test_default_eigen_pipeline_is_batched(tmp_path, monkeypatch):
 
 
 def test_resume_saved_without_fresh_starts(tmp_path, monkeypatch):
+    pytest.importorskip("scipy")
     from scripts.retry_eigen_frontier import main
     source = tmp_path/'source'; source.mkdir()
     # Continue a known nearly converged search, keeping its branch.
@@ -109,6 +111,7 @@ def test_resume_saved_without_fresh_starts(tmp_path, monkeypatch):
 
 
 def test_retry_checkpoints_before_next_chunk_and_graceful_stop(tmp_path, monkeypatch):
+    pytest.importorskip("scipy")
     import signal
 
     import scripts.retry_eigen_frontier as retry

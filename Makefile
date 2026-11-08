@@ -123,11 +123,11 @@ ZD_HUGE_LEVELS ?= 4096,65536,1000000
 ZD_WITNESSES ?= 10
 
 zd-showcase:
-	python3 scripts/zd_showcase.py --levels=$(ZD_HUGE_LEVELS) \
+	$(PYTHON) scripts/zd_showcase.py --levels=$(ZD_HUGE_LEVELS) \
 	    --witnesses=$(ZD_WITNESSES) --seed=$(ZD_SEED)
 
 test-sparse-zd:
-	$(PYTHON) -m pytest -q -s tests/test_sparse_zd.py --run-sparse-zd \
+	$(PYTHON) -m pytest -q -s tests/core/test_sparse_zd.py --run-sparse-zd \
 	    --zd-levels=$(ZD_LEVELS) --zd-samples=$(ZD_SAMPLES) --zd-seed=$(ZD_SEED) \
 	    --zd-repeats=$(ZD_REPEATS)
 
@@ -138,22 +138,22 @@ BENCHMARK_BASELINE ?= benchmark-results/gpu-local.json
 BENCHMARK_MAX_REGRESSION ?= 0.20
 
 benchmark:
-	$(PYTHON) -m pytest -q -s -m benchmark tests/test_benchmark.py --run-benchmarks \
+	$(PYTHON) -m pytest -q -s -m benchmark tests/performance/test_benchmark.py --run-benchmarks \
 	    --benchmark-baseline "$(BENCHMARK_BASELINE)" \
 	    --benchmark-max-regression "$(BENCHMARK_MAX_REGRESSION)"
 
 benchmark-record:
-	$(PYTHON) -m pytest -q -s -m benchmark tests/test_benchmark.py --run-benchmarks \
+	$(PYTHON) -m pytest -q -s -m benchmark tests/performance/test_benchmark.py --run-benchmarks \
 	    --benchmark-record "$(BENCHMARK_BASELINE)"
 
 benchmark-sparse:
-	$(PYTHON) -m pytest -q -s -m benchmark tests/test_sparse_csr.py --run-benchmarks
+	$(PYTHON) -m pytest -q -s -m benchmark tests/performance/test_sparse_timing.py --run-benchmarks
 
 benchmark-multi-gpu:
-	$(PYTHON) -m pytest -q -s -m benchmark tests/test_multi_gpu.py --run-benchmarks
+	$(PYTHON) -m pytest -q -s -m benchmark tests/performance/test_multi_gpu_timing.py --run-benchmarks
 
 benchmark-torch:
-	$(PYTHON) -m pytest -q -s -m benchmark tests/test_torch_interop.py --run-benchmarks
+	$(PYTHON) -m pytest -q -s -m benchmark tests/performance/test_torch_timing.py --run-benchmarks
 
 wheel:
 	PYTHON="$(PYTHON)" bash scripts/build_wheel.sh

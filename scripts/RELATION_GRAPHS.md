@@ -87,10 +87,10 @@ deeply. A run with no edges means no mutual annihilations were found in its
 sample, not that the algebra has no zero divisors.
 
 A broader search found a **69-clique at level 32**, trial 2, seed 2026,
-with 512 sampled vertices. Its [saved certificate](results/relation_graphs_clique69.json)
+with 512 sampled vertices. Its [saved certificate](../tests/research/fixtures/relation_graphs_clique69.json)
 includes every support. All **4,692 ordered products** of distinct clique
 vertices were independently verified by the iterative doubling oracle in
-`tests/test_sparse_zd.py`, without `twist` or `basis`. The regression
+`tests/support/oracles.py`, without `twist` or `basis`. The regression
 suite repeats that independent verification. Reproduce the search with:
 
 ```bash
@@ -177,5 +177,5 @@ clique-search cost.
 Validation:
 
 ```bash
-python3 -m pytest -q tests/test_relation_graphs.py
+python3 -m pytest -q tests/research/test_relation_graphs.py
 ```

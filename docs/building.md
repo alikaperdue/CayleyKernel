@@ -31,7 +31,7 @@ virtual environment and run:
 
 ```bash
 python3 -m pip install build 'setuptools>=77.0.3' wheel
-python3 tests/test_wheel_build.py -v
+python3 -m tests.integration.test_wheel_build -v
 ```
 
 The metadata tests run offline without build isolation and skip with an

@@ -21,6 +21,10 @@ python3 -m tests.papers.physletb_141078.run
 python3 -m pytest -q tests/papers/physletb_141078
 ```
 
+Add `-m ""` to pytest to include the level-20 dense GPU replay and the slow
+extension surveys. The standalone report runner includes the full GPU class
+when a device and kernel are available.
+
 Record a **new** evidence file without replacing the historical result:
 
 ```bash

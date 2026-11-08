@@ -4,11 +4,11 @@ on:
   pull_request:
     paths:
       - '.github/workflows/jax-interop.yml'
-      - 'CayleyKernel/_jax.py'
-      - 'CayleyKernel/__init__.py'
+      - 'CayleyKernel/**'
+      - 'cuda/**'
       - 'tests/conftest.py'
-      - 'tests/gpu_support.py'
-      - 'tests/test_jax_interop.py'
+      - 'tests/support/**'
+      - 'tests/integration/test_jax_interop.py'
       - 'pyproject.toml'
       - 'Makefile'
   workflow_dispatch:
@@ -22,7 +22,7 @@ permissions:
 # skip device-dependent tests when the GPU stack is unavailable.
 jobs:
   jax-interop:
-    name: tests/test_jax_interop.py on CUDA runner (else self-skip)
+    name: JAX correctness
     runs-on: ${{ vars.CI_GPU_LABEL || 'ubuntu-latest' }}
     continue-on-error: ${{ vars.CI_GPU_LABEL == '' }}
     steps:
@@ -32,28 +32,20 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies (jax + jaxlib + CuPy + pytest)
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install pytest numpy
-          # On a CUDA runner this pulls in the CUDA-enabled jaxlib wheel;
-          # on a CUDA-less runner the CPU jaxlib is installed and the
-          # tests still run (or self-skip where CuPy is unavailable).
-          python -m pip install 'jax[cuda]' 'jaxlib[cuda]' || python -m pip install 'jax>=0.4' 'jaxlib>=0.4'
-          python -m pip install cupy-cuda12x || true
-          python -m pip install --no-deps -e .
+      - name: Install dependencies on the GPU runner
+        if: vars.CI_GPU_LABEL != ''
+        run: python -m pip install -e '.[test,cuda12,jax]' 'jax[cuda12]'
 
-      - name: Build the CUDA kernel (skipped automatically when nvcc is missing)
-        run: |
-          if command -v nvcc >/dev/null 2>&1; then
-            make kernel
-          else
-            echo "nvcc not found on this runner; GPU tests will self-skip"
-          fi
+      - name: Install dependencies on the hosted fallback
+        if: vars.CI_GPU_LABEL == ''
+        run: python -m pip install -e '.[test,jax]'
 
-      - name: Run the JAX interop test file
-        run: |
-          python -m pytest -v tests/test_jax_interop.py ${{ vars.CI_GPU_LABEL && '--require-gpu' || '' }}
+      - name: Build the CUDA kernel on the GPU runner
+        if: vars.CI_GPU_LABEL != ''
+        run: make kernel
+
+      - name: Run correctness tests
+        run: python -m pytest -v tests/integration/test_jax_interop.py ${{ vars.CI_GPU_LABEL && '--require-gpu' || '' }}
         env:
           CAYLEY_KERNEL_BLOCK_SIZE: '256'
 

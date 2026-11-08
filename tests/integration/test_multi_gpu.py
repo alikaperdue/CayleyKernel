@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Alika Perdue
-"""Multi-GPU split_batch correctness tests and optional overlap measurements.
+"""Multi-GPU split_batch correctness tests.
 
 These tests are skipped automatically when fewer than two CUDA devices
 are visible (``visible_devices() < 2``), so single-GPU CI runs stay green.
@@ -11,13 +11,8 @@ import pytest
 
 import CayleyKernel as ck
 from CayleyKernel import _distributed, cp
-from tests.benchmark_support import PROTOCOL, device_topology, measure_workloads
 
-
-@pytest.fixture(scope="module", autouse=True)
-def _two_devices(gpu_device_count):
-    if gpu_device_count < 2:
-        pytest.skip("Multi-GPU tests require at least two visible devices")
+pytestmark = pytest.mark.usefixtures("two_gpu_devices")
 
 
 def _rng(batch, dim, dtype, seed=2026):
@@ -108,46 +103,3 @@ def test_split_batch_out_buffer():
     result = _distributed.split_batch(a, b, out=out)
     assert result is out or cp.shares_memory(result, out)
     np.testing.assert_allclose(cp.asnumpy(out), cp.asnumpy(expected), rtol=1e-5, atol=1e-5)
-
-
-@pytest.mark.benchmark
-def test_split_batch_overlap_timing(monkeypatch):
-    """Compare split_batch with and without a per-launch device barrier."""
-    dim = 32
-    batch = 2**20
-    devices = _distributed.visible_devices()[:2]
-
-    # Put both operands and the gathered result on the first participating device.
-    with cp.cuda.Device(devices[0]):
-        print(f"\nTopology: {device_topology(cp, devices)}")
-        cp.random.seed(PROTOCOL["seed"])
-        a = cp.random.rand(batch, dim, dtype=cp.float32)
-        b = cp.random.rand(batch, dim, dtype=cp.float32)
-
-        launch = _distributed._launch
-        serialized = False
-
-        def launch_chunk(*args):
-            launch(*args)
-            if serialized:
-                cp.cuda.runtime.deviceSynchronize()
-
-        monkeypatch.setattr(_distributed, "_launch", launch_chunk)
-
-        def split(with_barrier):
-            nonlocal serialized
-            serialized = with_barrier
-            return _distributed.split_batch(a, b, devices=devices)
-
-        def synchronize():
-            for dev in devices:
-                with cp.cuda.Device(dev):
-                    cp.cuda.runtime.deviceSynchronize()
-
-        print(f"Workload: batch={batch}, dim={dim}, dtype=float32")
-        cases = measure_workloads(
-            {"queued": lambda: split(False), "serialized": lambda: split(True)},
-            synchronize,
-        )
-    ratio = cases["serialized"]["median_seconds"] / cases["queued"]["median_seconds"]
-    print(f"Serialized/queued median ratio: {ratio:.2f}x (informational)")

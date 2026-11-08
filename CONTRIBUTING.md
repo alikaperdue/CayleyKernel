@@ -39,9 +39,10 @@ test/sparse-zd-regression
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-python -m pip install -e .            # core package + NumPy
-python -m pip install -e ".[test]"    # pytest
+python -m pip install -e '.[test,dev]'
 ```
+
+Use `.[test,dev,research-test]` to include the research dependencies used by CI.
 
 For the optional Rust CPU backend:
 
@@ -57,7 +58,7 @@ Requires an NVIDIA GPU, the CUDA toolkit with `nvcc` on `PATH`, and a
 matching CuPy build:
 
 ```bash
-python -m pip install cupy-cuda12x   # or cupy-cuda11x
+python -m pip install -e '.[test,cuda12]'  # use cuda11 for CUDA 11.8
 make kernel                          # -> CayleyKernel/cuda_kernel.so
 ```
 
@@ -70,7 +71,7 @@ for faster local iteration. AMD: `make kernel-amd` (requires ROCm/HIP).
 
 ```bash
 # Python (ruff: linter + formatter)
-ruff check .            # style + bugbear + isort
+ruff check .            # style, pyflakes, and isort
 ruff format --check .   # formatter drift check
 
 # C/CUDA (clang-format, Google base + project overrides)
@@ -94,8 +95,8 @@ The one-liner to auto-fix Python + C/CUDA drift is `make format`
 
 Configuration lives in `pyproject.toml` under `[tool.ruff]`. Rules enabled:
 `E` (pycodestyle errors), `W` (pycodestyle warnings), `F` (pyflakes),
-`I` (isort), `B` (flake8-bugbear). Rules deliberately **off**:
-`ANN` (type hints) and `D` (docstrings) — the codebase does not use type
+`I` (isort). Rules deliberately **off** include `B` (flake8-bugbear),
+`ANN` (type hints) and `D` (docstrings). The codebase does not use type
 hints on internal helpers and does not require docstrings on every helper;
 forcing them would be a separate policy change. Line length is 100;
 the formatter owns wrapping (`E501` is ignored so the linter and formatter
@@ -130,29 +131,24 @@ Style notes for new code:
 
 ## Testing
 
-All tests live in `tests/`. Pytest validates markers against `pyproject.toml`.
-
-| Marker | Meaning |
-| --- | --- |
-| `cpu` | Runs without a GPU. Some checks use optional host dependencies or inspect the compiled library. |
-| `gpu_device` | Needs a CuPy device and can run without the compiled CayleyKernel library. |
-| `slow` | Expensive products and other long workloads. |
-| `sparse_zd` | CPU sparse zero-divisor validation (opt-in via `--run-sparse-zd`). |
-| `benchmark` | GPU timing workloads (opt-in via `--run-benchmarks`). |
-| `benchmark_baseline` | Timing workloads that record or compare a local baseline. |
-
-The default selection excludes `slow`. Tests without a `cpu` or
-`gpu_device` marker normally need CuPy, a usable device, and the compiled library.
+Put library checks in `tests/core/`, adapter and build checks in
+`tests/integration/`, timings in `tests/performance/`, and structural
+script regressions in `tests/research/`. Keep paper identifiers and
+section-level test names in `tests/papers/`. Reuse the oracles and
+comparison policies in `tests/support/`. Pytest validates markers against
+`pyproject.toml`.
 
 ```bash
 make test                  # python3 -m pytest -q tests/
 make test-all              # python3 -m pytest -q -m "" tests/
 make test-cpu              # python3 -m pytest -q -m "cpu and not slow" tests/
+python -m pytest -q -m slow tests/
 ```
 
-Pass `--require-gpu` on dedicated GPU runners to fail setup when a selected GPU
-test lacks its device or compiled library. Optional capability checks such as
-BF16 support still apply. The test guide lists selection and opt-in flags.
+Pass `--require-gpu` on dedicated GPU runners to fail setup when a selected
+GPU test lacks its device or compiled library. Performance and sparse
+zero-divisor tests use separate opt-in flags even with `make test-all`.
+See the test guide for the dependency matrix, marker behavior, and CI jobs.
 [`docs/testing.md`](docs/testing.md)
 
 ## Pull requests
@@ -164,14 +160,15 @@ BF16 support still apply. The test guide lists selection and opt-in flags.
 4. Run `make lint` (Python + C/CUDA) and `make rust-check` (Rust) before
    pushing. Run `make test` (or `make test-all` if you touched the slow
    path) if you touched the kernel, the Python wrapper, or `tests/`.
-5. Open a PR against `main`. CI will run the `lint` job, the CPU/Rust
-   matrix, and the wheel builds.
+5. Open a PR against `main`. CI runs lint and the CPU/Rust matrix, including
+   fast research regressions. Packaging and GPU integration workflows have
+   path filters.
 
 ## Adding a supported dtype
 
 This is the most common non-trivial change and touches exactly three places.
 The existing `float16` and `bfloat16` dtypes are good templates — read
-`tests/test_half.py` and `tests/test_bfloat16.py` first.
+`tests/core/test_half.py` and `tests/core/test_bfloat16.py` first.
 
 ### 1. The kernel entry points (`cuda/cuda_kernel.cu`, `cuda/amd_kernel.cu`)
 
@@ -193,8 +190,8 @@ if the new type has a platform-dependent size.
 If you are adding a **new kernel family** (e.g. fused multiply-add), you
 must also emit the new entry point for the same suffix in **both**
 `cuda/cuda_kernel.cu` and `cuda/amd_kernel.cu`, add a matching benchmark
-case in `tests/benchmark_support.py` (a new `CASE_SHAPES_*` dict), and add
-corresponding tests in `tests/`. Bump `cayley_abi_version()` in the kernel
+case in `tests/performance/benchmark_support.py` (a new `CASE_SHAPES_*` dict), and add
+corresponding correctness tests in `tests/core/`. Bump `cayley_abi_version()` in the kernel
 and the `abi_version()` docstring in `CayleyKernel/__init__.py`.
 Record a **new** baseline file under `benchmark-results/` (do not overwrite
 an existing one).
@@ -203,7 +200,7 @@ Rebuild and smoke-test:
 
 ```bash
 make kernel
-python -c "import CayleyKernel as ck; ck._select_kernel(np.dtype('<new>'))"
+python -c "import numpy as np; import CayleyKernel as ck; ck._select_kernel(np.dtype('<new>'))"
 ```
 
 ### 2. The Python wrapper (`CayleyKernel/__init__.py`)
@@ -229,7 +226,7 @@ type), add a specialisation to `accum_traits<T>` in the kernel rather than in
 Python. If it needs a custom promotion rule (like `bfloat16` does), extend
 `_result_dtype` in `__init__.py` and add a test for it.
 
-### 3. Tests (`tests/`)
+### 3. Tests (`tests/core/`)
 
 Copy the closest existing dtype test file (`test_half.py` or
 `test_bfloat16.py`) and adapt it. At minimum cover:
@@ -305,8 +302,8 @@ GPU pair) without breaking the helper:
    *which devices are used* and *how results are gathered*, never *how a
    single device's kernel is launched*.
 
-4. **Tests.** Place topology checks in `tests/test_multi_gpu.py`. Its
-   module fixture uses the shared device probe at test setup and skips when
+4. **Tests.** Place topology checks in `tests/integration/test_multi_gpu.py`. The
+   shared fixture probes devices at test setup and skips when
    fewer than two devices are visible. The GPU workflow runs the correctness
    cases. Use `make benchmark-multi-gpu` to measure overlap on a GPU pair.
 

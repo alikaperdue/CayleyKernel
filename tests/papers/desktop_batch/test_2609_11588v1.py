@@ -3,7 +3,7 @@ import unittest
 from itertools import product
 
 import CayleyKernel as CK
-from tests.gpu_support import require_gpu
+from tests.support.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 
 try:

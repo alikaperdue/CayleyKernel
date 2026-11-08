@@ -117,8 +117,8 @@ Prefer a run that completes the specified design when drawing comparisons.
 Tests (pytest required):
 
 ```bash
-python tests/test_clique_level_comparison.py
-python -m pytest -q tests/test_clique_level_comparison.py tests/test_clique_growth.py tests/test_relation_graphs.py
+python tests/research/test_clique_level_comparison.py
+python -m pytest -q tests/research/test_clique_level_comparison.py tests/research/test_clique_growth.py tests/research/test_relation_graphs.py
 ```
 
 ## Completed validation experiment

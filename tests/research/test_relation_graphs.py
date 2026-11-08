@@ -1,6 +1,5 @@
 """CPU checks for the sparse graph experiment and its certificates."""
 
-import importlib.util
 import itertools
 import json
 import random
@@ -10,13 +9,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from scripts import relation_graphs as rg
 from tests.support.oracles import doubling_sign_at_level, recursive_product
 
-spec = importlib.util.spec_from_file_location(
-    "relation_graphs", Path(__file__).resolve().parents[1] / "scripts/relation_graphs.py"
-)
-rg = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(rg)
 pytestmark = pytest.mark.cpu
 
 
@@ -174,7 +169,7 @@ def test_general_sparse_graph_fallback():
 
 
 def test_saved_69_clique_with_independent_doubling_oracle():
-    path = Path(__file__).resolve().parents[1] / "scripts/results/relation_graphs_clique69.json"
+    path = Path(__file__).resolve().parent / "fixtures/relation_graphs_clique69.json"
     record = json.loads(path.read_text())
     vertices = [
         tuple((int(k, 16), c) for k, c in x) for x in record["certificates"]["orthogonality"]

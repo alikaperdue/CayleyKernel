@@ -19,7 +19,7 @@ except ImportError:
 else:
     pytestmark = pytest.mark.cpu
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 @unittest.skipUnless(

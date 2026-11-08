@@ -27,7 +27,7 @@ b = cp.array([4, 3, 2, 1], dtype=cp.float16)
 c = multiply(a, b)  # float16 output, float32 arithmetic inside the kernel
 ```
 
-Run `python3 -m pytest -q tests/test_half.py` after rebuilding to check FP16
+Run `python3 -m pytest -q tests/core/test_half.py` after rebuilding to check FP16
 products against a recursive reference, batching, dtype promotion, both C entry
 points, subnormals, output rounding, and cancellation of terms that exceed the
 FP16 range. GPU tests require CuPy and a working GPU runtime; wrapper and ABI
@@ -61,10 +61,10 @@ Install `ml_dtypes` in your CuPy 14+ environment, rebuild, and run:
 ```bash
 python3 -m pip install ml_dtypes
 make kernel ARCHS="sm_120"  # RTX 50 series; select your own architecture
-python3 -m pytest -q tests/test_bfloat16.py tests/test_half.py tests/test_complex.py
+python3 -m pytest -q tests/core/test_bfloat16.py tests/core/test_half.py tests/core/test_complex.py
 ```
 
-BF16 CPU wrapper tests run with `python3 -m pytest -q -m cpu tests/test_bfloat16.py`.
+BF16 CPU wrapper tests run with `python3 -m pytest -q -m cpu tests/core/test_bfloat16.py`.
 GPU checks in that file skip when CuPy 14+, ml_dtypes, or a CUDA device is
 unavailable; with a supported runtime, a missing/stale BF16 library fails.
 

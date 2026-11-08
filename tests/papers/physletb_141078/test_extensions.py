@@ -10,7 +10,7 @@ try:
 except ModuleNotFoundError as exc:
     raise unittest.SkipTest('follow-up needs NumPy and SymPy: '+str(exc))
 import CayleyKernel as CK
-from tests.gpu_support import require_gpu
+from tests.support.gpu_support import require_gpu
 
 from .algebra import comm, e, flat, matrix_units, operator, oracle, restrict, span_rank
 from .extension_algebra import (
@@ -332,3 +332,9 @@ except ImportError:
     pass
 else:
     Extensions = pytest.mark.cpu(Extensions)
+    Extensions.test_02_exhaustive_xor_classification = pytest.mark.slow(
+        Extensions.test_02_exhaustive_xor_classification
+    )
+    Extensions.test_05_all_basis_units_complete_columns = pytest.mark.slow(
+        Extensions.test_05_all_basis_units_complete_columns
+    )

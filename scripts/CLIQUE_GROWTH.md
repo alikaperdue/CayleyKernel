@@ -128,6 +128,6 @@ commutativity controls that are redundant for this dyad sampler.
 Regression checks (pytest required):
 
 ```bash
-python tests/test_clique_growth.py
-python -m pytest -q tests/test_clique_growth.py tests/test_relation_graphs.py
+python tests/research/test_clique_growth.py
+python -m pytest -q tests/research/test_clique_growth.py tests/research/test_relation_graphs.py
 ```

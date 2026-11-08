@@ -9,7 +9,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from tests import benchmark_support as bs
+from tests.performance import benchmark_support as bs
 
 pytestmark = pytest.mark.cpu
 

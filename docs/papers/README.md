@@ -41,13 +41,12 @@ Run commands from the repository root. A CPU-only source installation and
 Python test dependencies can be prepared with:
 
 ```bash
-python3 -m pip install --no-deps -e .
-python3 -m pip install pytest numpy scipy sympy
+python3 -m pip install -e '.[test,research-test]'
 ```
 
-SciPy is required to collect the current eigenvalue workflow tests. SymPy is
-used by symbolic companions. Some individual suites have fewer dependencies;
-see their review pages for focused commands.
+SciPy enables the frontier solver regressions. SymPy is used by symbolic
+companions. Some individual suites have fewer dependencies. See their
+review pages for focused commands.
 
 Run one companion first, for example:
 
@@ -55,17 +54,20 @@ Run one companion first, for example:
 python3 -m pytest -v tests/papers/arxiv_2608_28176/test_sections.py
 ```
 
-Run the full paper test collection with:
+The default paper selection excludes the slow cases.
 
 ```bash
-python3 -m pytest -v -m "not slow" tests/papers/
+python3 -m pytest -v tests/papers/
 ```
 
-The `not slow` selection matches the default `make test` policy. Several
-paper-specific exhaustive and large-array experiments are not marked `slow`
-and can still take substantial time and memory. Consult the relevant review
-before running the entire collection. For the 16-paper collection's standalone
-`unittest` commands, see [its reproduction instructions](desktop-review/README.md#reproduce-the-checks).
+Use `-m "cpu and not slow"` for the host selection used by CI, `-m slow`
+for expensive cases alone, and `-m ""` to include both default and slow
+cases. The slow selection includes the exhaustive cell audits for 0704.0112,
+the million-pair sign comparison for 2205.07986v2, the exhaustive subspace and
+basis-column surveys for Physics Letters B 141078, and the level-20 dense
+checks for 141078 and 2609.11588v1. Standalone runners and `unittest` keep
+their own selection. The 16-paper batch has separate reproduction commands.
+[Desktop review reproduction](desktop-review/README.md#reproduce-the-checks)
 
 CPU basis operations use the Python implementation or the optional Rust
 backend. See [CPU backend setup](../../rust/README.md) for backend selection.
@@ -74,12 +76,15 @@ device. Missing prerequisites produce skips in the paper suites; a skip does
 not validate GPU multiplication. A numerical mismatch or missing required
 entry point after prerequisites succeed is a failure, not an expected skip.
 
-Tests run without the original PDFs and do not refresh the committed result
-snapshots. Some companions retain a `run` module for generating reports; its
-`--paper` option hashes a local PDF for provenance rather than supplying test
-inputs. Use `--help` and the companion's instructions: `--output` accepts a
-directory in some runners and a JSON filename in others. Choose a new output
-location to preserve earlier evidence.
+Tests run without the original PDFs. Some companions retain a `run` module
+for generating reports. Its `--paper` option hashes a local PDF for provenance.
+Consult the companion's `--help` for whether `--output` expects a directory
+or a JSON filename. Choose a fresh output location to preserve earlier evidence.
+
+Published certificates, such as the portable eigenpair vectors for arXiv
+2607.23613, live under the corresponding review's `results/` directory.
+The eigen workflow tests use synthetic archives generated under pytest's
+temporary directory. [Eigenpair witness provenance](2607.23613/FRONTIER.md)
 
 ## Reading results and coverage
 

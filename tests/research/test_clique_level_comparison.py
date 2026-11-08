@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts import clique_growth as growth
 from scripts import clique_level_comparison as comparison
 from tests.support.inputs import small_anchor

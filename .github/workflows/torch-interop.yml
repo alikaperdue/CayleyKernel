@@ -4,11 +4,11 @@ on:
   pull_request:
     paths:
       - '.github/workflows/torch-interop.yml'
-      - 'CayleyKernel/_torch.py'
-      - 'CayleyKernel/__init__.py'
+      - 'CayleyKernel/**'
+      - 'cuda/**'
       - 'tests/conftest.py'
-      - 'tests/gpu_support.py'
-      - 'tests/test_torch_interop.py'
+      - 'tests/support/**'
+      - 'tests/integration/test_torch_interop.py'
       - 'pyproject.toml'
       - 'Makefile'
   workflow_dispatch:
@@ -22,7 +22,7 @@ permissions:
 # skip device-dependent tests when the GPU stack is unavailable.
 jobs:
   torch-interop:
-    name: tests/test_torch_interop.py on CUDA runner (else self-skip)
+    name: PyTorch correctness
     runs-on: ${{ vars.CI_GPU_LABEL || 'ubuntu-latest' }}
     continue-on-error: ${{ vars.CI_GPU_LABEL == '' }}
     steps:
@@ -32,27 +32,20 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies (torch + CuPy + pytest)
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install pytest numpy
-          # Torch CPU build is fine on a CUDA-less runner (tests self-skip).
-          # On a CUDA runner pip pulls in the CUDA-enabled wheel.
-          python -m pip install 'torch>=2.0' || true
-          python -m pip install cupy-cuda12x || true
-          python -m pip install --no-deps -e .
+      - name: Install dependencies on the GPU runner
+        if: vars.CI_GPU_LABEL != ''
+        run: python -m pip install -e '.[test,cuda12,torch]'
 
-      - name: Build the CUDA kernel (skipped automatically when nvcc is missing)
-        run: |
-          if command -v nvcc >/dev/null 2>&1; then
-            make kernel
-          else
-            echo "nvcc not found on this runner; GPU tests will self-skip"
-          fi
+      - name: Install dependencies on the hosted fallback
+        if: vars.CI_GPU_LABEL == ''
+        run: python -m pip install -e '.[test,torch]'
 
-      - name: Run the PyTorch interop test file
-        run: |
-          python -m pytest -v tests/test_torch_interop.py ${{ vars.CI_GPU_LABEL && '--require-gpu' || '' }}
+      - name: Build the CUDA kernel on the GPU runner
+        if: vars.CI_GPU_LABEL != ''
+        run: make kernel
+
+      - name: Run correctness tests
+        run: python -m pytest -v tests/integration/test_torch_interop.py ${{ vars.CI_GPU_LABEL && '--require-gpu' || '' }}
         env:
           CAYLEY_KERNEL_BLOCK_SIZE: '256'
 

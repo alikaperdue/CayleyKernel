@@ -7,7 +7,7 @@ from itertools import combinations, product
 import numpy as np
 
 import CayleyKernel as CK
-from tests.gpu_support import require_gpu
+from tests.support.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 
 from .algebra import (

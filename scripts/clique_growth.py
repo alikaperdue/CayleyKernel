@@ -16,7 +16,9 @@ from pathlib import Path
 from time import perf_counter
 from uuid import uuid4
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Allow direct execution from a source checkout.
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts.relation_graphs import (
     budget,
     build_graphs,
@@ -27,7 +29,7 @@ from scripts.relation_graphs import (
     verify_clique,
 )
 
-BASELINE = Path(__file__).resolve().parent / "results/relation_graphs_clique69.json"
+BASELINE = Path(__file__).resolve().parents[1] / "tests/research/fixtures/relation_graphs_clique69.json"
 
 
 def encode(vertices):

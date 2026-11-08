@@ -46,10 +46,8 @@ jobs:
         with:
           components: rustfmt, clippy
       - name: Install Python tests and package without GPU dependencies
-        run: |
-          python -m pip install pytest numpy scipy sympy tzdata
-          python -m pip install --no-deps -e .
-      - name: Verify Python fallback before installing Rust
+        run: python -m pip install -e '.[test,research-test]'
+      - name: Verify Python fallback and research regressions before installing Rust
         env:
           CAYLEY_KERNEL_CPU_BACKEND: python
         run: python -m pytest -q -m "cpu and not slow" tests/
@@ -78,4 +76,4 @@ jobs:
       - name: Verify independent sparse zero-divisor oracle
         env:
           CAYLEY_KERNEL_CPU_BACKEND: rust
-        run: python -m pytest -q tests/test_sparse_zd.py --run-sparse-zd --zd-levels=4,32,256 --zd-samples=16 --zd-repeats=1
+        run: python -m pytest -q tests/core/test_sparse_zd.py --run-sparse-zd --zd-levels=4,32,256 --zd-samples=16 --zd-repeats=1

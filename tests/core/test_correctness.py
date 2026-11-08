@@ -8,7 +8,7 @@ The kernel still evaluates the full dense product, so the largest cases
 carry the slow marker.
 
 Run with:
-    pytest -q tests/test_correctness.py
+    pytest -q tests/core/test_correctness.py
 """
 
 import numpy as np

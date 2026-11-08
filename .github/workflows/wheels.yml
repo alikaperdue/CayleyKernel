@@ -7,7 +7,7 @@ on:
       - 'pyproject.toml'
       - 'setup.py'
       - 'CayleyKernel/**'
-      - 'tests/test_wheel_build.py'
+      - 'tests/integration/test_wheel_build.py'
       - 'rust/**'
       - 'cuda/**'
       - 'scripts/build_wheel.sh'
@@ -30,7 +30,7 @@ jobs:
       - run: python -m pip install build twine 'setuptools>=77.0.3' wheel
       - run: python -m build
       - run: python -m twine check dist/*
-      - run: python tests/test_wheel_build.py -v
+      - run: python -m tests.integration.test_wheel_build -v
       - uses: actions/upload-artifact@v4
         with:
           name: python-wheel

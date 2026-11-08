@@ -6,7 +6,7 @@ API (currently named basis). Sparse products never stand in for GPU execution.
 import math
 
 import CayleyKernel as CK
-from tests.gpu_support import require_gpu
+from tests.support.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 from tests.papers.arxiv_2608_28176.algebra import (
     Algebra, add, conj, e, neg, scale, pair, rank, nullity, recursive_basis,

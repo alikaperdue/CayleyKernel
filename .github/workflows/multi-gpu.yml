@@ -4,11 +4,11 @@ on:
   pull_request:
     paths:
       - '.github/workflows/multi-gpu.yml'
-      - 'CayleyKernel/_distributed.py'
-      - 'CayleyKernel/__init__.py'
+      - 'CayleyKernel/**'
+      - 'cuda/**'
       - 'tests/conftest.py'
-      - 'tests/gpu_support.py'
-      - 'tests/test_multi_gpu.py'
+      - 'tests/support/**'
+      - 'tests/integration/test_multi_gpu.py'
       - 'docs/multi-gpu.md'
       - 'pyproject.toml'
       - 'Makefile'
@@ -23,7 +23,7 @@ permissions:
 # skip device-dependent tests when the GPU stack is unavailable.
 jobs:
   multi-gpu:
-    name: tests/test_multi_gpu.py on 2-GPU runner (else self-skip)
+    name: Multi-GPU correctness
     runs-on: ${{ vars.CI_GPU_2X_LABEL || 'ubuntu-latest' }}
     continue-on-error: ${{ vars.CI_GPU_2X_LABEL == '' }}
     steps:
@@ -33,24 +33,20 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies (no new packages; CuPy + pytest only)
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install pytest numpy
-          python -m pip install cupy-cuda12x || true
-          python -m pip install --no-deps -e .
+      - name: Install dependencies on the GPU runner
+        if: vars.CI_GPU_2X_LABEL != ''
+        run: python -m pip install -e '.[test,cuda12]'
 
-      - name: Build the CUDA kernel (skipped automatically when nvcc is missing)
-        run: |
-          if command -v nvcc >/dev/null 2>&1; then
-            make kernel
-          else
-            echo "nvcc not found on this runner; GPU tests will self-skip"
-          fi
+      - name: Install dependencies on the hosted fallback
+        if: vars.CI_GPU_2X_LABEL == ''
+        run: python -m pip install -e '.[test]'
 
-      - name: Run the multi-GPU test file
-        run: |
-          python -m pytest -v tests/test_multi_gpu.py -m "" ${{ vars.CI_GPU_2X_LABEL && '--require-gpu' || '' }}
+      - name: Build the CUDA kernel on the GPU runner
+        if: vars.CI_GPU_2X_LABEL != ''
+        run: make kernel
+
+      - name: Run correctness tests
+        run: python -m pytest -v tests/integration/test_multi_gpu.py ${{ vars.CI_GPU_2X_LABEL && '--require-gpu' || '' }}
         env:
           CAYLEY_KERNEL_BLOCK_SIZE: '256'
 

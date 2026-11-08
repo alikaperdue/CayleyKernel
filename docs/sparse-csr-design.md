@@ -30,7 +30,7 @@ Three facts make a sparse path both correct and cheap:
    one used below.)
 3. **Cancellations are common.** Two distinct input pairs can map to the same
    output index with opposite effective signs, summing to exactly zero. The
-   CPU suite `tests/test_sparse_zd.py` (run via `make test-sparse-zd`)
+   CPU suite `tests/core/test_sparse_zd.py` (run via `make test-sparse-zd`)
    exhaustively verifies four-term products at level 4, embedded
    zero-divisor witnesses, and high-bit samples at arbitrary level —
    including the identity `expected == {}` exactly when the two canceling
@@ -148,11 +148,11 @@ timing includes the work to produce sparse output.
   FP16/BF16 accumulate in float32 and round once, exactly like the dense
   `accum_traits`. Integer and bool dtypes accumulate in the dense path's
   accumulator type (int for bool, own type otherwise).
-- **Cancellation oracle:** `tests/test_sparse_zd.py` is the regression
+- `tests/core/test_sparse_zd.py` is the cancellation regression
   harness for exact cancellation: every case where it asserts
   `expected == {}` must also produce an all-zero output on the sparse GPU
-  path (checked in a new `tests/test_sparse_csr.py`, `pytest.mark.sparse_zd`
-  compatible, GPU-gated).
+  path. The known-witness checks in `tests/core/test_sparse_csr.py` use a
+  CuPy device and run independently of the CPU suite's opt-in flag.
 - **Dense kernels untouched:** no `mult_*` / `fma_mult_*` symbol, launch
   path, or ABI behavior is modified; the sparse path is additive (new
   symbols + new ABI version 5 if it ships, reported by `cayley_abi_version`).
@@ -195,7 +195,7 @@ The experimental status is stated in the docstrings and in `README.md`.
 
 ## References
 
-- `tests/test_sparse_zd.py` — CPU zero-divisor / cancellation evidence.
+- `tests/core/test_sparse_zd.py` — CPU zero-divisor / cancellation evidence.
 - `CayleyKernel/_cpu.py` — authoritative O(1) sign rule.
 - `cuda/cuda_kernel.cu` — dense reference implementation and dtypes.
 - `docs/testing.md` — benchmark protocol the measured table must follow.

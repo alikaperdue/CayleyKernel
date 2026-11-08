@@ -15,7 +15,9 @@ from pathlib import Path
 from time import perf_counter
 from uuid import uuid4
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Allow direct execution from a source checkout.
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts import clique_growth as growth
 from scripts.relation_graphs import budget, levels_arg, positive
 

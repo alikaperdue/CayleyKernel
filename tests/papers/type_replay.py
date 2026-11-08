@@ -7,7 +7,7 @@ and complexification, not extensions of real norm/topology theorems.
 import numpy as np
 
 import CayleyKernel as CK
-from tests.gpu_support import require_gpu
+from tests.support.gpu_support import require_gpu
 from tests.support.comparisons import assert_product_close
 from tests.support.oracles import recursive_product
 

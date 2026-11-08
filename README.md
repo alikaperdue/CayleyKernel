@@ -59,15 +59,15 @@ for downloads, platform coverage, and the `rust`, `cuda11`, and `cuda12` extras.
 Dense CUDA multiplication requires an NVIDIA GPU, the CUDA toolkit (`nvcc`
 on PATH), and a Python environment with NumPy and a compatible CuPy build.
 The package requires Python ≥ 3.10; dependency versions must also
-support the selected interpreter. Tests need pytest; research suites also use
-SciPy and SymPy.
+support the selected interpreter. See the [testing guide](docs/testing.md#dependencies)
+for optional research and framework dependencies.
 
 ```bash
 git clone https://github.com/alikaperdue/CayleyKernel.git
 cd CayleyKernel
 
 # Select cuda11 for CUDA 11.8, or cuda12 for CUDA 12.x.
-python3 -m pip install -e '.[test,cuda12]' scipy sympy
+python3 -m pip install -e '.[test,cuda12]'
 make kernel                 # compile cuda/cuda_kernel.cu -> CayleyKernel/cuda_kernel.so
 make test                   # run the default suite, excluding slow tests
 ```
@@ -294,7 +294,7 @@ Python helper reports the same value.
 
 The fused path avoids the intermediate allocation and second kernel launch for the elementwise `±c` step.
 
-See `tests/test_fused_multiply_add.py` for the correctness matrix and
+See `tests/core/test_fused_multiply_add.py` for the correctness matrix and
 `benchmark-results/gpu-fma.json` for the benchmark baseline.
 
 ### Multi-GPU
@@ -385,7 +385,7 @@ signed label. Zero is a valid `twist` index and an invalid `basis` label.
 For the CPU test collection, install its dependencies and run:
 
 ```bash
-python3 -m pip install numpy pytest scipy sympy
+python3 -m pip install -e '.[test,research-test]'
 make test-cpu
 ```
 
@@ -484,7 +484,7 @@ CayleyKernel/
 ├── cuda/
 │   ├── cuda_kernel.cu       NVIDIA CUDA kernel (primary target)
 │   └── amd_kernel.cu        AMD HIP/ROCm port of the same kernel
-├── tests/                   pytest suite (reference impl + identities)
+├── tests/                   core, integration, performance, research, and paper tests
 ├── docs/                    build, precision, testing, comparison, and research docs
 ├── rust/                    optional CPU basis-operation accelerator
 ├── scripts/build_wheel.sh   kernel -> package -> wheel -> auditwheel

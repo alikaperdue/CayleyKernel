@@ -117,7 +117,7 @@ cargo test --manifest-path rust/Cargo.toml --locked
 make rust-check
 make test-cpu
 CAYLEY_KERNEL_CPU_BACKEND=rust CAYLEY_TEST_REQUIRE_RUST=1 \
-  python -m pytest -q tests/test_cpu_backend.py
+  python -m pytest -q tests/core/test_cpu_backend.py
 python scripts/benchmark_cpu_backends.py
 # Compare native fixed-width dispatch with the generic BigUint calculation:
 cargo test --manifest-path rust/Cargo.toml --locked --release \

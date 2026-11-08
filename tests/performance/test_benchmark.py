@@ -8,10 +8,10 @@ for each of dim outputs: O(batch * dim**2) total work. At dim=2**20 this is
 not justified. GPU parallelism does not make the whole product O(1).
 
 Default test runs skip these measurements. Record a baseline explicitly:
-    pytest tests/test_benchmark.py --run-benchmarks \
+    pytest tests/performance/test_benchmark.py --run-benchmarks \
         --benchmark-record benchmark-results/gpu-local.json -s
 Compare on the same GPU/software environment:
-    pytest tests/test_benchmark.py --run-benchmarks \
+    pytest tests/performance/test_benchmark.py --run-benchmarks \
         --benchmark-baseline benchmark-results/gpu-local.json -s
 
 Each workload has three warmups followed by calibration to at least 100 ms

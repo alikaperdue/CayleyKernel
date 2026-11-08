@@ -17,7 +17,7 @@ only asserted where mathematically valid (2^0..2^3), while conjugation and
 unity hold at every level.
 
 Run with:
-    pytest -q tests/test_identities.py
+    pytest -q tests/core/test_identities.py
 """
 
 import pytest

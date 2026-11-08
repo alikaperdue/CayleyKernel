@@ -145,3 +145,7 @@ except ImportError:
     pass
 else:
     Sections = pytest.mark.cpu(Sections)
+    # Run the million-pair comparison of three implementations on request.
+    Sections.test_04_1_lemma_4_and_theorem_1_exhaustive = pytest.mark.slow(
+        Sections.test_04_1_lemma_4_and_theorem_1_exhaustive
+    )

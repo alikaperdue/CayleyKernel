@@ -11,7 +11,7 @@ try:
 except ModuleNotFoundError as exc:
     raise unittest.SkipTest("paper companion requires NumPy and SymPy: " + str(exc))
 import CayleyKernel as CK
-from tests.gpu_support import require_gpu
+from tests.support.gpu_support import require_gpu
 
 from .algebra import (
     PAPER,
@@ -498,3 +498,6 @@ except ImportError:
     pass
 else:
     Sections = pytest.mark.cpu(Sections)
+    GPUVerification.test_27_multiply_sparse_witness_dense_arrays_through_level20 = pytest.mark.slow(
+        GPUVerification.test_27_multiply_sparse_witness_dense_arrays_through_level20
+    )

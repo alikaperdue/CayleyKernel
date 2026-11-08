@@ -2,7 +2,48 @@
 
 [Back to the README](../README.md)
 
-Commands below run from the repository root.
+Run commands from the repository root. Use `python -m pytest` so pytest,
+CayleyKernel, and the optional dependencies use the same Python interpreter.
+
+## Where tests belong
+
+| Directory | Responsibility |
+| --- | --- |
+| `tests/core/` | Products, dtypes, algebra, validation, and Python and Rust CPU backends |
+| `tests/integration/` | CUDA launch ABI, JAX and PyTorch adapters, multi-GPU correctness, wheel builds, and pytest configuration |
+| `tests/performance/` | Opt-in GPU measurements and CPU tests of the timing and baseline tooling |
+| `tests/research/` | Relation graphs, clique growth, associativity, and structural scaling |
+| `tests/papers/` | Paper-specific checks and report runners, grouped by identifier |
+| `tests/support/` | Shared reference products, comparison policies, test inputs, and GPU prerequisite probes |
+
+Shared pytest fixtures and options live in `tests/conftest.py`. Keep
+checked-in witness inputs with the suite that consumes them. The
+[graph fixture inventory](../tests/research/fixtures/README.md) records
+the provenance of the shared clique certificate. The
+[paper index](papers/README.md) links section-level checks, standalone
+reproduction commands, and the canonical published evidence.
+
+## Dependencies
+
+| Scope | Install from the checkout | Additional prerequisites |
+| --- | --- | --- |
+| Base CPU tests | `python -m pip install -e '.[test]'` | NumPy and pytest are sufficient for the core host checks and most graph regressions. |
+| CPU and research as in CI | `python -m pip install -e '.[test,research-test]'` | SciPy for frontier solvers, SymPy for symbolic paper checks, Matplotlib for plot/replot, and tzdata for time-zone handling on hosts without IANA data. |
+| CUDA correctness and timing | `python -m pip install -e '.[test,cuda12]'` | Use `cuda11` for CUDA 11.8. Use a matching NVIDIA driver and build the kernel with `make kernel`. |
+| BF16 | `python -m pip install -e '.[test,bfloat16]'` | This extra already includes the CUDA 12 CuPy build, NumPy ≥ 2.1.2 and `ml_dtypes`. GPU cases also need BF16-capable hardware and a kernel with BF16 exports. |
+| PyTorch | `python -m pip install -e '.[test,cuda12,torch]'` | Use a CUDA-enabled PyTorch build compatible with the runner. |
+| JAX | `python -m pip install -e '.[test,cuda12,jax]'` | The host callback supports CPU JAX arrays and uses CUDA for the CayleyKernel product. For JAX GPU execution on CUDA 12, also install `jax[cuda12]` as the GPU workflow does. |
+
+Use a single CuPy distribution in an environment. If `nvcc` cannot build
+all the Makefile's default architectures, set `ARCHS` to your GPU's
+architecture. For native CPU checks, install the optional Rust extension
+with `make rust-install` and set `CAYLEY_KERNEL_CPU_BACKEND=rust`.
+`CAYLEY_TEST_REQUIRE_RUST=1` makes the backend regression fail if the
+extension is missing. For CPU-only BF16 promotion and algebra checks,
+install `ml_dtypes>=0.5` alongside `.[test]`. The wheel metadata regression
+needs `build`, `setuptools>=77.0.3`, and `wheel`. The build-script regressions
+use stubs and require Linux, Bash, and Make.
+[JAX CUDA installation](https://docs.jax.dev/en/latest/installation.html#nvidia-gpu)
 
 ## Test selection
 
@@ -13,6 +54,15 @@ Commands below run from the repository root.
 | Slow only | | `python3 -m pytest -q -m slow tests/` |
 | Default and slow | `make test-all` | `python3 -m pytest -q -m "" tests/` |
 
+| Marker | Meaning |
+| --- | --- |
+| `cpu` | Runs without a GPU. Some tests need optional host dependencies or inspect a compiled library. |
+| `gpu_device` | Requires a usable CuPy device. The compiled CayleyKernel library is optional. |
+| `slow` | Expensive products or reproductions selected explicitly. |
+| `sparse_zd` | Exact CPU sparse zero-divisor validation and informational timings. |
+| `benchmark` | Opt-in GPU timings. |
+| `benchmark_baseline` | GPU timings that record or compare a local baseline. |
+
 An explicit `-m` expression replaces the default `not slow` filter, so
 `-m cpu` includes slow host checks. GPU timing workloads skip unless
 `--run-benchmarks` is supplied, even with `make test-all` or `-m benchmark`.
@@ -22,7 +72,11 @@ The default suite includes the dimension-16 basis table and dimension-1024
 sparse-input dense product. The larger sparse-input products at dimensions
 `2^14`, `2^16`, and `2^20`, the `2^20` unity check, and other expensive
 products are slow. The quasilinear paper's million-component CPU check is
-also slow.
+also slow, as are selected exhaustive paper audits and the Physics Letters B
+level-20 dense GPU replay. Run just the slow host reproductions with
+`python -m pytest -q -m "cpu and slow" tests/papers/`. Standalone
+`unittest` and paper report runners keep their own selection and include
+the expensive cases unless their own options limit the workload.
 
 GPU tests check CuPy and device availability before seeding the GPU RNG.
 Most GPU tests also need the compiled CayleyKernel library. Tests marked
@@ -30,11 +84,29 @@ Most GPU tests also need the compiled CayleyKernel library. Tests marked
 and checks that can use the sparse product's host fallback.
 
 Use `python3 -m pytest -q --require-gpu tests/` on a dedicated GPU runner.
-Missing GPU prerequisites produce setup failures for selected GPU tests.
+Missing CuPy, a usable device, or a required kernel produces setup failures
+for selected GPU tests.
 Local runs skip those tests. Host tests, tests deselected by markers, and
-disabled opt-in suites bypass GPU setup. Optional dependencies and
-capability-specific skips such as CuPy 14+ for BF16 or a second device
-still apply.
+disabled opt-in suites bypass GPU setup. Optional imports, missing BF16
+capabilities, and a missing second device can still cause skips. The Torch
+suite also requires CUDA availability in PyTorch. Check `-rs` output to
+see which prerequisites were missing.
+
+## CI coverage
+
+- The CPU workflow runs `cpu and not slow` on Linux, macOS, and Windows
+  with Python 3.10, 3.13, and 3.14, first with the Python backend and then
+  with the locally built Rust extension. Both passes include fast graph,
+  structural-script, and paper regressions. A separate Rust-backed step runs
+  sparse zero-divisor validation at levels 4, 32, and 256 with 16 samples
+  and one timing round.
+- JAX, PyTorch, and multi-GPU workflows run their integration correctness
+  files on `main` pushes, relevant pull requests, and manual dispatch.
+  They use `--require-gpu` when `CI_GPU_LABEL` or `CI_GPU_2X_LABEL` is
+  configured for the job. Otherwise the hosted fallback can skip device tests.
+- The wheel workflow checks Python, Rust, and CUDA packaging on relevant
+  pull requests, manual dispatch, and releases. The CPU workflow also
+  runs Python and CUDA/C++ lint plus the Rust format, lint, and test checks.
 
 ## GPU performance workloads
 
@@ -47,7 +119,7 @@ still apply.
 | PyTorch adapter overhead | `make benchmark-torch` | Check that the Torch median is at most 3.0 times the CuPy median |
 
 Run the three paired workloads together with
-`python3 -m pytest -q -s -m "benchmark and not benchmark_baseline" tests/ --run-benchmarks`.
+`python3 -m pytest -q -s -m "benchmark and not benchmark_baseline" tests/performance/ --run-benchmarks`.
 Add `-k <pattern>` to a direct pytest invocation to select individual cases.
 The paired workloads need no baseline file. They include each API's wrapper
 and output handling. Sparse inputs are converted before sampling, so the
@@ -86,7 +158,7 @@ overwrite an existing file; choose a new path for a deliberate new reference.
 Select a GPU explicitly with `CUDA_VISIBLE_DEVICES=0` (or `1`) before either
 command, and use the same device and software environment for comparison.
 
-Direct pytest invocations select `tests/test_benchmark.py` with
+Direct pytest invocations select `tests/performance/test_benchmark.py` with
 `--run-benchmarks` and exactly one of `--benchmark-record PATH` and
 `--benchmark-baseline PATH`. Recording requires all configured dense
 multiply cases. Reports include the samples, repetitions, device and PCI
@@ -145,12 +217,12 @@ types of zero divisor.
 ## Optional sparse zero-divisor validation and timings (CPU only)
 
 ```bash
-python3 -m pip install pytest
+python3 -m pip install -e '.[test]'
 make test-sparse-zd
 # Customize doubling levels n (dimension = 2^n), candidates per level, and seed:
 make test-sparse-zd ZD_LEVELS=4,32,256,4096 ZD_SAMPLES=1000 ZD_SEED=42 ZD_REPEATS=5
 # Equivalent direct invocation:
-python3 -m pytest -q -s tests/test_sparse_zd.py --run-sparse-zd \
+python3 -m pytest -q -s tests/core/test_sparse_zd.py --run-sparse-zd \
     --zd-levels=4,32,256,4096 --zd-samples=1000 --zd-seed=42 --zd-repeats=5
 ```
 

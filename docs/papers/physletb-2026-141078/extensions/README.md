@@ -55,10 +55,11 @@ python3 -m tests.papers.physletb_141078.run_extensions --classify 1,2,12
 
 The first is an octonion example. The second returns a concrete zero-divisor counterexample. Decimal and `0x` hexadecimal indices are accepted. The criterion works for arbitrary-width indices; it does not allocate an ambient vector of length 2^level.
 
-Repository integration:
+This command includes the exhaustive classification and complete
+basis-column scan in the repository regression suite.
 
 ```bash
-python3 -m pytest -q tests/papers/physletb_141078/test_extensions.py
+python3 -m pytest -q -m "" tests/papers/physletb_141078/test_extensions.py
 ```
 
 ## 1. Which eight-dimensional XOR subspaces retain norm composition?

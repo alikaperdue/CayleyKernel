@@ -85,7 +85,7 @@ make benchmark-record BENCHMARK_BASELINE=benchmark-results/my-gpu.json
 make benchmark BENCHMARK_BASELINE=benchmark-results/my-gpu.json
 ```
 
-Both commands select `tests/test_benchmark.py` with `--run-benchmarks`.
+Both commands select `tests/performance/test_benchmark.py` with `--run-benchmarks`.
 The sampler uses three warmups and five calibrated, synchronized samples.
 For sparse versus dense, multi-GPU overlap, and Torch adapter timing,
 use `make benchmark-sparse`, `make benchmark-multi-gpu`, and

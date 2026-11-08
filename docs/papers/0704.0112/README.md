@@ -24,10 +24,10 @@ python3 -m tests.papers.arxiv_0704_0112.run \
   --output /tmp/cayley-paper-0704.0112/results
 ```
 
-On your CUDA machine, run all 32 tests normally:
+On a CUDA machine, this command runs all 32 tests, including the two slow finite audits.
 
 ```bash
-pytest -v tests/papers/arxiv_0704_0112/test_sections.py
+python3 -m pytest -v -m "" tests/papers/arxiv_0704_0112/test_sections.py
 ```
 
 Or run only the three GPU tests:

@@ -6,7 +6,7 @@ Deliverable of ``feat/sparse-csr`` (Phases A–C): design document,
 Python API (:mod:`CayleyKernel._sparse`), and the dedicated CUDA
 kernel (``sparse_mult_<suffix>`` in ``cuda/cuda_kernel.cu``, ABI 5).
 See ``docs/sparse-csr-design.md`` for the design and
-``tests/test_sparse_zd.py`` for the algebraic evidence.
+``tests/core/test_sparse_zd.py`` for the algebraic evidence.
 
 The sparse API dispatches to the GPU kernel when the library exposes
 the Phase C symbols for the operand dtype (float16 / bfloat16 /
@@ -15,7 +15,7 @@ reference. SparseVector storage and conversion still use CuPy device arrays.
 
 Run with::
 
-    pytest -q tests/test_sparse_csr.py
+    pytest -q tests/core/test_sparse_csr.py
 """
 
 import numpy as np
@@ -23,8 +23,6 @@ import pytest
 
 import CayleyKernel
 from CayleyKernel import cp, from_sparse, is_sparse_beneficial, sparse_multiply, to_sparse
-from CayleyKernel._sparse import _sparse_kernel_handle
-from tests.benchmark_support import PROTOCOL, measure_workloads
 
 
 def _make_dense_batch(batch, dim, K, seed, dtype):
@@ -47,7 +45,7 @@ def _make_dense_batch(batch, dim, K, seed, dtype):
 def _known_zero_divisor_supports(dim):
     """A pair of two-term supports known to produce a zero product.
 
-    Lifted from ``tests/test_sparse_zd.py::test_embedded_known_witness``
+    Lifted from ``tests/core/test_sparse_zd.py::test_embedded_known_witness``
     (level 4 / dim 16).  All indices are < 16, so the sign rule and XOR
     are identical for any dim ≥ 16 (high bits are zero on both sides).
     """
@@ -88,7 +86,7 @@ def test_roundtrip_dense_to_sparse_and_back(dim, dtype):
 # ---------------------------------------------------------------------------
 @pytest.mark.gpu_device
 def test_sparse_product_known_zero_divisor():
-    """The embedded witness from tests/test_sparse_zd.py must produce
+    """The embedded witness from tests/core/test_sparse_zd.py must produce
     an empty support (K == 0) on the sparse path."""
     dim = 16
     x, y = _known_zero_divisor_supports(dim)
@@ -131,57 +129,6 @@ def test_sparse_product_zero_divisor_batch():
 _SPARSE_DTYPES = [np.float16, np.float32, np.float64, np.complex64, np.complex128]
 if hasattr(cp, "bfloat16"):
     _SPARSE_DTYPES.append(cp.bfloat16)
-
-
-@pytest.mark.benchmark
-@pytest.mark.parametrize(
-    "config",
-    [
-        {"dim": 1024, "K": 8, "batch": 4096, "label": "memory-bound (batch=4096)"},
-        {"dim": 4096, "K": 4, "batch": 256, "label": "compute-bound (dim=4096)"},
-        {"dim": 8192, "K": 4, "batch": 128, "label": "compute-memory-bound (dim=8192)"},
-        {"dim": 16384, "K": 4, "batch": 64, "label": "compute-memory-bound (dim=16384)"},
-        {"dim": 32768, "K": 4, "batch": 16, "label": "compute-memory-bound (dim=32768)"},
-        {"dim": 131072, "K": 4, "batch": 2, "label": "compute-memory-bound (dim=131072)"},
-    ],
-    ids=lambda c: c["label"],
-)
-def test_benchmark(config):
-    """Compare products on inputs already in each path's native layout."""
-    if _sparse_kernel_handle("float32") is None:
-        pytest.skip("Sparse versus dense timing requires the float32 sparse GPU kernel")
-
-    dim = config["dim"]
-    K = config["K"]
-    batch = config["batch"]
-    label = config["label"]
-
-    rng = np.random.default_rng(PROTOCOL["seed"])
-
-    # Build sparse inputs with exactly K nonzeros
-    x_dense = np.zeros((batch, dim), dtype=np.float32)
-    y_dense = np.zeros((batch, dim), dtype=np.float32)
-    for i in range(batch):
-        x_idx = rng.choice(dim, K, replace=False)
-        y_idx = rng.choice(dim, K, replace=False)
-        x_dense[i, x_idx] = rng.standard_normal(K)
-        y_dense[i, y_idx] = rng.standard_normal(K)
-
-    x_gpu = cp.asarray(x_dense)
-    y_gpu = cp.asarray(y_dense)
-    x_sp = to_sparse(x_gpu)
-    y_sp = to_sparse(y_gpu)
-
-    print(f"\n{label}: dim={dim}, K={K}, batch={batch}, dtype=float32")
-    cases = measure_workloads(
-        {
-            "dense": lambda: CayleyKernel.multiply(x_gpu, y_gpu),
-            "sparse": lambda: sparse_multiply(x_sp, y_sp),
-        },
-        cp.cuda.Stream.null.synchronize,
-    )
-    ratio = cases["dense"]["median_seconds"] / cases["sparse"]["median_seconds"]
-    print(f"Dense/sparse median ratio: {ratio:.2f}x (informational)")
 
 
 @pytest.mark.parametrize("K", [1, 2, 4, 8])

@@ -14,7 +14,7 @@ Validates:
   ``scripts/ASSOCIATIVITY.md``.
 
 Run with:
-    pytest -q tests/test_jax_interop.py
+    pytest -q tests/integration/test_jax_interop.py
 """
 
 import numpy as np

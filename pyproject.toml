@@ -52,6 +52,12 @@ bfloat16 = ["ml_dtypes>=0.5", "numpy>=2.1.2", "cupy-cuda12x>=14"]
 test = [
     "pytest",
 ]
+research-test = [
+    "scipy>=1.14",
+    "sympy>=1.12",
+    "matplotlib",
+    "tzdata",
+]
 dev = [
     "ruff>=0.9,<1.0",
 ]
@@ -123,12 +129,13 @@ quote-style = "double"   # match the existing docstring style
 line-ending = "lf"
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 addopts = "--strict-markers -m 'not slow'"
 markers = [
-    "cpu: host-only checks that need no GPU",
+    "cpu: host-only checks that need no GPU (some use optional host dependencies or a compiled library)",
     "gpu_device: requires a CuPy device but can run without the compiled CayleyKernel library",
     "sparse_zd: CPU-only sparse zero-divisor validation (opt-in: --run-sparse-zd)",
-    "slow: expensive products and other long workloads (opt-in: pytest -m slow)",
+    "slow: expensive products and reproductions (opt-in: pytest -m slow)",
     "benchmark: GPU timing workloads (opt-in: --run-benchmarks)",
     "benchmark_baseline: GPU workloads that record or compare a local baseline",
 ]

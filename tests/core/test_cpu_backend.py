@@ -12,7 +12,7 @@ from types import SimpleNamespace
 import pytest
 
 pytestmark = pytest.mark.cpu
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 @pytest.fixture(params=["python", "rust"])

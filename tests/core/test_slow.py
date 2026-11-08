@@ -5,7 +5,7 @@
 These are excluded from the default run (they are marked ``slow`` in
 pyproject.toml).  Run them explicitly with:
 
-    pytest -q -m slow tests/test_slow.py
+    pytest -q -m slow tests/core/test_slow.py
 
 Dense multiplication costs O(batch * dim**2), even with sparse inputs.
 The default suite covers the same laws at smaller dimensions.

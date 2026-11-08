@@ -15,7 +15,9 @@ from collections import deque
 from pathlib import Path
 from time import perf_counter
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Allow direct execution from a source checkout.
+if not __package__:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from CayleyKernel import basis, twist
 
 RELATIONS = ("commute", "orthogonality", "zero-either", "dot")
