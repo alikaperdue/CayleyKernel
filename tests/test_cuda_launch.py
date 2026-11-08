@@ -6,6 +6,8 @@ import numpy as np
 import pytest
 
 import CayleyKernel as ck
+from tests.support.comparisons import assert_product_close
+from tests.support.oracles import recursive_product
 
 BLOCK_SIZES = (32, 64, 128, 256, 512, 1024)
 
@@ -33,24 +35,6 @@ def test_block_size_can_change_between_calls(monkeypatch, value):
     assert len(calls) == 1
     assert calls[0][-2].value == 4
     assert calls[0][-1].value == 37
-
-
-def reference(a, b):
-    """Independent recursive doubling, vectorized over leading batch axes."""
-    if a.shape[-1] == 1:
-        return a * b
-    mid = a.shape[-1] // 2
-    x, y = a[..., :mid], a[..., mid:]
-    u, v = b[..., :mid], b[..., mid:]
-
-    def conj(z):
-        z = -z.copy()
-        z[..., 0] = -z[..., 0]
-        return z
-
-    return np.concatenate(
-        (reference(x, u) - reference(conj(v), y), reference(v, x) + reference(y, conj(u))), axis=-1
-    )
 
 
 @pytest.mark.parametrize("threads", BLOCK_SIZES)
@@ -85,7 +69,7 @@ def test_all_block_sizes_against_recursive(monkeypatch, threads, dim, dtype):
         a += 1j * rng.integers(-2, 3, size=a.shape)
         b += 1j * rng.integers(-2, 3, size=b.shape)
     acc_dtype = np.complex128 if np.dtype(dtype).kind == "c" else np.float64
-    expected = reference(a.astype(acc_dtype), b.astype(acc_dtype)).astype(dtype)
+    expected = recursive_product(a, b, xp=np, calc_dtype=acc_dtype).astype(dtype)
     np.testing.assert_array_equal(ck.multiply(a, b), expected)
 
 
@@ -106,7 +90,14 @@ def test_midrange_and_large_batches(monkeypatch, batch):
     rng = np.random.default_rng(987)
     a = rng.normal(size=(batch, 8)).astype(np.float64)
     b = rng.normal(size=(batch, 8)).astype(np.float64)
-    np.testing.assert_allclose(ck.multiply(a, b), reference(a, b), rtol=1e-11, atol=1e-11)
+    assert_product_close(
+        ck.multiply(a, b),
+        recursive_product(a, b, xp=np, calc_dtype=None),
+        np.float64,
+        contract="dense",
+        override=(1e-11, 1e-11),
+        reason="Retain the relative and near-zero budgets for the large launch batches.",
+    )
 
 
 @pytest.mark.parametrize("threads", BLOCK_SIZES)
@@ -119,6 +110,6 @@ def test_bfloat16_launch_sizes(monkeypatch, threads, dim):
     rng = np.random.default_rng(42)
     a = (rng.integers(-8, 9, size=(37, dim)) / 8).astype(bf16)
     b = (rng.integers(-8, 9, size=(37, dim)) / 8).astype(bf16)
-    expected = reference(a.astype(np.float64), b.astype(np.float64)).astype(bf16)
+    expected = recursive_product(a, b, xp=np, calc_dtype=np.float64).astype(bf16)
     actual = ck.multiply(a, b)
     np.testing.assert_array_equal(actual.astype(np.float32), expected.astype(np.float32))

@@ -16,6 +16,7 @@ from time import perf_counter
 import pytest
 
 from CayleyKernel import basis, twist
+from tests.support.oracles import doubling_sign_at_level
 
 pytestmark = [pytest.mark.cpu, pytest.mark.sparse_zd]
 
@@ -38,30 +39,6 @@ def safe_getrandbits(rng, total_bits):
     return result
 
 
-def _doubling_sign(a, b, level):
-    """Independent reference from (ac-conj(d)b, da+b conj(c)).
-
-    Process the most significant doubling bit first. The four branches
-    correspond to lower/lower, lower/upper, upper/lower, upper/upper.
-    This is the recursive definition evaluated iteratively, so levels above
-    Python's recursion limit are supported. It does not call twist or use
-    its trailing-zero/popcount formula.
-    """
-    sign = 1
-    for bit in range(level - 1, -1, -1):
-        half = 1 << bit
-        upper_a, upper_b = bool(a & half), bool(b & half)
-        a, b = a & (half - 1), b & (half - 1)
-        if upper_a:
-            if b:  # conjugation of the second operand's lower component
-                sign = -sign
-            if upper_b:  # minus conj(d)*b
-                sign = -sign
-        if upper_b:  # da or conj(d)b reverses the remaining factors
-            a, b = b, a
-    return sign
-
-
 def _kernel_sparse(x, y):
     out = {}
     for a, sa in x:
@@ -82,7 +59,7 @@ def _reference_sparse(x, y, signs):
 
 
 def _check_support(a, b, c, d, level, context):
-    signs = [_doubling_sign(p, q, level) for p, q in ((a, c), (a, d), (b, c), (b, d))]
+    signs = [doubling_sign_at_level(p, q, level) for p, q in ((a, c), (a, d), (b, c), (b, d))]
     zeros = 0
     for s, t in product((-1, 1), repeat=2):
         x, y = ((a, 1), (b, s)), ((c, 1), (d, t))
@@ -103,7 +80,7 @@ def _check_support(a, b, c, d, level, context):
 def test_exhaustive_small_basiss():
     # Checks the reference/sign convention and all signed input combinations.
     for a, b in product(range(64), repeat=2):
-        sign = _doubling_sign(a, b, 6)
+        sign = doubling_sign_at_level(a, b, 6)
         for sa, sb in product((-1, 1), repeat=2):
             assert basis(sa * (a + 1), sb * (b + 1)) == (sa * sb * sign * ((a ^ b) + 1)), (
                 a,
@@ -126,7 +103,7 @@ def test_exhaustive_sedenion_two_term_products():
 def test_embedded_known_witness(zd_level):
     # An embedding regression, deliberately separate from high-bit sampling.
     x, y = ((3, 1), (10, 1)), ((6, 1), (15, -1))
-    signs = [_doubling_sign(a, b, zd_level) for a, _ in x for b, _ in y]
+    signs = [doubling_sign_at_level(a, b, zd_level) for a, _ in x for b, _ in y]
     assert _reference_sparse(x, y, signs) == {}
     assert _kernel_sparse(x, y) == {}
 
@@ -178,12 +155,12 @@ def _doubling_basis(r, c, level):
     """Match the public API's signed, one-based input/output convention."""
     a, b = abs(r) - 1, abs(c) - 1
     sign = -1 if (r > 0) != (c > 0) else 1
-    return sign * _doubling_sign(a, b, level) * ((a ^ b) + 1)
+    return sign * doubling_sign_at_level(a, b, level) * ((a ^ b) + 1)
 
 
 def _doubling_sparse(x, y, level):
     # Recompute every sign, just as _kernel_sparse does; no cached signs.
-    signs = [_doubling_sign(a, b, level) for a, _ in x for b, _ in y]
+    signs = [doubling_sign_at_level(a, b, level) for a, _ in x for b, _ in y]
     return _reference_sparse(x, y, signs)
 
 
@@ -236,7 +213,7 @@ def test_method_timings(zd_level, request):
         for s, t in product((-1, 1), repeat=2)
     ]
     workloads = [
-        ("sign", lambda a, b: _doubling_sign(a, b, zd_level), twist, pairs),
+        ("sign", lambda a, b: doubling_sign_at_level(a, b, zd_level), twist, pairs),
         ("basis product", lambda r, c: _doubling_basis(r, c, zd_level), basis, encoded),
         ("two-term product", lambda x, y: _doubling_sparse(x, y, zd_level), _kernel_sparse, sparse),
     ]

@@ -24,6 +24,9 @@ jax = pytest.importorskip("jax")
 import jax.numpy as jnp  # noqa: E402
 
 import CayleyKernel as ck  # noqa: E402
+from tests.support.comparisons import assert_product_close  # noqa: E402
+from tests.support.inputs import normal_coefficients  # noqa: E402
+from tests.support.oracles import doubling_conjugate, recursive_product  # noqa: E402
 
 # jax must be enabled for x64 (float64 tests).
 jax.config.update("jax_enable_x64", True)
@@ -32,40 +35,6 @@ jax.config.update("jax_enable_x64", True)
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _reference(a_np, b_np):
-    """Recursive Cayley-Dickson product (NumPy, arbitrary batch shape)."""
-    if a_np.shape[-1] == 1:
-        return a_np * b_np
-    m = a_np.shape[-1] // 2
-    x, y = a_np[..., :m], a_np[..., m:]
-    u, v = b_np[..., :m], b_np[..., m:]
-
-    def conj(z):
-        out = -z.copy()
-        out[..., 0] = z[..., 0]
-        return out
-
-    return np.concatenate(
-        (_reference(x, u) - _reference(conj(v), y), _reference(v, x) + _reference(y, conj(u))),
-        axis=-1,
-    )
-
-
-def _random(shape, dtype, seed):
-    rng = np.random.default_rng(seed)
-    if np.issubdtype(np.dtype(dtype), np.complexfloating):
-        return (rng.normal(size=shape) + 1j * rng.normal(size=shape)).astype(dtype)
-    return rng.normal(size=shape).astype(dtype)
-
-
-def _tolerance(dtype):
-    if dtype in (np.float32, np.complex64):
-        return 1e-5, 1e-5
-    if dtype is np.float64:
-        return 1e-10, 1e-12
-    raise ValueError("unsupported dtype: %s" % dtype)
 
 
 # ---------------------------------------------------------------------------
@@ -84,8 +53,8 @@ def _tolerance(dtype):
 )
 def test_jax_multiply_matches_reference(dim, batch, jax_dtype, np_dtype):
     shape = (batch, dim)
-    a_np = _random(shape, np_dtype, seed=100 + dim + batch)
-    b_np = _random(shape, np_dtype, seed=200 + dim + batch)
+    a_np = normal_coefficients(shape, np_dtype, seed=100 + dim + batch)
+    b_np = normal_coefficients(shape, np_dtype, seed=200 + dim + batch)
 
     a = jnp.asarray(a_np)
     b = jnp.asarray(b_np)
@@ -94,9 +63,8 @@ def test_jax_multiply_matches_reference(dim, batch, jax_dtype, np_dtype):
     assert got.shape == shape
     assert got.dtype == jax_dtype
 
-    ref = _reference(a_np, b_np)
-    rtol, atol = _tolerance(np_dtype)
-    np.testing.assert_allclose(np.asarray(got), ref, rtol=rtol, atol=atol)
+    ref = recursive_product(a_np, b_np, xp=np, calc_dtype=None)
+    assert_product_close(np.asarray(got), ref, np_dtype, contract="interop")
 
 
 def test_jax_multiply_1d_single_vector():
@@ -179,8 +147,8 @@ def test_jax_grad_matches_finite_difference_dim8_float32():
     Tolerance: relative 1e-4 as specified in the task brief.
     """
     dim = 8
-    a = jnp.asarray(_random((dim,), np.float32, seed=11), dtype=jnp.float32)
-    b = jnp.asarray(_random((dim,), np.float32, seed=12), dtype=jnp.float32)
+    a = jnp.asarray(normal_coefficients((dim,), np.float32, seed=11), dtype=jnp.float32)
+    b = jnp.asarray(normal_coefficients((dim,), np.float32, seed=12), dtype=jnp.float32)
 
     scalar_fn = lambda x: jnp.real(ck.jax.multiply(x, b)).sum()  # noqa: E731
     g_auto = jax.grad(scalar_fn)(a)
@@ -189,14 +157,15 @@ def test_jax_grad_matches_finite_difference_dim8_float32():
     h = np.float32(1e-3)
     fd = np.zeros(dim, dtype=np.float64)
     a_np = np.asarray(a, dtype=np.float64)
+    b_np = np.asarray(b)
     for i in range(dim):
         a_plus = a_np.copy()
         a_minus = a_np.copy()
         a_plus[i] += h
         a_minus[i] -= h
         # Use float64 reference for accuracy
-        f_plus = _reference(a_plus, np.asarray(b, dtype=np.float64)).sum()
-        f_minus = _reference(a_minus, np.asarray(b, dtype=np.float64)).sum()
+        f_plus = recursive_product(a_plus, b_np, xp=np, calc_dtype=np.float64).sum()
+        f_minus = recursive_product(a_minus, b_np, xp=np, calc_dtype=np.float64).sum()
         fd[i] = (f_plus - f_minus) / (2 * h)
 
     g_auto_np = np.asarray(g_auto, dtype=np.float64)
@@ -207,8 +176,8 @@ def test_jax_grad_matches_finite_difference_dim8_float32():
 # 4. jax.jit round-trip
 # ---------------------------------------------------------------------------
 def test_jax_jit_round_trip():
-    a = jnp.asarray(_random((8,), np.float32, seed=42), dtype=jnp.float32)
-    b = jnp.asarray(_random((8,), np.float32, seed=43), dtype=jnp.float32)
+    a = jnp.asarray(normal_coefficients((8,), np.float32, seed=42), dtype=jnp.float32)
+    b = jnp.asarray(normal_coefficients((8,), np.float32, seed=43), dtype=jnp.float32)
 
     eager = ck.jax.multiply(a, b)
     jit_fn = jax.jit(lambda x, y: ck.jax.multiply(x, y))
@@ -219,8 +188,8 @@ def test_jax_jit_round_trip():
 
 def test_jax_jit_grad_round_trip():
     """jax.grad under jax.jit must also work."""
-    a = jnp.asarray(_random((8,), np.float32, seed=44), dtype=jnp.float32)
-    b = jnp.asarray(_random((8,), np.float32, seed=45), dtype=jnp.float32)
+    a = jnp.asarray(normal_coefficients((8,), np.float32, seed=44), dtype=jnp.float32)
+    b = jnp.asarray(normal_coefficients((8,), np.float32, seed=45), dtype=jnp.float32)
 
     def loss(x):
         return jnp.real(ck.jax.multiply(x, b)).sum()
@@ -228,12 +197,6 @@ def test_jax_jit_grad_round_trip():
     g_eager = jax.grad(loss)(a)
     g_jit = jax.jit(jax.grad(loss))(a)
     np.testing.assert_allclose(np.asarray(g_eager), np.asarray(g_jit), rtol=0, atol=0)
-
-
-def _conj_np(z):
-    out = -z.copy()
-    out[..., 0] = z[..., 0]
-    return out
 
 
 # ---------------------------------------------------------------------------
@@ -252,9 +215,9 @@ def test_vjp_does_not_assume_associativity():
     We verify both VJP terms against finite differences.
     """
     dim = 8
-    a_np = _random((dim,), np.float32, seed=50)
-    b_np = _random((dim,), np.float32, seed=51)
-    g_np = _random((dim,), np.float32, seed=52)
+    a_np = normal_coefficients((dim,), np.float32, seed=50)
+    b_np = normal_coefficients((dim,), np.float32, seed=51)
+    g_np = normal_coefficients((dim,), np.float32, seed=52)
     a = jnp.asarray(a_np, dtype=jnp.float32)
     b = jnp.asarray(b_np, dtype=jnp.float32)
     g = jnp.asarray(g_np, dtype=jnp.float32)
@@ -268,9 +231,9 @@ def test_vjp_does_not_assume_associativity():
     g_np64 = np.asarray(g, dtype=np.float64)
 
     # Expected vjp_a = g * conj(b)  (bilinear VJP, single product)
-    expected_vjp_a = _reference(g_np64, _conj_np(b_np64))
+    expected_vjp_a = recursive_product(g_np64, doubling_conjugate(b_np64), xp=np, calc_dtype=None)
     # Expected vjp_b = conj(a) * g  (bilinear VJP, single product)
-    expected_vjp_b = _reference(_conj_np(a_np64), g_np64)
+    expected_vjp_b = recursive_product(doubling_conjugate(a_np64), g_np64, xp=np, calc_dtype=None)
 
     rtol, atol = 1e-5, 1e-5
     np.testing.assert_allclose(
@@ -283,8 +246,12 @@ def test_vjp_does_not_assume_associativity():
     # Contrast: the *wrong* association (g*b)*a and a*(g*b) would differ.
     # We demonstrate they do NOT equal the correct bilinear terms, so the
     # test is meaningful.
-    wrong_vjp_a = _reference(_reference(g_np64, b_np64), a_np64)  # (g*b)*a
-    wrong_vjp_b = _reference(a_np64, _reference(g_np64, b_np64))  # a*(g*b)
+    wrong_vjp_a = recursive_product(
+        recursive_product(g_np64, b_np64, xp=np, calc_dtype=None), a_np64, xp=np, calc_dtype=None
+    )  # (g*b)*a
+    wrong_vjp_b = recursive_product(
+        a_np64, recursive_product(g_np64, b_np64, xp=np, calc_dtype=None), xp=np, calc_dtype=None
+    )  # a*(g*b)
 
     # At dim=8 (non-associative) these should differ from the bilinear terms.
     # (Not asserted as a hard inequality — some random draws may accidentally

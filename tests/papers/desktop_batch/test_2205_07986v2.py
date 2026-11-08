@@ -4,6 +4,7 @@ import unittest
 from itertools import product
 
 import CayleyKernel as CK
+from tests.support.oracles import iterative_doubling_sign
 
 from .common import (
     Algebra,
@@ -36,22 +37,6 @@ def sigma(a,b):
     elif da<db:parity+=1+((a>>ell)&1)
     else:parity+=(a>>ell)&1
     return parity%2
-
-
-def independent_sign(a,b):
-    """Iterative block doubling; no closed sign formula or module calls."""
-    s=1
-    while a or b:
-        h=1<<(max(a.bit_length(),b.bit_length())-1)
-        u,v=a>=h,b>=h
-        a,b=a%h,b%h
-        if u and v:
-            s*=1 if b else -1
-            a,b=b,a
-        elif u:
-            s*=-1 if b else 1
-        elif v:a,b=b,a
-    return s
 
 
 def assoc_parity(a,b,c):
@@ -97,7 +82,7 @@ class Sections(unittest.TestCase):
         for a,b in product(range(1024),repeat=2):
             s=(-1)**sigma(a,b)
             self.assertEqual(CK.twist(a,b),s,(a,b))
-            self.assertEqual(independent_sign(a,b),s,(a,b))
+            self.assertEqual(iterative_doubling_sign(a,b),s,(a,b))
             self.assertEqual(basis_product(a+1,b+1),s*((a^b)+1))
             if a and b and a!=b:
                 ell=max(degree(a),degree(b),degree(a^b))
@@ -137,7 +122,7 @@ class Sections(unittest.TestCase):
                 a,b=rng.getrandbits(bits),rng.getrandbits(bits)
                 s=(-1)**sigma(a,b)
                 self.assertEqual(s,CK.twist(a,b))
-                self.assertEqual(s,independent_sign(a,b))
+                self.assertEqual(s,iterative_doubling_sign(a,b))
                 self.assertEqual(basis_product(-(a+1),b+1),-s*((a^b)+1))
             rows.append(dict(index_bits=bits,samples=24))
         MEASUREMENTS['high_index_coverage']=rows

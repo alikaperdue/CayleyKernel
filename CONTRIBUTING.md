@@ -234,12 +234,29 @@ Copy the closest existing dtype test file (`test_half.py` or
 `test_bfloat16.py`) and adapt it. At minimum cover:
 
 - `_select_kernel` returns a `(legacy, nd)` pair for the new dtype.
-- A small batch product matches the reference implementation in
-  `tests/reference.py` for a few dimensions (2, 4, 8).
+- A small batch product matches `recursive_product` from
+  `tests/support/oracles.py` for a few dimensions (2, 4, 8). Specify the
+  array backend and calculation dtype and assert the output dtype separately.
 - Broadcasting against a smaller batch shape works.
 - The `out=` buffer reuse path works and does not allocate.
 - If the dtype has promotion quirks (like `bfloat16`), assert the promoted
   dtype explicitly.
+
+Use this matrix to select the numerical checks for the new dtype in addition
+to the ABI, layout, and promotion checks above.
+
+| Coefficient family | Reference and comparison | Coverage to include |
+| --- | --- | --- |
+| Float32 / Float64 | Input-dtype doubling and the dense product tolerance | Single and batched products, broadcasting, large batches |
+| Float16 / BFloat16 | Wider reference, then a cast to the storage dtype for rounded products | Exact constructed rounding, accumulation and range, legacy and batched entry points |
+| Complex64 / Complex128 | Complex doubling and the complex product tolerance | Nonzero imaginary coefficients, bilinearity, mixed promotion |
+| Signed / unsigned integers | Exact equality with the intended fixed-width arithmetic | Negative contributions, signed and unsigned storage, wraparound |
+| Boolean | Exact equality against the nonzero pattern of an integer product | Cancellation and a nonzero result |
+| Fused operations and framework adapters | Use their named comparison policies and preserve the reference precision for each path | Fused add/subtract, output reuse, framework shape and dtype |
+
+`tests/support/comparisons.py` documents the approximate product budgets.
+Supply a reason at the call site for any override. Use exact assertions for
+integer, boolean, and constructed rounding cases.
 
 Run the full suite before pushing:
 

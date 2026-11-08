@@ -158,7 +158,7 @@ The same command also prints a speed comparison at each level for three
 workloads: sign calculation, signed basis multiplication, and complete
 two-term sparse multiplication (four basis products and coefficient
 cancellation). The new path uses `twist` / `basis`; the baseline is
-the independent Python doubling reference in `tests/test_sparse_zd.py`.
+the independent Python doubling reference in `tests/support/oracles.py`.
 This baseline follows the older level-by-level approach; it is not a
 reproduction of a particular author's optimized implementation.
 

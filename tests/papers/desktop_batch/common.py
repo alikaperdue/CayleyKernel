@@ -51,3 +51,13 @@ def gpu_replay(case, vectors, dim):
         for k, c in mul(x, y).items(): expected[row, k] = c
     actual = CK.cp.asnumpy(replay_product(a, b))
     np.testing.assert_allclose(actual, expected, atol=1e-12, rtol=1e-12)
+
+
+def left_matrix(unit, dim):
+    import numpy as np
+
+    out = np.zeros((dim, dim))
+    for j in range(dim):
+        for i, c in mul(e(unit), e(j)).items():
+            out[i, j] = c
+    return out

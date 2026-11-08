@@ -9,6 +9,7 @@ from itertools import product
 import numpy as np
 
 import CayleyKernel as CK
+from tests.support.oracles import recursive_product
 
 PAPER_TO_KERNEL = (0, 1, 2, 4, 3, 5, 6, 7)
 # Signed one-based PAPER labels, transcribed from printed page 4.
@@ -58,13 +59,8 @@ def mul(a, b):
 
 
 def recursive(a, b):
-    """Independent recursive doubling, no module signs or product calls."""
-    if len(a) == 1:
-        return [a[0]*b[0]]
-    h = len(a)//2
-    x, y, u, v = a[:h], a[h:], b[:h], b[h:]
-    return (add(recursive(x, u), scale(recursive(conj(v), y), -1))
-            + add(recursive(v, x), recursive(y, conj(u))))
+    """Independent doubling with exact Python integer and rational arithmetic."""
+    return recursive_product(a, b, xp=np, calc_dtype=object).tolist()
 
 
 def inverse(a):

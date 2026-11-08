@@ -3,7 +3,11 @@ import unittest
 from itertools import product
 
 from .common import e, gpu_replay, mul
-from .test_1703_00144v4 import np
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 MEASUREMENTS={}
 

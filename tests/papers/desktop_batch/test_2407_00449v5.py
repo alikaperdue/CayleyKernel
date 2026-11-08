@@ -3,7 +3,7 @@ import unittest
 from itertools import product
 
 from .common import add, gpu_replay, mul
-from .test_2205_07986v2 import independent_sign
+from tests.support.oracles import iterative_doubling_sign
 
 try:
     import numpy as np
@@ -13,7 +13,7 @@ MEASUREMENTS={}
 
 def tensor(dim):
     A=np.zeros((dim,dim,dim),dtype=np.int64)
-    for i,j in product(range(dim),repeat=2):A[i,j,i^j]=independent_sign(i,j)
+    for i,j in product(range(dim),repeat=2):A[i,j,i^j]=iterative_doubling_sign(i,j)
     return A
 
 
@@ -104,7 +104,7 @@ class Sections(unittest.TestCase):
             x={1:2,(1<<(n-1))+3:1};y={2:-1,(1<<(n-2))+5:3}
             expected={}
             for i,a in x.items():
-                for j,b in y.items():expected[i^j]=expected.get(i^j,0)+independent_sign(i,j)*a*b
+                for j,b in y.items():expected[i^j]=expected.get(i^j,0)+iterative_doubling_sign(i,j)*a*b
             expected={k:c for k,c in expected.items() if c}
             self.assertEqual(mul(x,y),expected)
         MEASUREMENTS['explicit_tensor_storage_scaling']=[dict(dimension=d,entries=d**3,nonzero=d**2) for d in (8,16,64,1024)]

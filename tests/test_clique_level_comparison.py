@@ -9,7 +9,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts import clique_growth as growth
 from scripts import clique_level_comparison as comparison
-from tests.test_clique_growth import small_anchor
+from tests.support.inputs import small_anchor
 
 pytestmark = pytest.mark.cpu
 

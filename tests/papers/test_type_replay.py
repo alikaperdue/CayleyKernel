@@ -5,7 +5,8 @@ import numpy as np
 import pytest
 
 from tests.papers.arxiv_2608_28176.algebra import Algebra
-from tests.papers.type_replay import bounded, reference, signature_fixture, typed_cases
+from tests.papers.type_replay import bounded, signature_fixture, typed_cases
+from tests.support.oracles import recursive_product
 
 pytestmark = pytest.mark.cpu
 
@@ -37,13 +38,13 @@ def test_typed_oracle_against_sparse_doubling(dim):
 def test_complex_signature_transport_against_standard_doubling(n):
     for gammas in product((-1, 1), repeat=n):
         a, b, expected = signature_fixture(gammas)
-        np.testing.assert_array_equal(reference(a, b), expected)
+        np.testing.assert_array_equal(recursive_product(a, b, xp=np, calc_dtype=None), expected)
 
 
 def test_phase_replay_preserves_zero_divisors_and_nonzero_controls():
     a, b = np.zeros(16), np.zeros(16)
     a[[1, 15]], b[[2, 12]] = [1, -1], [1, 1]
-    assert np.any(reference(a, a))
+    assert np.any(recursive_product(a, a, xp=np, calc_dtype=None))
     for mode, x, y, expected in typed_cases(a, b):
         if mode in ('real', 'phase'):
             np.testing.assert_array_equal(expected, 0)
@@ -58,7 +59,7 @@ def test_half_protocol_bounds_large_power_fixtures_and_keeps_dyadics():
     # The oracle quantizes operands before computing the expected product.
     a = np.array([1/3, 1/7])
     _, x, y, expected = next(typed_cases(a, a))
-    np.testing.assert_array_equal(expected, reference(x.astype(float), y.astype(float)).astype(np.float16))
+    np.testing.assert_array_equal(expected, recursive_product(x.astype(float), y.astype(float), xp=np, calc_dtype=None).astype(np.float16))
 
 
 def test_replay_dispatch_checks_all_types_and_retains_original_result(monkeypatch):
@@ -71,12 +72,12 @@ def test_replay_dispatch_checks_all_types_and_retains_original_result(monkeypatc
         calls.append(np.asarray(a).dtype)
         dtype = np.result_type(a, b)
         wide = np.complex128 if dtype.kind == 'c' else np.float64
-        return reference(np.asarray(a, dtype=wide), np.asarray(b, dtype=wide)).astype(dtype)
+        return recursive_product(np.asarray(a, dtype=wide), np.asarray(b, dtype=wide), xp=np, calc_dtype=None).astype(dtype)
 
     monkeypatch.setattr(CK, 'multiply', cpu_test_double)
     a = np.arange(8, dtype=float)
     result = replay_product(a, a)
-    np.testing.assert_array_equal(result, reference(a, a))
+    np.testing.assert_array_equal(result, recursive_product(a, a, xp=np, calc_dtype=None))
     assert calls == [np.dtype(t) for t in (np.float64, np.float16, np.complex64,
                                          np.complex64, np.complex128, np.complex128)]
 
@@ -88,8 +89,8 @@ def test_replay_rejects_coefficient_conjugation(monkeypatch):
     def wrong_product(a, b):
         dtype = np.result_type(a, b)
         wide = np.complex128 if dtype.kind == 'c' else np.float64
-        return reference(np.asarray(a, dtype=wide).conjugate(),
-                         np.asarray(b, dtype=wide)).astype(dtype)
+        return recursive_product(np.asarray(a, dtype=wide).conjugate(),
+                         np.asarray(b, dtype=wide), xp=np, calc_dtype=None).astype(dtype)
 
     monkeypatch.setattr(CK, 'multiply', wrong_product)
     with pytest.raises(AssertionError, match='complex64 phase paper replay'):

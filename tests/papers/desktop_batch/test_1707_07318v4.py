@@ -4,8 +4,7 @@ from functools import lru_cache
 from itertools import combinations, product
 
 from .common import add, conj, e, gpu_replay
-from .test_1602_02843v3 import kernel_shuffle, omega
-from .test_1474295358 import tree2
+from .shuffle import kernel_shuffle, omega, tree2
 
 
 

@@ -15,26 +15,9 @@ import numpy as np
 import pytest
 
 from CayleyKernel import _select_kernel, cp, multiply, twist
-from tests.reference import ref_mult, ref_sign  # noqa: E402
-
-
-# ---------------------------------------------------------------------------
-# Exact sparse expansion:  x*y = sum_{i,j} sign(i,j) x_i y_j e_{i^j}
-# ---------------------------------------------------------------------------
-def sparse_product(dim, ix, vx, iy, vy):
-    """Reference product for sparse operands via the basis sign table."""
-    out = np.zeros(dim, dtype=np.float64)
-    for i, vi in zip(ix, vx):
-        for j, vj in zip(iy, vy):
-            out[i ^ j] += ref_sign(int(i), int(j)) * float(vi) * float(vj)
-    return out
-
-
-def random_sparse(dim, k, rng):
-    ix = rng.choice(dim, size=k, replace=False)
-    # Small integer coefficients make both GPU precision modes exact.
-    vx = rng.integers(1, 9, size=k) * rng.choice([-1, 1], size=k)
-    return ix, vx
+from tests.support.comparisons import assert_product_close
+from tests.support.inputs import random_sparse
+from tests.support.oracles import doubling_sign, recursive_product, sparse_product
 
 
 def as_dense(dim, ix, vx, dtype):
@@ -52,31 +35,30 @@ def test_1d_float_against_recursive(dim, dtype):
     a = cp.random.randn(dim).astype(dtype)
     b = cp.random.randn(dim).astype(dtype)
     got = multiply(a, b)
-    want = ref_mult(a, b)
+    want = recursive_product(a, b, xp=cp, calc_dtype=None)
     assert got.shape == (dim,)
-    rtol, atol = (1e-4, 1e-5) if dtype is np.float32 else (1e-10, 1e-12)
-    cp.testing.assert_allclose(got, want, rtol=rtol, atol=atol)
+    assert_product_close(got, want, dtype, contract="dense", xp=cp)
 
 
 @pytest.mark.parametrize("dim", [2, 4, 8])
 def test_1d_int32_against_recursive(dim):
     a = (cp.random.randint(0, 5, size=dim) - 2).astype(cp.int32)
     b = (cp.random.randint(0, 5, size=dim) - 2).astype(cp.int32)
-    cp.testing.assert_array_equal(multiply(a, b), ref_mult(a, b))
+    cp.testing.assert_array_equal(multiply(a, b), recursive_product(a, b, xp=cp, calc_dtype=None))
 
 
 def test_1d_int64_against_recursive():
     dim = 4
     a = (cp.random.randint(0, 5, size=dim) - 2).astype(cp.int64)
     b = (cp.random.randint(0, 5, size=dim) - 2).astype(cp.int64)
-    cp.testing.assert_array_equal(multiply(a, b), ref_mult(a, b))
+    cp.testing.assert_array_equal(multiply(a, b), recursive_product(a, b, xp=cp, calc_dtype=None))
 
 
 def test_1d_uint8_against_recursive():
     dim = 4
     a = cp.random.randint(0, 4, size=dim).astype(cp.uint8)
     b = cp.random.randint(0, 4, size=dim).astype(cp.uint8)
-    cp.testing.assert_array_equal(multiply(a, b), ref_mult(a, b))
+    cp.testing.assert_array_equal(multiply(a, b), recursive_product(a, b, xp=cp, calc_dtype=None))
 
 
 def test_bool_matches_int32_nonzero_pattern():
@@ -132,7 +114,7 @@ def test_sparse_spot_2pow20():
 def test_basis_sign_oracle_matches_cpu_dim16():
     for row in range(16):
         for col in range(16):
-            assert ref_sign(row, col) == twist(row, col), (row, col)
+            assert doubling_sign(row, col) == twist(row, col), (row, col)
 
 
 def test_basis_sign_table_dim16():
@@ -145,13 +127,13 @@ def test_basis_sign_table_dim16():
             y[col] = 1.0
             got = multiply(x, y)
 
-            sign = ref_sign(row, col)
+            sign = doubling_sign(row, col)
             want = cp.zeros(dim, dtype=cp.float64)
             want[row ^ col] = float(sign)
             cp.testing.assert_array_equal(got, want)
 
             # And the recursive reference must agree as well.
-            cp.testing.assert_array_equal(got, ref_mult(x, y))
+            cp.testing.assert_array_equal(got, recursive_product(x, y, xp=cp, calc_dtype=None))
 
 
 # ---------------------------------------------------------------------------
@@ -165,7 +147,7 @@ def test_2d_batch_matches_1d(dim, batch):
     got = multiply(A, B)
     assert got.shape == (batch, dim)
     for i in range(batch):
-        cp.testing.assert_allclose(got[i], multiply(A[i], B[i]), rtol=1e-4, atol=1e-5)
+        assert_product_close(got[i], multiply(A[i], B[i]), np.float32, contract="dense", xp=cp)
 
 
 @pytest.mark.parametrize("dim", [4, 8])
@@ -175,7 +157,13 @@ def test_2d_batch_matches_recursive(dim):
     B = cp.random.randn(batch, dim).astype(cp.float64)
     got = multiply(A, B)
     for i in range(batch):
-        cp.testing.assert_allclose(got[i], ref_mult(A[i], B[i]), rtol=1e-10, atol=1e-12)
+        assert_product_close(
+            got[i],
+            recursive_product(A[i], B[i], xp=cp, calc_dtype=None),
+            np.float64,
+            contract="dense",
+            xp=cp,
+        )
 
 
 def test_3d_batch_matches_1d():
@@ -186,7 +174,9 @@ def test_3d_batch_matches_1d():
     assert got.shape == (B, N, dim)
     for i in range(B):
         for j in range(N):
-            cp.testing.assert_allclose(got[i, j], multiply(A[i, j], C[i, j]), rtol=1e-4, atol=1e-5)
+            assert_product_close(
+                got[i, j], multiply(A[i, j], C[i, j]), np.float32, contract="dense", xp=cp
+            )
 
 
 def test_4d_batch_matches_1d():
@@ -199,8 +189,8 @@ def test_4d_batch_matches_1d():
     flat_b = B.reshape(-1, dims[-1])
     flat_got = got.reshape(-1, dims[-1])
     for i in range(flat_a.shape[0]):
-        cp.testing.assert_allclose(
-            flat_got[i], multiply(flat_a[i], flat_b[i]), rtol=1e-4, atol=1e-5
+        assert_product_close(
+            flat_got[i], multiply(flat_a[i], flat_b[i]), np.float32, contract="dense", xp=cp
         )
 
 
@@ -215,7 +205,7 @@ def test_broadcast_stack_against_vector(dim):
     got = multiply(A, v)
     assert got.shape == (N, dim)
     for i in range(N):
-        cp.testing.assert_allclose(got[i], multiply(A[i], v), rtol=1e-4, atol=1e-5)
+        assert_product_close(got[i], multiply(A[i], v), np.float32, contract="dense", xp=cp)
 
 
 def test_broadcast_vector_against_stack():
@@ -225,7 +215,7 @@ def test_broadcast_vector_against_stack():
     got = multiply(v, A)
     assert got.shape == (N, dim)
     for i in range(N):
-        cp.testing.assert_allclose(got[i], multiply(v, A[i]), rtol=1e-4, atol=1e-5)
+        assert_product_close(got[i], multiply(v, A[i]), np.float32, contract="dense", xp=cp)
 
 
 def test_broadcast_3d_stack_against_vector():
@@ -236,7 +226,9 @@ def test_broadcast_3d_stack_against_vector():
     assert got.shape == (B, N, dim)
     for i in range(B):
         for j in range(N):
-            cp.testing.assert_allclose(got[i, j], multiply(A[i, j], v), rtol=1e-4, atol=1e-5)
+            assert_product_close(
+                got[i, j], multiply(A[i, j], v), np.float32, contract="dense", xp=cp
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -250,7 +242,7 @@ def test_batch_exceeds_max_grid_y():
     got = multiply(A, B)
     assert got.shape == (batch, dim)
     for i in (0, 1, 65534, 65535, 65536, batch - 1):
-        cp.testing.assert_allclose(got[i], multiply(A[i], B[i]), rtol=1e-4, atol=1e-5)
+        assert_product_close(got[i], multiply(A[i], B[i]), np.float32, contract="dense", xp=cp)
 
 
 # ---------------------------------------------------------------------------
@@ -324,4 +316,8 @@ def test_2d_product_small_case():
     a = cp.array([3.0, 4.0], dtype=cp.float64)
     b = cp.array([1.0, 2.0], dtype=cp.float64)
     # (3 + 4i)(1 + 2i) = -5 + 10i
-    cp.testing.assert_allclose(multiply(a, b), cp.array([-5.0, 10.0]), rtol=1e-12, atol=1e-14)
+    got = multiply(a, b)
+    cp.testing.assert_allclose(got, cp.array([-5.0, 10.0]), rtol=1e-12, atol=1e-14)
+    cp.testing.assert_allclose(
+        got, recursive_product(a, b, xp=cp, calc_dtype=None), rtol=1e-12, atol=1e-14
+    )

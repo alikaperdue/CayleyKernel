@@ -5,21 +5,16 @@ import random
 import sys
 from pathlib import Path
 
+import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts import clique_growth as growth
 from scripts import relation_graphs as rg
-from tests.test_relation_graphs import reference
+from tests.support.inputs import small_anchor
+from tests.support.oracles import recursive_product
 
 pytestmark = pytest.mark.cpu
-
-
-def small_anchor():
-    vertices, _ = rg.candidates(4, 14, random.Random(1), xor_mask=9)
-    graph = rg.build_graphs(vertices, ["orthogonality"])["orthogonality"]
-    clique = rg.maximum_clique(graph, 5)
-    return [vertices[i] for i in clique["vertices"]]
 
 
 def test_oracle_matches_dense_doubling_and_rejects_nonclique():
@@ -27,7 +22,7 @@ def test_oracle_matches_dense_doubling_and_rejects_nonclique():
         for b in range(16):
             x, y = [0] * 16, [0] * 16
             x[a], y[b] = 1, 1
-            result = reference(x, y)
+            result = recursive_product(x, y, xp=np, calc_dtype=object)
             assert result[a ^ b] == growth.doubling_sign(a, b, 4)
     anchor = small_anchor()
     assert growth.certify(anchor, 4)["ordered_products_checked"] == 2

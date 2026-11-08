@@ -6,34 +6,9 @@ import numpy as np
 import pytest
 
 import CayleyKernel as ck
-
-
-def reference(a, b):
-    """Independent recursive product, with broadcasting on leading axes."""
-    if a.shape[-1] == 1:
-        return a * b
-    m = a.shape[-1] // 2
-    x, y = a[..., :m], a[..., m:]
-    u, v = b[..., :m], b[..., m:]
-
-    def conj(z):
-        result = -z.copy()
-        result[..., 0] = z[..., 0]
-        return result
-
-    return np.concatenate(
-        (reference(x, u) - reference(conj(v), y), reference(v, x) + reference(y, conj(u))), axis=-1
-    )
-
-
-def coefficients(shape, dtype, seed):
-    rng = np.random.default_rng(seed)
-    return (rng.normal(size=shape) + 1j * rng.normal(size=shape)).astype(dtype)
-
-
-def assert_close(actual, expected, dtype):
-    tol = 2e-5 if np.dtype(dtype) == np.dtype("complex64") else 1e-12
-    np.testing.assert_allclose(actual, expected, rtol=tol, atol=tol)
+from tests.support.comparisons import assert_product_close
+from tests.support.inputs import normal_coefficients
+from tests.support.oracles import recursive_product
 
 
 @pytest.mark.cpu
@@ -66,7 +41,7 @@ class TestComplexWrapper:
     @pytest.mark.parametrize("shape", [(4,), (2, 3, 4)])
     def test_conjugation_is_basis_conjugation(self, monkeypatch, shape):
         monkeypatch.setattr(ck, "cp", np)
-        a = coefficients(shape, np.complex128, 1)
+        a = normal_coefficients(shape, np.complex128, 1)
         original = a.copy()
         result = ck.conjugate(a)
         np.testing.assert_array_equal(result[..., 0], a[..., 0])
@@ -97,18 +72,20 @@ class TestComplexWrapper:
 @pytest.mark.parametrize("dtype", [np.complex64, np.complex128])
 @pytest.mark.parametrize("dim", [1, 2, 4, 8, 16, 32])
 def test_complex_product_against_recursive(dtype, dim):
-    a = coefficients((dim,), dtype, 1)
-    b = coefficients((dim,), dtype, 2)
+    a = normal_coefficients((dim,), dtype, 1)
+    b = normal_coefficients((dim,), dtype, 2)
     result = ck.multiply(a, b)
     assert result.dtype == np.dtype(dtype)
-    assert_close(result, reference(a, b), dtype)
+    assert_product_close(
+        result, recursive_product(a, b, xp=np, calc_dtype=None), dtype, contract="complex"
+    )
 
 
 @pytest.mark.parametrize("dtype", [np.complex64, np.complex128])
 @pytest.mark.parametrize("layout", ["broadcast", "strided", "empty"])
 def test_complex_batches(dtype, layout):
-    a = coefficients((2, 1, 8), dtype, 3)
-    b = coefficients((1, 3, 8), dtype, 4)
+    a = normal_coefficients((2, 1, 8), dtype, 3)
+    b = normal_coefficients((1, 3, 8), dtype, 4)
     if layout == "strided":
         a, b = a[..., ::2], b[..., ::2]
     elif layout == "empty":
@@ -116,7 +93,9 @@ def test_complex_batches(dtype, layout):
     result = ck.multiply(a, b)
     assert result.shape == np.broadcast_shapes(a.shape, b.shape)
     assert result.dtype == np.dtype(dtype)
-    assert_close(result, reference(a, b), dtype)
+    assert_product_close(
+        result, recursive_product(a, b, xp=np, calc_dtype=None), dtype, contract="complex"
+    )
 
 
 @pytest.mark.parametrize(
@@ -138,7 +117,12 @@ def test_complex_dtype_promotion(left, right):
     dtype = np.result_type(left, right)
     result = ck.multiply(a, b)
     assert result.dtype == dtype
-    assert_close(result, reference(a.astype(dtype), b.astype(dtype)), dtype)
+    assert_product_close(
+        result,
+        recursive_product(a.astype(dtype), b.astype(dtype), xp=np, calc_dtype=None),
+        dtype,
+        contract="complex",
+    )
 
 
 @pytest.mark.parametrize(
@@ -152,27 +136,41 @@ def test_complex_dtype_promotion(left, right):
 def test_complex_python_lists(a, b):
     result = ck.multiply(a, b)
     assert isinstance(result, list)
-    assert_close(result, reference(np.asarray(a), np.asarray(b)), np.complex128)
+    assert_product_close(
+        result,
+        recursive_product(np.asarray(a), np.asarray(b), xp=np, calc_dtype=None),
+        np.complex128,
+        contract="complex",
+    )
 
 
 @pytest.mark.parametrize("dtype", [np.complex64, np.complex128])
 def test_complex_cupy_container_and_bilinearity(dtype):
     cp = ck.cp
-    a = cp.asarray(coefficients((8,), dtype, 5))
-    b = cp.asarray(coefficients((8,), dtype, 6))
+    a = cp.asarray(normal_coefficients((8,), dtype, 5))
+    b = cp.asarray(normal_coefficients((8,), dtype, 6))
     result = ck.multiply(a, b)
     assert isinstance(result, cp.ndarray)
-    assert_close(cp.asnumpy(result), reference(cp.asnumpy(a), cp.asnumpy(b)), dtype)
+    assert_product_close(
+        cp.asnumpy(result),
+        recursive_product(cp.asnumpy(a), cp.asnumpy(b), xp=np, calc_dtype=None),
+        dtype,
+        contract="complex",
+    )
     # Scalar i commutes with every basis unit and is never conjugated.
-    assert_close(cp.asnumpy(ck.multiply(1j * a, b)), cp.asnumpy(1j * result), dtype)
-    assert_close(cp.asnumpy(ck.multiply(a, 1j * b)), cp.asnumpy(1j * result), dtype)
+    assert_product_close(
+        cp.asnumpy(ck.multiply(1j * a, b)), cp.asnumpy(1j * result), dtype, contract="complex"
+    )
+    assert_product_close(
+        cp.asnumpy(ck.multiply(a, 1j * b)), cp.asnumpy(1j * result), dtype, contract="complex"
+    )
 
 
 @pytest.mark.parametrize("dtype", [np.complex64, np.complex128])
 def test_complex_legacy_c_entry_point(dtype):
     cp = ck.cp
-    a = cp.asarray(coefficients((8,), dtype, 7))
-    b = cp.asarray(coefficients((8,), dtype, 8))
+    a = cp.asarray(normal_coefficients((8,), dtype, 7))
+    b = cp.asarray(normal_coefficients((8,), dtype, 8))
     out = cp.empty_like(a)
     legacy, _ = ck._select_kernel(a.dtype)
     cp.cuda.get_current_stream().synchronize()
@@ -182,7 +180,12 @@ def test_complex_legacy_c_entry_point(dtype):
         ctypes.c_void_p(out.data.ptr),
         ctypes.c_int(a.size),
     )
-    assert_close(cp.asnumpy(out), reference(cp.asnumpy(a), cp.asnumpy(b)), dtype)
+    assert_product_close(
+        cp.asnumpy(out),
+        recursive_product(cp.asnumpy(a), cp.asnumpy(b), xp=np, calc_dtype=None),
+        dtype,
+        contract="complex",
+    )
 
 
 @pytest.mark.parametrize("dtype", [np.complex64, np.complex128])
@@ -190,4 +193,4 @@ def test_complex_batch_grid_stride(dtype):
     # Cross the grid.y limit without a large algebra or expensive reference.
     a = np.full((65536, 1), 1 + 2j, dtype=dtype)
     b = np.full((1,), 3 - 4j, dtype=dtype)
-    assert_close(ck.multiply(a, b), a * b, dtype)
+    assert_product_close(ck.multiply(a, b), a * b, dtype, contract="complex")

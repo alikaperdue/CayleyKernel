@@ -6,34 +6,20 @@ import numpy as np
 import pytest
 
 import CayleyKernel as ck
+from tests.support.comparisons import assert_product_close
+from tests.support.inputs import normal_coefficients
+from tests.support.oracles import recursive_product
 
 
-def reference(a, b):
-    """Independent recursive doubling reference, evaluated in float64."""
-    a, b = np.asarray(a, dtype=np.float64), np.asarray(b, dtype=np.float64)
-    if a.shape[-1] == 1:
-        return a * b
-    m = a.shape[-1] // 2
-    x, y = a[..., :m], a[..., m:]
-    u, v = b[..., :m], b[..., m:]
-
-    def conj(z):
-        result = -z.copy()
-        result[..., 0] = z[..., 0]
-        return result
-
-    return np.concatenate(
-        (reference(x, u) - reference(conj(v), y), reference(v, x) + reference(y, conj(u))), axis=-1
-    )
-
-
-def coefficients(shape, seed):
-    return (np.random.default_rng(seed).normal(size=shape) / 4).astype(np.float16)
+def half_coefficients(shape, seed):
+    return normal_coefficients(shape, np.float16, seed, divisor=4)
 
 
 def assert_half(actual, expected):
     assert actual.dtype == np.dtype(np.float16)
-    np.testing.assert_allclose(actual, np.asarray(expected, dtype=np.float16), rtol=2e-3, atol=5e-4)
+    assert_product_close(
+        actual, np.asarray(expected, dtype=np.float16), np.float16, contract="rounded_half"
+    )
 
 
 @pytest.mark.cpu
@@ -80,8 +66,8 @@ class TestHalfWrapper:
 
 @pytest.mark.parametrize("dim", [1, 2, 4, 8, 16, 32, 64])
 def test_half_product_against_recursive(dim):
-    a, b = coefficients((dim,), 1), coefficients((dim,), 2)
-    assert_half(ck.multiply(a, b), reference(a, b))
+    a, b = half_coefficients((dim,), 1), half_coefficients((dim,), 2)
+    assert_half(ck.multiply(a, b), recursive_product(a, b, xp=np, calc_dtype=np.float64))
 
 
 def test_half_known_quaternion_product():
@@ -92,15 +78,15 @@ def test_half_known_quaternion_product():
 
 @pytest.mark.parametrize("layout", ["broadcast", "strided", "empty"])
 def test_half_batches(layout):
-    a = coefficients((2, 1, 8), 3)
-    b = coefficients((1, 3, 8), 4)
+    a = half_coefficients((2, 1, 8), 3)
+    b = half_coefficients((1, 3, 8), 4)
     if layout == "strided":
         a, b = a[..., ::2], b[..., ::2]
     elif layout == "empty":
         a = a[:0]
     result = ck.multiply(a, b)
     assert result.shape == np.broadcast_shapes(a.shape, b.shape)
-    assert_half(result, reference(a, b))
+    assert_half(result, recursive_product(a, b, xp=np, calc_dtype=np.float64))
 
 
 @pytest.mark.parametrize("other", [np.float32, np.float64, np.complex64, np.int32])
@@ -123,8 +109,8 @@ def test_half_dtype_promotion(other, half_first):
 @pytest.mark.parametrize("entry", ["legacy", "batched", "fallback"])
 def test_half_c_entry_points(entry, monkeypatch):
     cp = ck.cp
-    a = cp.asarray(coefficients((3, 8), 5))
-    b = cp.asarray(coefficients((3, 8), 6))
+    a = cp.asarray(half_coefficients((3, 8), 5))
+    b = cp.asarray(half_coefficients((3, 8), 6))
     out = cp.empty_like(a)
     legacy, batched = ck._select_kernel(a.dtype)
     cp.cuda.get_current_stream().synchronize()
@@ -140,7 +126,10 @@ def test_half_c_entry_points(entry, monkeypatch):
             offset = i * 8 * a.dtype.itemsize
             legacy(a.data.ptr + offset, b.data.ptr + offset, out.data.ptr + offset, ctypes.c_int(8))
     assert isinstance(out, cp.ndarray)
-    assert_half(cp.asnumpy(out), reference(cp.asnumpy(a), cp.asnumpy(b)))
+    assert_half(
+        cp.asnumpy(out),
+        recursive_product(cp.asnumpy(a), cp.asnumpy(b), xp=np, calc_dtype=np.float64),
+    )
 
 
 def test_half_python_list_with_typed_operand():

@@ -1,19 +1,12 @@
 """LDR networks: finite reconstruction, embedding and gradient checks."""
 import unittest
 
-from .common import e, gpu_replay, mul
+from .common import e, gpu_replay, left_matrix, mul
 
 try:
     import numpy as np
 except ImportError:
     np=None
-
-
-def left_matrix(unit,dim):
-    out=np.zeros((dim,dim))
-    for j in range(dim):
-        for i,c in mul(e(unit),e(j)).items(): out[i,j]=c
-    return out
 
 
 def reconstruct(A,B,G,H):

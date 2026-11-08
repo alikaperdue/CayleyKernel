@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 import CayleyKernel as ck
+from tests.support.oracles import recursive_product
 
 # Mark CPU checks individually so CUDA execution tests are excluded by -m cpu.
 # CPU checks remain runnable without CuPy, ml_dtypes, or an NVIDIA driver.
@@ -25,24 +26,6 @@ def gpu(bf16, gpu_kernel):
     # A stale build is a failure, not an optional-dependency skip.
     ck._select_kernel(np.dtype(bf16))
     return cp
-
-
-def reference(a, b):
-    """Independent recursive doubling product with float64 coefficients."""
-    a, b = np.asarray(a, dtype=np.float64), np.asarray(b, dtype=np.float64)
-    if a.shape[-1] == 1:
-        return a * b
-    m = a.shape[-1] // 2
-    x, y, u, v = a[..., :m], a[..., m:], b[..., :m], b[..., m:]
-
-    def conj(z):
-        z = -z.copy()
-        z[..., 0] *= -1
-        return z
-
-    return np.concatenate(
-        (reference(x, u) - reference(conj(v), y), reference(v, x) + reference(y, conj(u))), axis=-1
-    )
 
 
 @pytest.mark.cpu
@@ -125,7 +108,8 @@ def test_product(gpu, bf16, dim):
     actual = ck.multiply(a, b)
     assert actual.dtype == np.dtype(bf16)
     np.testing.assert_array_equal(
-        actual.astype(np.float32), reference(a, b).astype(bf16).astype(np.float32)
+        actual.astype(np.float32),
+        recursive_product(a, b, xp=np, calc_dtype=np.float64).astype(bf16).astype(np.float32),
     )
 
 
@@ -141,7 +125,8 @@ def test_batches(gpu, bf16, layout):
     assert actual.dtype == np.dtype(bf16)
     assert actual.shape == np.broadcast_shapes(a.shape, b.shape)
     np.testing.assert_array_equal(
-        gpu.asnumpy(actual).astype(np.float32), reference(a, b).astype(bf16).astype(np.float32)
+        gpu.asnumpy(actual).astype(np.float32),
+        recursive_product(a, b, xp=np, calc_dtype=np.float64).astype(bf16).astype(np.float32),
     )
 
 
@@ -180,7 +165,8 @@ def test_c_entry_points(gpu, bf16, entry, monkeypatch):
             offset = i * 4 * 2  # Explicitly exercise the 2-byte ABI.
             legacy(a.data.ptr + offset, b.data.ptr + offset, out.data.ptr + offset, 4)
     np.testing.assert_array_equal(
-        gpu.asnumpy(out).astype(np.float32), reference(gpu.asnumpy(a), gpu.asnumpy(b))
+        gpu.asnumpy(out).astype(np.float32),
+        recursive_product(gpu.asnumpy(a), gpu.asnumpy(b), xp=np, calc_dtype=np.float64),
     )
 
 

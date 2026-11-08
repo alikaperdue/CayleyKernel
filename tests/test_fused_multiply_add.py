@@ -20,47 +20,24 @@ import pytest
 
 import CayleyKernel as ck
 from CayleyKernel import cp
+from tests.support.comparisons import assert_product_close
+from tests.support.inputs import normal_coefficients
+from tests.support.oracles import recursive_product
 
 # ---------------------------------------------------------------------------
 # Reference helpers
 # ---------------------------------------------------------------------------
 
 
-def ref_product(a, b):
-    """Recursive Cayley-Dickson reference, computed in the input dtype."""
-    a = np.asarray(a)
-    b = np.asarray(b)
-    if a.shape[-1] == 1:
-        return a * b
-    m = a.shape[-1] // 2
-    x, y = a[..., :m], a[..., m:]
-    u, v = b[..., :m], b[..., m:]
-
-    def conj(z):
-        result = -z.copy()
-        result[..., 0] = z[..., 0]
-        return result
-
-    return np.concatenate(
-        (ref_product(x, u) - ref_product(conj(v), y), ref_product(v, x) + ref_product(y, conj(u))),
-        axis=-1,
-    )
-
-
 def coefficients(shape, dtype, seed=2026):
     """Random coefficients in a range safe for the given dtype."""
-    rng = np.random.default_rng(seed)
-    if np.dtype(dtype) == np.dtype(np.bool_):
-        return (rng.integers(0, 2, size=shape)).astype(np.bool_)
-    if np.dtype(dtype).kind in "iu":
-        return (rng.integers(-2, 3, size=shape)).astype(dtype)
-    if np.dtype(dtype) in (np.dtype(np.float16),):
-        return (rng.normal(size=shape) / 4).astype(np.float16)
-    if np.dtype(dtype) == np.dtype(np.complex64):
-        return (rng.normal(size=shape) / 4 + 1j * rng.normal(size=shape) / 4).astype(np.complex64)
-    if np.dtype(dtype) == np.dtype(np.complex128):
-        return (rng.normal(size=shape) / 4 + 1j * rng.normal(size=shape) / 4).astype(np.complex128)
-    return rng.normal(size=shape).astype(dtype)
+    dtype = np.dtype(dtype)
+    if dtype.kind in "biu":
+        rng = np.random.default_rng(seed)
+        lower, upper = (0, 2) if dtype.kind == "b" else (-2, 3)
+        return rng.integers(lower, upper, size=shape).astype(dtype)
+    divisor = 4 if dtype == np.dtype(np.float16) or dtype.kind == "c" else 1
+    return normal_coefficients(shape, dtype, seed, divisor=divisor)
 
 
 def assert_close(actual, expected, dtype):
@@ -68,20 +45,12 @@ def assert_close(actual, expected, dtype):
     actual_np = actual.get() if hasattr(actual, "get") else np.asarray(actual)
     expected_np = np.asarray(expected)
     dt = np.dtype(dtype)
-    if dt == np.dtype(np.bool_):
-        np.testing.assert_array_equal(actual_np, expected_np)
-    elif dt == np.dtype(np.float16):
-        np.testing.assert_allclose(
-            actual_np.astype(np.float32), expected_np.astype(np.float32), rtol=2e-3, atol=5e-4
-        )
-    elif dt == np.dtype(np.float32):
-        np.testing.assert_allclose(actual_np, expected_np, rtol=1e-5, atol=1e-6)
-    elif dt == np.dtype(np.complex64):
-        np.testing.assert_allclose(actual_np, expected_np, rtol=1e-4, atol=1e-5)
-    elif dt in (np.dtype(np.int32), np.dtype(np.int64)):
+    if dt.kind in "biu":
         np.testing.assert_array_equal(actual_np, expected_np)
     else:
-        np.testing.assert_allclose(actual_np, expected_np, rtol=1e-10, atol=1e-12)
+        if dt == np.dtype(np.float16):
+            actual_np, expected_np = actual_np.astype(np.float32), expected_np.astype(np.float32)
+        assert_product_close(actual_np, expected_np, dtype, contract="fused")
 
 
 # ---------------------------------------------------------------------------
@@ -145,11 +114,11 @@ def test_multiply_add_against_recursive_reference(dim, dtype):
 
     got = ck.multiply_add(a, b, c)
     if np.dtype(dtype) == np.dtype(np.bool_):
-        ab_ref = ref_product(a.astype(np.int32), b.astype(np.int32))
+        ab_ref = recursive_product(a, b, xp=np, calc_dtype=np.int32)
         want = (ab_ref.astype(np.int32) + np.asarray(c, dtype=np.int32)) != 0
         np.testing.assert_array_equal(np.asarray(got), want)
     else:
-        ab_ref = ref_product(a, b)
+        ab_ref = recursive_product(a, b, xp=np, calc_dtype=None)
         want = ab_ref + np.asarray(c)
         assert_close(got, want, dtype)
 
@@ -176,7 +145,7 @@ def test_bfloat16_multiply_add(dim, bf16_dtype):
     got = ck.multiply_add(a, b, c)
     assert got.dtype == bf16_dtype
 
-    ab_ref = ref_product(a, b)
+    ab_ref = recursive_product(a, b, xp=np, calc_dtype=None)
     want = (ab_ref + c).astype(bf16_dtype)
     np.testing.assert_array_equal(
         np.asarray(got).astype(np.float32), np.asarray(want).astype(np.float32)
@@ -195,7 +164,7 @@ def test_bfloat16_multiply_subtract(dim, bf16_dtype):
     got = ck.multiply_subtract(a, b, c)
     assert got.dtype == bf16_dtype
 
-    ab_ref = ref_product(a, b)
+    ab_ref = recursive_product(a, b, xp=np, calc_dtype=None)
     want = (ab_ref - c).astype(bf16_dtype)
     np.testing.assert_array_equal(
         np.asarray(got).astype(np.float32), np.asarray(want).astype(np.float32)

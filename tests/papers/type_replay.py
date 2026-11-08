@@ -8,25 +8,10 @@ import numpy as np
 
 import CayleyKernel as CK
 from tests.gpu_support import require_gpu
+from tests.support.comparisons import assert_product_close
+from tests.support.oracles import recursive_product
 
 DTYPES = (np.float16, np.complex64, np.complex128)
-
-
-def reference(a, b):
-    """Independent four-product doubling, bilinear over central scalars."""
-    if a.shape[-1] == 1:
-        return a * b
-    h = a.shape[-1] // 2
-    x, y = a[..., :h], a[..., h:]
-    u, v = b[..., :h], b[..., h:]
-
-    def conjugate(z):
-        out = z.copy()
-        out[..., 1:] *= -1
-        return out
-
-    return np.concatenate((reference(x, u) - reference(conjugate(v), y),
-                           reference(v, x) + reference(y, conjugate(u))), axis=-1)
 
 
 def host(a):
@@ -63,7 +48,7 @@ def typed_cases(a, b):
                 x, y = a, b
             x, y = x.astype(dtype), y.astype(dtype)
             wide = np.float64 if dtype == np.float16 else np.complex128
-            expected = reference(x.astype(wide), y.astype(wide)).astype(dtype)
+            expected = recursive_product(x, y, xp=np, calc_dtype=wide).astype(dtype)
             yield mode, x, y, expected
 
 
@@ -73,14 +58,10 @@ def replay_product(a, b):
     for mode, x, y, expected in typed_cases(a, b):
         actual = host(CK.multiply(x, y))
         assert actual.dtype == x.dtype, (mode, actual.dtype, x.dtype)
-        if x.dtype == np.dtype(np.float16):
-            rtol, atol = 1e-3, float(np.nextafter(np.float16(0), np.float16(1)))
-        elif x.dtype == np.dtype(np.complex64):
-            rtol, atol = 2e-5, 2e-5
-        else:
-            rtol, atol = 1e-12, 1e-12
-        np.testing.assert_allclose(actual, expected, rtol=rtol, atol=atol,
-                                   err_msg=f'{x.dtype} {mode} paper replay')
+        assert_product_close(
+            actual, expected, x.dtype, contract="typed_replay",
+            err_msg=f"{x.dtype} {mode} paper replay",
+        )
     return original
 
 

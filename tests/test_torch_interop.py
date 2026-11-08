@@ -4,7 +4,7 @@
 
 These tests run against a CUDA ``torch.Tensor`` and validate:
 
-* correctness against the recursive reference in :mod:`tests.reference`,
+* correctness against the recursive reference in :mod:`tests.support.oracles`,
 * ``out=`` identity preservation,
 * cross-device / dtype preservation,
 * the autograd guard (v1 raises ``NotImplementedError``),
@@ -23,6 +23,8 @@ import pytest
 torch = pytest.importorskip("torch")
 
 import CayleyKernel as ck  # noqa: E402
+from tests.support.comparisons import assert_product_close  # noqa: E402
+from tests.support.oracles import recursive_product  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -42,34 +44,8 @@ def _cuda_tensor_factory(*shape, dtype=torch.float32):
     return torch.randn(*shape, device="cuda", dtype=dtype)
 
 
-def _numpy_reference(a_np, b_np):
-    """Compute the recursive reference product on a NumPy array."""
-    # ref_mult expects 1-D cupy arrays, but it's a pure recursion that works
-    # on any array with element-wise ops and slicing, so we can drive it with
-    # numpy arrays by monkey-patching the module-level cp reference.
-    import tests.reference as ref
-
-    original_cp = ref.cp
-    ref.cp = np
-    try:
-        result = ref.ref_mult(a_np, b_np)
-    finally:
-        ref.cp = original_cp
-    return result
-
-
 def _as_numpy(t):
     return t.detach().cpu().numpy()
-
-
-def _tolerance(dtype):
-    if dtype == torch.float32:
-        return 1e-5, 1e-5
-    if dtype == torch.float64:
-        return 1e-12, 1e-12
-    if dtype == torch.complex64:
-        return 1e-5, 1e-5
-    raise ValueError("unsupported dtype: %s" % dtype)
 
 
 # ---------------------------------------------------------------------------
@@ -98,26 +74,21 @@ def test_torch_multiply_matches_numpy_reference(dim, batch, dtype):
     assert got.shape == a.shape
     assert got.device == a.device
 
-    # Reference: do per-row products via ref_mult (1-D) on the CPU.
-    a_np = _as_numpy(a).astype(
-        np.complex128 if dtype in (torch.complex64, torch.complex128) else np.float64
-    )
-    b_np = _as_numpy(b).astype(
-        np.complex128 if dtype in (torch.complex64, torch.complex128) else np.float64
-    )
-
-    # For a batch, compute row-by-row (cheap at dim <= 32).
-    ref_np = np.empty_like(a_np)
-    for i in range(batch):
-        ref_np[i] = _numpy_reference(a_np[i], b_np[i])
-
-    rtol, atol = _tolerance(dtype)
-    np.testing.assert_allclose(
-        _as_numpy(got).astype(ref_np.dtype),
-        ref_np,
-        rtol=rtol,
-        atol=atol,
-    )
+    a_np, b_np = _as_numpy(a), _as_numpy(b)
+    wide = np.complex128 if a_np.dtype.kind == "c" else np.float64
+    ref_np = recursive_product(a_np, b_np, xp=np, calc_dtype=wide)
+    got_np = _as_numpy(got).astype(ref_np.dtype)
+    if dtype == torch.float64:
+        assert_product_close(
+            got_np,
+            ref_np,
+            a_np.dtype,
+            contract="interop",
+            override=(1e-12, 1e-12),
+            reason="Retain the tighter relative budget against the wide Torch reference.",
+        )
+    else:
+        assert_product_close(got_np, ref_np, a_np.dtype, contract="interop")
 
 
 def test_torch_multiply_single_vector_float32():

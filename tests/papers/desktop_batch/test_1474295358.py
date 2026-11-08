@@ -6,6 +6,7 @@ from itertools import product
 from CayleyKernel import twist
 
 from .common import basis_product, e, gpu_replay, recursive_basis
+from .shuffle import tree2
 
 
 
@@ -29,18 +30,6 @@ def doubling2(p, q):
             a,b = b,a
         p,q = a,b
     return sign
-
-
-TREE = {'C':('C','T','L','-D'), 'T':('T','T','1','-1'),
-        'L':('L','-1','L','1'), '-D':('-D','1','-1','-D'),
-        '1':('1',)*4, '-1':('-1',)*4}
-
-
-def tree2(p,q):
-    node='C'
-    for k in reversed(range(max(p.bit_length(),q.bit_length()))):
-        node=TREE[node][2*((p>>k)&1)+((q>>k)&1)]
-    return -1 if node in ('-1','-D') else 1
 
 
 def reverse_bits(i,n):

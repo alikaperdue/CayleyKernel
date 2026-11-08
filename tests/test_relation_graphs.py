@@ -7,7 +7,10 @@ import random
 import sys
 from pathlib import Path
 
+import numpy as np
 import pytest
+
+from tests.support.oracles import doubling_sign_at_level, recursive_product
 
 spec = importlib.util.spec_from_file_location(
     "relation_graphs", Path(__file__).resolve().parents[1] / "scripts/relation_graphs.py"
@@ -15,18 +18,6 @@ spec = importlib.util.spec_from_file_location(
 rg = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(rg)
 pytestmark = pytest.mark.cpu
-
-
-def reference(x, y):
-    """Independent dense doubling definition, only used in dimension 16."""
-    if len(x) == 1:
-        return [x[0] * y[0]]
-    half = len(x) // 2
-    a, b, c, d = x[:half], x[half:], y[:half], y[half:]
-    conj = lambda z: z[:1] + [-v for v in z[1:]]
-    ac, db = reference(a, c), reference(conj(d), b)
-    da, bc = reference(d, a), reference(b, conj(c))
-    return [u - v for u, v in zip(ac, db)] + [u + v for u, v in zip(da, bc)]
 
 
 def test_sparse_products_and_relations_against_doubling():
@@ -40,7 +31,8 @@ def test_sparse_products_and_relations_against_doubling():
     graphs = rg.build_graphs(vertices, rg.RELATIONS)
     for i, x in enumerate(vertices):
         for j, y in enumerate(vertices):
-            xy, yx = reference(dense[i], dense[j]), reference(dense[j], dense[i])
+            xy = recursive_product(dense[i], dense[j], xp=np, calc_dtype=object).tolist()
+            yx = recursive_product(dense[j], dense[i], xp=np, calc_dtype=object).tolist()
             assert rg.sparse_product(x, y) == {k: c for k, c in enumerate(xy) if c}
             expected = {
                 "commute": xy == yx,
@@ -182,8 +174,6 @@ def test_general_sparse_graph_fallback():
 
 
 def test_saved_69_clique_with_independent_doubling_oracle():
-    from tests.test_sparse_zd import _doubling_sign
-
     path = Path(__file__).resolve().parents[1] / "scripts/results/relation_graphs_clique69.json"
     record = json.loads(path.read_text())
     vertices = [
@@ -198,7 +188,7 @@ def test_saved_69_clique_with_independent_doubling_oracle():
             for a, ca in x:
                 for b, cb in y:
                     k = a ^ b
-                    out[k] = out.get(k, 0) + ca * cb * _doubling_sign(a, b, record["level"])
+                    out[k] = out.get(k, 0) + ca * cb * doubling_sign_at_level(a, b, record["level"])
             assert not any(out.values()), (i, j)
 
 

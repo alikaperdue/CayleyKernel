@@ -102,20 +102,15 @@ not a GPU batch library and does not support dimensions beyond 4.
 
 ## Comparison with the in-repo recursive reference
 
-`tests/reference.py` (`ref_mult`) is the **canonical recursive CD product** used to
-validate the GPU kernel in every test run. It is:
+`recursive_product` in `tests/support/oracles.py` evaluates the
+Cayley–Dickson doubling recurrence independently of the production sign law.
+It accepts NumPy or CuPy arrays with broadcastable batch axes. Tests select
+the calculation dtype and apply any final storage cast separately.
 
-- CPU-only, operating on 1-D NumPy/CuPy arrays.
-- `O(dim)` sign determination per output component (recursive halving).
-- `O(dim²)` total work — the same asymptotic complexity as the GPU kernel.
-- **Not intended for production use**; it is a test oracle.
-
-The GPU `multiply` uses the O(1) sign-law for each basis sign, reducing the
-per-term sign cost from `O(dim)` to `O(1)`. Total dense-product work remains
-`O(dim²)` (each of the `dim` outputs sums `dim` terms), but the constant factor
-is smaller and the work is parallel across threads. For small dimensions (≤ 8)
-the difference is negligible; for large dimensions (≥ 256) the O(1) sign and
-GPU parallelism dominate.
+Both the recursive oracle and GPU kernel evaluate `O(dim²)` coefficient
+products. The oracle recursively combines four half-size products, while
+the GPU kernel uses the constant-time sign law and computes the output
+components in parallel.
 
 ## When to use what
 
@@ -124,6 +119,6 @@ GPU parallelism dominate.
 | 3-D rotation in `SO(3)`, unit quaternions, Euler angles, Slerp | `scipy.spatial.transform.Rotation` |
 | Interactive quaternion arithmetic, dim 4, pure Python | `quaternion` PyPI package |
 | Batched `2^n`-dim products, arbitrary dimension, GPU throughput | **CayleyKernel** |
-| Validating a new CD-product implementation | `tests/reference.py` as oracle + CayleyKernel as target |
+| Validating a new CD-product implementation | `tests/support/oracles.py` as oracle + CayleyKernel as target |
 | Nonassociative algebra research (octonions, sedenions, 32-dim, …) | **CayleyKernel** |
 | Complex-number arithmetic (dim 2) | `numpy` / `cupy` (no special library needed) |

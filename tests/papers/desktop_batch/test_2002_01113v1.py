@@ -1,8 +1,12 @@
 """Cayley matrix transform: Stiefel identities and finite-iteration limits."""
 import unittest
 
-from .common import close, e, gpu_replay, mul
-from .test_1703_00144v4 import left_matrix, np
+from .common import close, e, gpu_replay, left_matrix, mul
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 MEASUREMENTS={}
 

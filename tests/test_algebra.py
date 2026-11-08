@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 """Public algebra helpers, checked against an independent doubling oracle."""
 
+from functools import partial
+
 import numpy as np
 import pytest
 
 import CayleyKernel as ck
-from tests.test_complex import reference
+from tests.support.oracles import recursive_product
+
+_numpy_product = partial(recursive_product, xp=np, calc_dtype=None)
 
 
 @pytest.mark.cpu
@@ -17,10 +21,10 @@ class TestAlgebra:
         b = rng.normal(size=(3, dim))
         star = ck.conjugate(a)
         np.testing.assert_array_equal(ck.conjugate(star), a)
-        product = reference(a, star)
+        product = _numpy_product(a, star)
         np.testing.assert_allclose(product[..., 0], ck.norm_sq(a))
         np.testing.assert_allclose(product[..., 1:], 0, atol=1e-12)
-        np.testing.assert_allclose(ck.inner(a, b), reference(a, ck.conjugate(b))[..., 0])
+        np.testing.assert_allclose(ck.inner(a, b), _numpy_product(a, ck.conjugate(b))[..., 0])
         np.testing.assert_allclose(ck.imag(a)[..., 1:], a[..., 1:])
         np.testing.assert_array_equal(ck.imag(a)[..., 0], 0)
         np.testing.assert_array_equal(ck.real(a), a[..., 0])
@@ -35,15 +39,15 @@ class TestAlgebra:
             inv = ck.inverse(a)
         identity = np.zeros_like(a)
         identity[..., 0] = 1
-        np.testing.assert_allclose(reference(a, inv), identity, atol=1e-12)
-        np.testing.assert_allclose(reference(inv, a), identity, atol=1e-12)
+        np.testing.assert_allclose(_numpy_product(a, inv), identity, atol=1e-12)
+        np.testing.assert_allclose(_numpy_product(inv, a), identity, atol=1e-12)
 
     def test_zero_divisor_warns_despite_positive_norm(self):
         a = np.zeros(16)
         b = np.zeros(16)
         a[[3, 10]] = 1
         b[6], b[15] = 1, -1
-        np.testing.assert_array_equal(reference(a, b), 0)
+        np.testing.assert_array_equal(_numpy_product(a, b), 0)
         assert ck.norm_sq(a) == 2
         with pytest.warns(RuntimeWarning, match="cancellation"):
             ck.inverse(a)
@@ -85,7 +89,7 @@ class TestAlgebra:
         assert ck.norm_sq(a) == np.sum(a * a)
         assert ck.inner(a, a) == ck.norm_sq(a)
         assert ck.real(a) == a[0]
-        np.testing.assert_allclose(reference(a, ck.inverse(a)), [1, 0], atol=1e-12)
+        np.testing.assert_allclose(_numpy_product(a, ck.inverse(a)), [1, 0], atol=1e-12)
 
     @pytest.mark.parametrize("a", [0, [], [1, 2, 3], np.empty((2, 0))])
     @pytest.mark.parametrize("fn", [ck.conjugate, ck.norm_sq, ck.inverse, ck.exp, ck.real, ck.imag])
@@ -105,13 +109,13 @@ class TestAlgebra:
             ck.norm_sq(a)
 
     def test_ordered_division(self, monkeypatch):
-        monkeypatch.setattr(ck, "multiply", reference)
+        monkeypatch.setattr(ck, "multiply", _numpy_product)
         a = np.array([1.0, 2.0, 3.0, 4.0])
         b = np.array([[2.0, 1.0, -1.0, 3.0], [3.0, 2.0, 1.0, 0.0]])
         right = ck.right_div(a, b)
         left = ck.left_div(a, b)
-        np.testing.assert_allclose(reference(right, b), np.broadcast_to(a, b.shape))
-        np.testing.assert_allclose(reference(a, left), b, atol=1e-12)
+        np.testing.assert_allclose(_numpy_product(right, b), np.broadcast_to(a, b.shape))
+        np.testing.assert_allclose(_numpy_product(a, left), b, atol=1e-12)
         assert not np.allclose(right, left)
 
     @pytest.mark.parametrize("fn", [ck.right_div, ck.left_div])
@@ -121,7 +125,7 @@ class TestAlgebra:
             # In particular, inverse fractions must not inherit an integer
             # reference dtype through multiply's list conversion policy.
             assert a.dtype.kind == b.dtype.kind == "f"
-            return reference(a, b)
+            return _numpy_product(a, b)
 
         monkeypatch.setattr(ck, "multiply", product)
         a, b = np.array([1, 2]), [2, 1]
@@ -131,20 +135,22 @@ class TestAlgebra:
         assert isinstance(result, np.ndarray)
         x, y = np.asarray(a, dtype=float), np.asarray(b, dtype=float)
         expected = (
-            reference(x, ck.inverse(y)) if fn is ck.right_div else reference(ck.inverse(x), y)
+            _numpy_product(x, ck.inverse(y))
+            if fn is ck.right_div
+            else _numpy_product(ck.inverse(x), y)
         )
         np.testing.assert_allclose(result, expected)
         assert isinstance(fn([1, 2], [2, 1]), list)
 
     @pytest.mark.parametrize("n", [-5, -1, 0, 1, 2, 7, np.int64(13)])
     def test_power_against_repeated_products(self, monkeypatch, n):
-        monkeypatch.setattr(ck, "multiply", reference)
+        monkeypatch.setattr(ck, "multiply", _numpy_product)
         a = np.array([[0.2, 0.3, -0.1, 0.4], [1.0, 0.0, 0.0, 0.0]])
         factor = ck.inverse(a) if n < 0 else a
         expected = np.zeros_like(a)
         expected[..., 0] = 1
         for _ in range(abs(n)):
-            expected = reference(expected, factor)
+            expected = _numpy_product(expected, factor)
         np.testing.assert_allclose(ck.power(a, n), expected, atol=1e-12)
 
     def test_power_contract(self, monkeypatch):
@@ -152,7 +158,7 @@ class TestAlgebra:
 
         def product(a, b):
             calls.append(1)
-            return reference(a, b)
+            return _numpy_product(a, b)
 
         monkeypatch.setattr(ck, "multiply", product)
         assert ck.power([0, 0], 0) == [1, 0]
@@ -170,7 +176,7 @@ class TestAlgebra:
         expected[..., 0] = 1
         term = expected.copy()
         for n in range(1, 25):
-            term = reference(term, a) / n
+            term = _numpy_product(term, a) / n
             expected += term
         np.testing.assert_allclose(ck.exp(a), expected, atol=1e-12)
 
@@ -204,13 +210,13 @@ def test_gpu_helpers(gpu_kernel):
         result = fn(a, b)
         assert isinstance(result, cp.ndarray)
         expected = (
-            reference(host_a, ck.inverse(host_b))
+            _numpy_product(host_a, ck.inverse(host_b))
             if fn is ck.right_div
-            else reference(ck.inverse(host_a), host_b)
+            else _numpy_product(ck.inverse(host_a), host_b)
             if fn is ck.left_div
             else ck.inner(host_a, host_b)
         )
         np.testing.assert_allclose(cp.asnumpy(result), expected, atol=1e-12)
     np.testing.assert_allclose(
-        cp.asnumpy(ck.power(a, 3)), reference(reference(host_a, host_a), host_a)
+        cp.asnumpy(ck.power(a, 3)), _numpy_product(_numpy_product(host_a, host_a), host_a)
     )
