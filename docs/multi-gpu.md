@@ -180,32 +180,27 @@ b = cp.asarray(rng.normal(size=(batch, dim)).astype(np.float32))
 # Verify device visibility
 print("Visible devices:", ck.visible_devices())  # [0, 1]
 
-# Single-GPU baseline
-import time
-
-cp.cuda.runtime.deviceSynchronize()
-t0 = time.perf_counter()
 c_single = ck.multiply(a, b)
-cp.cuda.runtime.deviceSynchronize()
-t_single = time.perf_counter() - t0
-print(f"Single GPU: {t_single * 1e3:.2f} ms")
-
-# Multi-GPU
-t0 = time.perf_counter()
 c_multi = ck.split_batch(a, b)  # uses all visible devices
-cp.cuda.runtime.deviceSynchronize()
-t_multi = time.perf_counter() - t0
-print(f"Multi GPU:  {t_multi * 1e3:.2f} ms")
-print(f"Speedup:    {t_single / t_multi:.2f}x")
-
-# Results are identical (within float32 tolerance)
 np.testing.assert_allclose(cp.asnumpy(c_multi), cp.asnumpy(c_single), rtol=1e-6, atol=1e-6)
 ```
 
-Expected: on a 2-GPU NVLink machine, `t_multi ≈ t_single / 1.7–1.9`
-(after subtracting the copy overhead). The exact speedup depends on
-NVLink bandwidth, kernel duration, and whether the two GPUs are
-interleaved or striped (see the topology note in CONTRIBUTING.md).
+## Measuring overlap
+
+Run `CUDA_VISIBLE_DEVICES=0,1 make benchmark-multi-gpu` for repeated timings
+on the selected pair. The workload uses `2**20` float32 vectors of dimension
+32. Both paths call `split_batch` and include input copies, kernel execution,
+and output gather. The serialized reference adds a device barrier after
+each chunk launch. The serialized/queued ratio describes the effect of
+those barriers on the selected pair and is informational.
+
+The report identifies the caller and participating devices by logical ID,
+GPU name, and PCI bus ID, and shows peer access capability in both
+directions. For the physical link type, match those PCI IDs against
+`nvidia-smi --query-gpu=index,pci.bus_id,name --format=csv` and
+`nvidia-smi topo -m`. Peer access capability alone does not describe link
+bandwidth. See the [testing guide](testing.md#gpu-performance-workloads)
+for the sampling protocol.
 
 ---
 

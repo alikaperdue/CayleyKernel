@@ -18,13 +18,13 @@ Run with::
     pytest -q tests/test_sparse_csr.py
 """
 
-import time
-
 import numpy as np
 import pytest
 
 import CayleyKernel
 from CayleyKernel import cp, from_sparse, is_sparse_beneficial, sparse_multiply, to_sparse
+from CayleyKernel._sparse import _sparse_kernel_handle
+from tests.benchmark_support import PROTOCOL, measure_workloads
 
 
 def _make_dense_batch(batch, dim, K, seed, dtype):
@@ -133,7 +133,7 @@ if hasattr(cp, "bfloat16"):
     _SPARSE_DTYPES.append(cp.bfloat16)
 
 
-@pytest.mark.slow
+@pytest.mark.benchmark
 @pytest.mark.parametrize(
     "config",
     [
@@ -141,18 +141,22 @@ if hasattr(cp, "bfloat16"):
         {"dim": 4096, "K": 4, "batch": 256, "label": "compute-bound (dim=4096)"},
         {"dim": 8192, "K": 4, "batch": 128, "label": "compute-memory-bound (dim=8192)"},
         {"dim": 16384, "K": 4, "batch": 64, "label": "compute-memory-bound (dim=16384)"},
-        {"dim": 32768, "K": 4, "batch": 16, "label": "compute-memory-bound (dim=32786)"},
+        {"dim": 32768, "K": 4, "batch": 16, "label": "compute-memory-bound (dim=32768)"},
         {"dim": 131072, "K": 4, "batch": 2, "label": "compute-memory-bound (dim=131072)"},
     ],
     ids=lambda c: c["label"],
 )
 def test_benchmark(config):
+    """Compare products on inputs already in each path's native layout."""
+    if _sparse_kernel_handle("float32") is None:
+        pytest.skip("Sparse versus dense timing requires the float32 sparse GPU kernel")
+
     dim = config["dim"]
     K = config["K"]
     batch = config["batch"]
     label = config["label"]
 
-    rng = np.random.default_rng(2026)
+    rng = np.random.default_rng(PROTOCOL["seed"])
 
     # Build sparse inputs with exactly K nonzeros
     x_dense = np.zeros((batch, dim), dtype=np.float32)
@@ -168,33 +172,16 @@ def test_benchmark(config):
     x_sp = to_sparse(x_gpu)
     y_sp = to_sparse(y_gpu)
 
-    # Warmup
-    CayleyKernel.multiply(x_gpu, y_gpu)
-    sparse_multiply(x_sp, y_sp)
-    cp.cuda.Stream.null.synchronize()
-
-    # Dense timing
-    n = 5
-    t0 = time.perf_counter()
-    for _ in range(n):
-        CayleyKernel.multiply(x_gpu, y_gpu)
-    cp.cuda.Stream.null.synchronize()
-    t_dense = (time.perf_counter() - t0) / n
-
-    # Sparse timing
-    t0 = time.perf_counter()
-    for _ in range(n):
-        sparse_multiply(x_sp, y_sp)
-    cp.cuda.Stream.null.synchronize()
-    t_sparse = (time.perf_counter() - t0) / n
-
-    speedup = t_dense / t_sparse
-    print(f"\n[benchmark] {label}")
-    print(f"[benchmark]   dim={dim}  K={K}  batch={batch}  dtype=float32")
-    print(f"[benchmark]   dense : {t_dense * 1e3:>10.3f} ms")
-    print(f"[benchmark]   sparse: {t_sparse * 1e3:>10.3f} ms")
-    print(f"[benchmark]   ratio dense/sparse: {speedup:>6.2f}x")
-    assert t_dense > 0 and t_sparse > 0
+    print(f"\n{label}: dim={dim}, K={K}, batch={batch}, dtype=float32")
+    cases = measure_workloads(
+        {
+            "dense": lambda: CayleyKernel.multiply(x_gpu, y_gpu),
+            "sparse": lambda: sparse_multiply(x_sp, y_sp),
+        },
+        cp.cuda.Stream.null.synchronize,
+    )
+    ratio = cases["dense"]["median_seconds"] / cases["sparse"]["median_seconds"]
+    print(f"Dense/sparse median ratio: {ratio:.2f}x (informational)")
 
 
 @pytest.mark.parametrize("K", [1, 2, 4, 8])

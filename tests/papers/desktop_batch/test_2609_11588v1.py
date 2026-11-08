@@ -1,5 +1,4 @@
 """Section-ordered verification of the quasilinear multiplication schedule."""
-import time
 import unittest
 from itertools import product
 
@@ -79,7 +78,7 @@ class Sections(unittest.TestCase):
         rng=np.random.default_rng(260911591);rows=[]
         for n in (10,12,14,16,18,20):
             N=1<<n;a=rng.choice([-1.,1.],N);b=rng.choice([-1.,1.],N)
-            start=time.perf_counter();out=multiply(a,b);elapsed=time.perf_counter()-start
+            out=multiply(a,b)
             errors=[]
             for k in (0,1,N//3,N-1):
                 expected=sum(CK.twist(i,i^k)*a[i]*b[i^k] for i in range(N))
@@ -90,7 +89,7 @@ class Sections(unittest.TestCase):
             for i in range(N):
                 for j in (0,1,N//2+1,N-1):expected[i^j]+=CK.twist(i,j)*a[i]*sparse[j]
             np.testing.assert_array_equal(got,expected)
-            rows.append(dict(level=n,dimension=N,python_cpu_seconds=elapsed,checked_dense_coordinates=[0,1,N//3,N-1],max_sampled_error=max(errors),dense_sparse_all_coordinates=True))
+            rows.append(dict(level=n,dimension=N,checked_dense_coordinates=[0,1,N//3,N-1],max_sampled_error=max(errors),dense_sparse_all_coordinates=True))
         MEASUREMENTS['dense_extension']=rows
 
     def test_05_broadcasting_and_float_error_protocol(self):

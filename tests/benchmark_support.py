@@ -1,4 +1,4 @@
-"""GPU baseline measurement and comparison, independent of pytest/CuPy imports."""
+"""Synchronized GPU measurement and baseline comparison without pytest/CuPy imports."""
 
 import hashlib
 import json
@@ -9,6 +9,7 @@ import statistics
 import subprocess
 import time
 from datetime import datetime, timezone
+from functools import partial
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,16 +55,16 @@ CASE_SHAPES_FMA = {
     "fma_batch_1024_dim16_sub": {"shape": [1024, 16], "sign": -1},
 }
 
-# Three-kernel "before" baseline: multiply(a, b) followed by elementwise + c.
-# Recorded so the PR description's before/after throughput table (three-kernel
-# path vs. single-kernel multiply_add) comes from the same harness and the
-# same baseline file as the fused cases.  Optional on older baselines.
+# Unfused reference: multiply(a, b) followed by elementwise + c.
+# Optional on older baselines.
 CASE_SHAPES_FMA_BASELINE = {
     "baseline_multiply_add_batch_65536_dim32": [65536, 32],
 }
 
 
 def _validate_case(name, case, shape, sign=None):
+    if not isinstance(case, dict):
+        raise ValueError("Invalid baseline workload/samples: " + name)
     samples = case.get("samples_seconds", [])
     repetitions = case.get("repetitions")
     if (
@@ -71,8 +72,9 @@ def _validate_case(name, case, shape, sign=None):
         or case.get("dtype") != "float32"
         or type(repetitions) is not int
         or not 1 <= repetitions <= PROTOCOL["max_repetitions"]
+        or not isinstance(samples, list)
         or len(samples) != PROTOCOL["trials"]
-        or any(not isinstance(s, (float, int)) or not math.isfinite(s) or s <= 0 for s in samples)
+        or any(type(s) not in (float, int) or not math.isfinite(s) or s <= 0 for s in samples)
     ):
         raise ValueError("Invalid baseline workload/samples: " + name)
     if case.get("median_seconds") != statistics.median(samples):
@@ -88,14 +90,17 @@ def validate_baseline(report, environment):
         or report.get("protocol") != PROTOCOL
     ):
         raise ValueError("Baseline schema/timing protocol differs; record a new baseline.")
+    recorded_environment = report.get("environment")
+    if not isinstance(recorded_environment, dict):
+        raise ValueError("Invalid baseline environment")
     mismatch = [
-        key
-        for key in ENVIRONMENT_KEYS
-        if report.get("environment", {}).get(key) != environment.get(key)
+        key for key in ENVIRONMENT_KEYS if recorded_environment.get(key) != environment[key]
     ]
     if mismatch:
         raise ValueError("Baseline environment differs: " + ", ".join(mismatch))
     cases = report.get("cases", {})
+    if not isinstance(cases, dict):
+        raise ValueError("Invalid baseline cases")
     # Multiply (2-operand) cases are required on every baseline, including
     # older ones that pre-date the fused entry points.
     missing = [name for name in CASE_SHAPES if name not in cases]
@@ -111,8 +116,7 @@ def validate_baseline(report, environment):
     for name, shape in CASE_SHAPES_FMA_BASELINE.items():
         if name in cases:
             _validate_case(name, cases[name], shape)
-    # Names that are neither multiply, fused, nor the three-kernel baseline
-    # are invalid.
+    # Reject names outside the multiply, fused, and unfused workloads.
     known = set(CASE_SHAPES) | set(CASE_SHAPES_FMA) | set(CASE_SHAPES_FMA_BASELINE)
     unknown = [name for name in cases if name not in known]
     if unknown:
@@ -125,17 +129,37 @@ def regression_limit(baseline_case, max_regression):
 
 def environment_info(cp):
     device = cp.cuda.Device()
-    props = cp.cuda.runtime.getDeviceProperties(device.id)
-    name = props["name"]
     return {
-        "gpu_name": name.decode() if isinstance(name, bytes) else str(name),
-        "pci_bus_id": device.pci_bus_id,
-        "compute_capability": device.compute_capability,
+        **_device_info(cp, device.id),
         "cuda_runtime_version": cp.cuda.runtime.runtimeGetVersion(),
         "cuda_driver_version": cp.cuda.runtime.driverGetVersion(),
         "cupy_version": cp.__version__,
         "python_version": platform.python_version(),
         "platform": platform.platform(),
+    }
+
+
+def _device_info(cp, device_id):
+    device = cp.cuda.Device(device_id)
+    name = cp.cuda.runtime.getDeviceProperties(device_id)["name"]
+    return {
+        "gpu_name": name.decode() if isinstance(name, bytes) else str(name),
+        "pci_bus_id": device.pci_bus_id,
+        "compute_capability": device.compute_capability,
+    }
+
+
+def device_topology(cp, devices):
+    """Describe the participating devices and directional peer access capability."""
+    return {
+        "caller_device": cp.cuda.Device().id,
+        "devices": {dev: _device_info(cp, dev) for dev in devices},
+        "peer_access": {
+            f"{src}->{dst}": bool(cp.cuda.runtime.deviceCanAccessPeer(src, dst))
+            for src in devices
+            for dst in devices
+            if src != dst
+        },
     }
 
 
@@ -163,6 +187,57 @@ def provenance():
     }
 
 
+def _time_calls(fn, synchronize, repetitions):
+    synchronize()
+    start = time.perf_counter()
+    for _ in range(repetitions):
+        result = fn()
+        del result
+    synchronize()
+    return time.perf_counter() - start
+
+
+def measure_workloads(workloads, synchronize):
+    """Measure named callables and alternate their order across sample rounds."""
+    cases = {}
+    for name, fn in workloads.items():
+        synchronize()
+        for _ in range(PROTOCOL["warmup"]):
+            result = fn()
+            synchronize()
+            del result
+
+        repetitions = 1
+        while True:
+            elapsed = _time_calls(fn, synchronize, repetitions)
+            if (
+                elapsed >= PROTOCOL["target_sample_seconds"]
+                or repetitions >= PROTOCOL["max_repetitions"]
+            ):
+                break
+            repetitions *= 2
+        cases[name] = {"repetitions": repetitions, "samples_seconds": []}
+
+    names = tuple(workloads)
+    for trial in range(PROTOCOL["trials"]):
+        order = names if trial % 2 == 0 else reversed(names)
+        for name in order:
+            case = cases[name]
+            repetitions = case["repetitions"]
+            elapsed = _time_calls(workloads[name], synchronize, repetitions)
+            assert math.isfinite(elapsed) and elapsed > 0, f"{name}: invalid sample {elapsed!r}"
+            case["samples_seconds"].append(elapsed / repetitions)
+
+    for name, case in cases.items():
+        samples = case["samples_seconds"]
+        case["median_seconds"] = statistics.median(samples)
+        print(
+            f"\n{name}: {case['median_seconds']:.6g}s median per call; "
+            f"{case['repetitions']} calls/sample; samples={samples}"
+        )
+    return cases
+
+
 class BenchmarkSession:
     def __init__(self, cp, baseline=None, record=None, max_regression=0.20):
         if (baseline is None) == (record is None):
@@ -186,16 +261,6 @@ class BenchmarkSession:
         if self.baseline is not None:
             validate_baseline(self.baseline, self.report["environment"])
 
-    @staticmethod
-    def _time_calls(fn, args, stream, repetitions):
-        stream.synchronize()
-        start = time.perf_counter()
-        for _ in range(repetitions):
-            result = fn(*args)
-            del result
-        stream.synchronize()
-        return time.perf_counter() - start
-
     def measure(self, name, multiply, shape):
         # Two-operand multiply: a*b.  Both operands share ``shape``; the
         # inner tuple tells _measure how many operands to allocate.
@@ -211,13 +276,10 @@ class BenchmarkSession:
         """
         if sign not in (+1, -1):
             raise ValueError("sign must be +1 (multiply_add) or -1 (multiply_subtract)")
-        import CayleyKernel as ck
-
-        fn = ck.multiply_add if sign == +1 else ck.multiply_subtract
-        return self._measure(name, fn, (shape, shape, shape), shape, sign=sign)
+        return self._measure(name, multiply_fn, (shape, shape, shape), shape, sign=sign)
 
     def measure_fma_baseline(self, name, multiply_fn, shape):
-        """Record the three-kernel path multiply(a, b) + c at the given shape.
+        """Record the unfused path multiply(a, b) + c at the given shape.
 
         This is the "before" half of the fused FMA throughput comparison:
         two CUDA launches (multiply, then elementwise add) plus the Python
@@ -235,48 +297,27 @@ class BenchmarkSession:
     def _measure(self, name, fn, operand_shapes, shape, sign=None):
         cp = self.cp
         cp.random.seed(PROTOCOL["seed"])
-        operands = [cp.random.rand(*operand_shapes[0], dtype=cp.float32) for _ in operand_shapes]
-        stream = cp.cuda.Stream.null
-        args = tuple(operands)
-        for _ in range(PROTOCOL["warmup"]):
-            result = fn(*args)
-            stream.synchronize()
-            del result
-        repetitions = 1
-        while True:
-            elapsed = self._time_calls(fn, args, stream, repetitions)
-            if (
-                elapsed >= PROTOCOL["target_sample_seconds"]
-                or repetitions >= PROTOCOL["max_repetitions"]
-            ):
-                break
-            repetitions *= 2
-        samples = []
-        for _ in range(PROTOCOL["trials"]):
-            elapsed = self._time_calls(fn, args, stream, repetitions)
-            samples.append(elapsed / repetitions)
-        case = {
-            "shape": list(shape),
-            "dtype": "float32",
-            "samples_seconds": samples,
-            "repetitions": repetitions,
-            "median_seconds": statistics.median(samples),
-        }
+        operands = [
+            cp.random.rand(*operand_shape, dtype=cp.float32) for operand_shape in operand_shapes
+        ]
+        case = measure_workloads({name: partial(fn, *operands)}, cp.cuda.Stream.null.synchronize)[
+            name
+        ]
+        case.update(shape=list(shape), dtype="float32")
         if sign is not None:
             case["sign"] = sign
         self.report["cases"][name] = case
-        print(
-            f"\n{name}: {case['median_seconds']:.6f}s median per call; "
-            f"{repetitions} calls/sample; samples={samples}"
-        )
-        if self.baseline is not None and name in self.baseline.get("cases", {}):
-            reference = self.baseline["cases"][name]
-            limit = regression_limit(reference, self.max_regression)
-            assert case["median_seconds"] <= limit, (
-                f"{name}: median {case['median_seconds']:.6f}s exceeds baseline "
-                f"{reference['median_seconds']:.6f}s + {self.max_regression:.0%} "
-                f"({limit:.6f}s). Check GPU load/clocks and repeat before diagnosing a regression."
-            )
+        if self.baseline is not None:
+            reference = self.baseline["cases"].get(name)
+            if reference is None:
+                print(f"{name}: informational timing (case absent from baseline)")
+            else:
+                limit = regression_limit(reference, self.max_regression)
+                assert case["median_seconds"] <= limit, (
+                    f"{name}: median {case['median_seconds']:.6f}s exceeds baseline "
+                    f"{reference['median_seconds']:.6f}s + {self.max_regression:.0%} "
+                    f"({limit:.6f}s). Check GPU load/clocks and repeat before diagnosing a regression."
+                )
         return case["median_seconds"]
 
     def finish(self):

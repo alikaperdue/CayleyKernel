@@ -504,8 +504,9 @@ make test-cpu      # CPU-marked checks from the default suite
 make test-all      # default and slow tests
 ```
 
-Sparse zero-divisor validation and baseline benchmarks still need their
-opt-in flags. Use `make test-sparse-zd` and `make benchmark` to enable them.
+GPU timings run through `make benchmark`, `make benchmark-record`,
+`make benchmark-sparse`, `make benchmark-multi-gpu`, or `make benchmark-torch`.
+Use `make test-sparse-zd` for the separate CPU sparse zero-divisor workflow.
 The obsolete `run-native-zd` target has been removed because its C source
 is unavailable. Use `make zd-showcase` for huge-index zero-divisor checks.
 
@@ -520,9 +521,8 @@ multiplicativity beyond the octonions.
 * `slow` covers expensive products and other long workloads. Select it with
   `python3 -m pytest -q -m slow tests/`. Dense GPU work is quadratic in
   dimension even when operands contain few nonzero coefficients.
-* `benchmark`: GPU baseline measurements require `--run-benchmarks` and an
-  explicit recording or comparison path. Selecting `-m benchmark` alone does
-  not enable them.
+* `benchmark` workloads require `--run-benchmarks`. The
+  `benchmark_baseline` subset also requires a recording or comparison path.
 * `sparse_zd`: additional CPU sparse validation requires `--run-sparse-zd`.
 
 Local GPU tests skip if their GPU prerequisites are missing. Dedicated GPU CI

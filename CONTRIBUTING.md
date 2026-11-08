@@ -138,7 +138,8 @@ All tests live in `tests/`. Pytest validates markers against `pyproject.toml`.
 | `gpu_device` | Needs a CuPy device and can run without the compiled CayleyKernel library. |
 | `slow` | Expensive products and other long workloads. |
 | `sparse_zd` | CPU sparse zero-divisor validation (opt-in via `--run-sparse-zd`). |
-| `benchmark` | GPU timing checks (opt-in via `--run-benchmarks`). |
+| `benchmark` | GPU timing workloads (opt-in via `--run-benchmarks`). |
+| `benchmark_baseline` | Timing workloads that record or compare a local baseline. |
 
 The default selection excludes `slow`. Tests without a `cpu` or
 `gpu_device` marker normally need CuPy, a usable device, and the compiled library.
@@ -306,8 +307,8 @@ GPU pair) without breaking the helper:
 
 4. **Tests.** Place topology checks in `tests/test_multi_gpu.py`. Its
    module fixture uses the shared device probe at test setup and skips when
-   fewer than two devices are visible. The GPU workflow selects both the
-   regular cases and the slow overlap check.
+   fewer than two devices are visible. The GPU workflow runs the correctness
+   cases. Use `make benchmark-multi-gpu` to measure overlap on a GPU pair.
 
 5. **Documentation.** Update `docs/multi-gpu.md` with a new row in the
    "When split_batch wins / does not" tables and, if the topology changes

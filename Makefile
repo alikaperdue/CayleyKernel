@@ -10,6 +10,10 @@
 #   make test            run the default pytest suite
 #   make test-all        default + slow suites (opt-in flags still apply)
 #   make benchmark      opt-in timing comparison against BENCHMARK_BASELINE
+#   make benchmark-record     record a new GPU baseline
+#   make benchmark-sparse     compare sparse and dense product timings
+#   make benchmark-multi-gpu  measure overlap with two visible GPUs
+#   make benchmark-torch      check Torch adapter timing against CuPy
 #   make test-sparse-zd  opt-in CPU sparse zero-divisor validation
 #   make zd-showcase     random million-bit zero-divisor confirmations
 #   make rust-install    install the optional Rust CPU extension
@@ -47,6 +51,7 @@ NVCC_GENCODES := $(foreach a,$(ARCHS),-gencode arch=compute_$(subst sm_,,$(a)),c
 
 .PHONY: all kernel kernel-amd sign-check test test-all test-sparse-zd zd-showcase wheel clean
 .PHONY: rust-install rust-check test-cpu benchmark benchmark-record lint lint-fix format
+.PHONY: benchmark-sparse benchmark-multi-gpu benchmark-torch
 
 # The optional CPU extension is packaged separately; ordinary Python/GPU
 # installations never need a Rust toolchain.
@@ -129,17 +134,26 @@ test-sparse-zd:
 test-all:
 	$(PYTHON) -m pytest -q -m "" tests/
 
-BENCHMARK_BASELINE ?= benchmark-results/gpu.json
+BENCHMARK_BASELINE ?= benchmark-results/gpu-local.json
 BENCHMARK_MAX_REGRESSION ?= 0.20
 
 benchmark:
-	$(PYTHON) -m pytest -q -s tests/test_benchmark.py --run-benchmarks \
+	$(PYTHON) -m pytest -q -s -m benchmark tests/test_benchmark.py --run-benchmarks \
 	    --benchmark-baseline "$(BENCHMARK_BASELINE)" \
 	    --benchmark-max-regression "$(BENCHMARK_MAX_REGRESSION)"
 
 benchmark-record:
-	$(PYTHON) -m pytest -q -s tests/test_benchmark.py --run-benchmarks \
+	$(PYTHON) -m pytest -q -s -m benchmark tests/test_benchmark.py --run-benchmarks \
 	    --benchmark-record "$(BENCHMARK_BASELINE)"
+
+benchmark-sparse:
+	$(PYTHON) -m pytest -q -s -m benchmark tests/test_sparse_csr.py --run-benchmarks
+
+benchmark-multi-gpu:
+	$(PYTHON) -m pytest -q -s -m benchmark tests/test_multi_gpu.py --run-benchmarks
+
+benchmark-torch:
+	$(PYTHON) -m pytest -q -s -m benchmark tests/test_torch_interop.py --run-benchmarks
 
 wheel:
 	PYTHON="$(PYTHON)" bash scripts/build_wheel.sh

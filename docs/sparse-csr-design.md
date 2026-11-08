@@ -130,10 +130,11 @@ float32:
 | 1024 | 20× (cap) | 10–20× | 5–10× | 3–6× |
 | 4096 | 20× (cap) | 10–20× | 8–15× | 4–10× |
 
-These are design-time estimates; measured medians are produced by
-`pytest -m sparse_csr tests/test_sparse_csr.py -k benchmark -s` and
-reported in the PR description (per `CONTRIBUTING.md`, `benchmark-results/`
-files are deliberately local-only and not committed to this repository).
+The table gives design-time estimates. Use `make benchmark-sparse` for
+synchronized measurements of six float32 workloads, including dimension
+32,768. It reports medians and an informational dense/sparse ratio.
+Inputs are prepared in each API's native layout before timing, and the sparse
+timing includes the work to produce sparse output.
 
 ## 5. Correctness guarantees
 

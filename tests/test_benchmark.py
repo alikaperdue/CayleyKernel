@@ -9,10 +9,10 @@ not justified. GPU parallelism does not make the whole product O(1).
 
 Default test runs skip these measurements. Record a baseline explicitly:
     pytest tests/test_benchmark.py --run-benchmarks \
-        --benchmark-record benchmark-results/gpu.json -s
+        --benchmark-record benchmark-results/gpu-local.json -s
 Compare on the same GPU/software environment:
     pytest tests/test_benchmark.py --run-benchmarks \
-        --benchmark-baseline benchmark-results/gpu.json -s
+        --benchmark-baseline benchmark-results/gpu-local.json -s
 
 Each workload has three warmups followed by calibration to at least 100 ms
 per sample (capped at 16384 calls). Five synchronized wall-clock samples
@@ -30,7 +30,7 @@ import pytest
 
 from CayleyKernel import multiply, multiply_add, multiply_subtract
 
-pytestmark = pytest.mark.benchmark
+pytestmark = [pytest.mark.benchmark, pytest.mark.benchmark_baseline]
 
 
 def test_single_product_2pow20(gpu_benchmark):
@@ -82,20 +82,12 @@ def test_fma_batch_1024_dim16_sub(gpu_benchmark):
 
 
 # ---------------------------------------------------------------------------
-# Three-kernel baseline (multiply + elementwise add) for before/after
+# Unfused reference (multiply + elementwise add) for comparison
 # ---------------------------------------------------------------------------
 
 
 def test_baseline_multiply_then_add_65536_dim32(gpu_benchmark):
-    """Three-kernel path (multiply, then elementwise add) at the same shape as
-    the fused FMA case, so the PR description can report a before/after
-    throughput comparison (three-kernel vs. single-kernel).
-
-    Recorded alongside the fused cases in the same baseline file so the
-    before/after numbers come from one consistent run.
-    """
-    from CayleyKernel import multiply as multiply_fn
-
+    """Measure the two launches and intermediate allocation at the FMA shape."""
     gpu_benchmark.measure_fma_baseline(
-        "baseline_multiply_add_batch_65536_dim32", multiply_fn, (65536, 32)
+        "baseline_multiply_add_batch_65536_dim32", multiply, (65536, 32)
     )

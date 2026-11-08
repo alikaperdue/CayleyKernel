@@ -2,6 +2,7 @@
 
 import copy
 import json
+import os
 import subprocess
 import sys
 from types import SimpleNamespace
@@ -40,7 +41,7 @@ def test_baseline_rejects_wrong_device_and_inconsistent_samples():
     environment = dict(report["environment"], pci_bus_id="another GPU")
     with pytest.raises(ValueError, match="environment differs"):
         bs.validate_baseline(report, environment)
-    for value in (float("nan"), -1, 0):
+    for value in (float("nan"), -1, 0, True):
         bad = copy.deepcopy(report)
         bad["cases"]["single_2pow20"]["samples_seconds"][0] = value
         with pytest.raises(ValueError, match="samples"):
@@ -53,6 +54,54 @@ def test_baseline_rejects_wrong_device_and_inconsistent_samples():
     del bad["cases"]["single_2pow20"]
     with pytest.raises(ValueError, match="all configured"):
         bs.validate_baseline(bad, bad["environment"])
+
+
+def test_topology_reports_device_identity_and_directional_peer_access():
+    devices = {
+        dev: SimpleNamespace(id=dev, pci_bus_id=f"bus-{dev}", compute_capability="90")
+        for dev in (0, 1)
+    }
+    runtime = SimpleNamespace(
+        getDeviceProperties=lambda dev: {"name": f"GPU {dev}".encode()},
+        deviceCanAccessPeer=lambda src, dst: int(src == 0 and dst == 1),
+    )
+    cp = SimpleNamespace(cuda=SimpleNamespace(Device=lambda dev=0: devices[dev], runtime=runtime))
+    topology = bs.device_topology(cp, [0, 1])
+    assert topology["caller_device"] == 0
+    assert topology["devices"][1] == {
+        "gpu_name": "GPU 1",
+        "pci_bus_id": "bus-1",
+        "compute_capability": "90",
+    }
+    assert topology["peer_access"] == {"0->1": True, "1->0": False}
+
+
+def test_paired_samples_are_synchronized_and_alternate_order(monkeypatch):
+    events = []
+    clock = 0.0
+
+    def synchronize():
+        nonlocal clock
+        events.append("sync")
+        clock += 1.0
+
+    def run(name, duration):
+        nonlocal clock
+        events.append(name)
+        clock += duration
+
+    monkeypatch.setattr(bs.time, "perf_counter", lambda: clock)
+    cases = bs.measure_workloads(
+        {"a": lambda: run("a", 2.0), "b": lambda: run("b", 4.0)},
+        synchronize,
+    )
+    trials = bs.PROTOCOL["trials"]
+    assert cases["a"]["samples_seconds"] == [3.0] * trials
+    assert cases["b"]["samples_seconds"] == [5.0] * trials
+    order = ["a", "b", "b", "a", "a", "b", "b", "a", "a", "b"]
+    assert events[-3 * len(order) :] == [
+        event for name in order for event in ("sync", name, "sync")
+    ]
 
 
 def fake_gpu(monkeypatch):
@@ -140,13 +189,24 @@ def test_recording_requires_complete_workloads_and_never_overwrites(tmp_path, mo
     with pytest.raises(ValueError, match="overwrite"):
         bs.BenchmarkSession(fake_gpu(monkeypatch), record=path)
 
+    late_path = tmp_path / "concurrent.json"
+    session = bs.BenchmarkSession(fake_gpu(monkeypatch), record=late_path)
+    session.report["cases"] = reference()["cases"]
+    late_path.write_text("another recording")
+    with pytest.raises(FileExistsError):
+        session.finish()
+    assert late_path.read_text() == "another recording"
+
 
 def test_opt_in_requires_flag_and_baseline_mode(tmp_path):
     # Load the repository hooks on CPU-marked synthetic tests, without a GPU.
     path = tmp_path / "test_opt_in.py"
     path.write_text(
-        "import pytest\n@pytest.mark.cpu\n@pytest.mark.benchmark\n"
-        "def test_timing():\n    assert True\n"
+        "import pytest\n"
+        "pytestmark = [pytest.mark.cpu, pytest.mark.benchmark]\n"
+        "@pytest.mark.benchmark_baseline\n"
+        "def test_baseline_timing():\n    assert True\n"
+        "def test_paired_timing():\n    assert True\n"
     )
     base = [
         sys.executable,
@@ -165,14 +225,24 @@ def test_opt_in_requires_flag_and_baseline_mode(tmp_path):
     ]
     baseline = tmp_path / "baseline.json"
     baseline.write_text(json.dumps(reference()))
+    env = os.environ.copy()
+    env.pop("PYTEST_ADDOPTS", None)
     for options, expected, message in (
-        ([], 0, "1 skipped"),
-        (["-m", "benchmark"], 0, "1 skipped"),
-        (["--run-benchmarks"], 4, "requires exactly one"),
+        ([], 0, "2 skipped"),
+        (["-m", "cpu and not slow"], 0, "2 skipped"),
+        (["-m", ""], 0, "2 skipped"),
+        (["-m", "benchmark"], 0, "2 skipped"),
+        (["--run-benchmarks"], 4, "exactly one"),
+        (["--run-benchmarks", "-m", "benchmark and not benchmark_baseline"], 0, "1 passed"),
+        (
+            ["--run-benchmarks", "--benchmark-baseline", str(baseline), "-k", "paired"],
+            4,
+            "requires selecting baseline workloads",
+        ),
         (
             ["--run-benchmarks", "--benchmark-record", "a", "--benchmark-baseline", "b"],
             4,
-            "requires exactly one",
+            "exactly one",
         ),
         (["--benchmark-max-regression", "nan"], 4, "finite and nonnegative"),
         (["--benchmark-record", str(tmp_path / "out.json")], 4, "requires --run-benchmarks"),
@@ -186,9 +256,12 @@ def test_opt_in_requires_flag_and_baseline_mode(tmp_path):
             4,
             "--benchmark-record PATH.json",
         ),
-        (["--run-benchmarks", "--benchmark-baseline", str(baseline)], 0, "1 passed"),
-        (["--run-benchmarks", "--benchmark-record", str(tmp_path / "out.json")], 0, "1 passed"),
+        (["--run-benchmarks", "--benchmark-baseline", str(baseline)], 0, "2 passed"),
+        (["--run-benchmarks", "--benchmark-record", str(baseline)], 4, "Refusing to overwrite"),
+        (["--run-benchmarks", "--benchmark-record", str(tmp_path / "out.json")], 0, "2 passed"),
     ):
-        result = subprocess.run(base + options, cwd=bs.ROOT, text=True, capture_output=True)
+        result = subprocess.run(
+            base + options, cwd=bs.ROOT, env=env, text=True, capture_output=True
+        )
         assert result.returncode == expected, result.stdout + result.stderr
         assert message in result.stdout + result.stderr

@@ -14,8 +14,9 @@ Commands below run from the repository root.
 | Default and slow | `make test-all` | `python3 -m pytest -q -m "" tests/` |
 
 An explicit `-m` expression replaces the default `not slow` filter, so
-`-m cpu` includes slow host checks. The `--run-sparse-zd` and
-`--run-benchmarks` flags independently enable their suites.
+`-m cpu` includes slow host checks. GPU timing workloads skip unless
+`--run-benchmarks` is supplied, even with `make test-all` or `-m benchmark`.
+The CPU sparse zero-divisor workflow uses its own `--run-sparse-zd` flag.
 
 The default suite includes the dimension-16 basis table and dimension-1024
 sparse-input dense product. The larger sparse-input products at dimensions
@@ -35,7 +36,36 @@ disabled opt-in suites bypass GPU setup. Optional dependencies and
 capability-specific skips such as CuPy 14+ for BF16 or a second device
 still apply.
 
-## GPU performance baselines
+## GPU performance workloads
+
+| Workload | Make command | Result |
+| --- | --- | --- |
+| Dense multiply, fused add/subtract, and unfused multiply then add | `make benchmark` | Compare per-case medians with a local baseline |
+| Same workloads, recording mode | `make benchmark-record` | Write a new local baseline |
+| Sparse versus dense multiplication | `make benchmark-sparse` | Informational dense/sparse ratio for six float32 shapes |
+| Multi-GPU overlap | `make benchmark-multi-gpu` | Informational serialized/queued ratio and device topology |
+| PyTorch adapter overhead | `make benchmark-torch` | Check that the Torch median is at most 3.0 times the CuPy median |
+
+Run the three paired workloads together with
+`python3 -m pytest -q -s -m "benchmark and not benchmark_baseline" tests/ --run-benchmarks`.
+Add `-k <pattern>` to a direct pytest invocation to select individual cases.
+The paired workloads need no baseline file. They include each API's wrapper
+and output handling. Sparse inputs are converted before sampling, so the
+sparse timing includes the work inside `sparse_multiply` and returns sparse
+output. The dense call returns dense output. The sparse workload needs the
+float32 sparse GPU kernel. The overlap workload needs two visible devices
+and measures both paths with input transfers and output gather included.
+It prints the GPU names, PCI bus IDs, and peer-access capability in both
+directions. The Torch check needs CUDA-enabled PyTorch and applies a local
+adapter overhead ceiling for its fixed float32 workload. The ordinary Torch
+suite checks input and output pointer identity directly.
+
+The GPU workloads warm up each path three times, then double the calls per
+sample until reaching 100 ms or 16,384 calls. They report five synchronized
+wall-clock samples as seconds per call and take their median. Paired workloads
+alternate order between rounds. Input generation is outside the timed region.
+
+### Recording and comparing a baseline
 
 The sign evaluator is O(1) for fixed-width GPU indices. The current dense
 kernel sums `dim` terms for each of `dim` outputs: `O(batch * dim^2)` total work. A single
@@ -50,28 +80,28 @@ make benchmark-record PYTHON=python3
 make benchmark PYTHON=python3
 ```
 
-Both use `benchmark-results/gpu.json`, ignored by Git. Override the path with
+Both use `benchmark-results/gpu-local.json`, ignored by Git. Override the path with
 `BENCHMARK_BASELINE=benchmark-results/my-gpu.json`. Recording refuses to
 overwrite an existing file; choose a new path for a deliberate new reference.
 Select a GPU explicitly with `CUDA_VISIBLE_DEVICES=0` (or `1`) before either
 command, and use the same device and software environment for comparison.
 
-Each workload uses one warmup and five individually synchronized wall-clock
-samples; the median includes wrapper and output-allocation overhead, while
-input generation is excluded. Reports record samples, device/PCI identity,
-driver/runtime, Python/CuPy versions, source and loaded-binary hashes, and Git
-revision/dirty state. A comparison rejects device/software or protocol
-mismatches rather than silently comparing unrelated measurements. Source and
-binary hashes are provenance, not equality requirements: changes are what
-the regression check is intended to evaluate.
+Direct pytest invocations select `tests/test_benchmark.py` with
+`--run-benchmarks` and exactly one of `--benchmark-record PATH` and
+`--benchmark-baseline PATH`. Recording requires all configured dense
+multiply cases. Reports include the samples, repetitions, device and PCI
+identity, driver and runtime, Python and CuPy versions, source and loaded
+binary hashes, and Git revision and dirty state. Comparison checks the
+device, software, protocol, and recorded cases for compatibility. Source
+and binary hashes provide provenance when evaluating a change.
+Fused and unfused cases absent from an older baseline report informational
+timings.
 
 The default comparison permits a **20% median slowdown** from the recorded
-reference (`BENCHMARK_MAX_REGRESSION=0.20`). This configurable local policy is
-not a hardware-independent speed guarantee. Investigate competing GPU load,
-temperature/clocks and repeated measurements before diagnosing a regression;
-do not automatically replace a failing baseline. The four workload shapes
-also report per-item costs for two batch sizes without asserting that the
-whole algorithm has constant or sublinear complexity.
+reference (`BENCHMARK_MAX_REGRESSION=0.20`, or
+`--benchmark-max-regression 0.20` in pytest). Investigate competing GPU load
+and temperature or clock changes before diagnosing a regression. The batch
+scaling workload also reports per-item costs for its two batch sizes.
 
 `make clean` preserves local performance baselines so rebuilding does not
 erase your reference. Remove `benchmark-results/` explicitly when no longer

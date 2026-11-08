@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
+from itertools import count
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -207,11 +209,14 @@ def test_restarted_krylov_against_dense_independent_jacobian():
 
 @pytest.mark.cpu
 def test_benchmark_archives_identical_work_and_iteration_counts(tmp_path, monkeypatch):
-    from scripts.benchmark_eigen_frontier import main
+    from scripts import benchmark_eigen_frontier as benchmark
+    ticks = count()
+    monkeypatch.setattr(benchmark, 'time', SimpleNamespace(perf_counter=lambda: next(ticks)))
     output = tmp_path/'benchmark'
     monkeypatch.setattr('sys.argv', ['benchmark', '--level', '2', '--matrices', '2', '--starts', '2',
-                                    '--batch-size', '3', '--maxiter', '3', '--repeats', '1', '--output', str(output)])
-    main()
+                                    '--batch-size', '3', '--maxiter', '3', '--repeats', '1',
+                                    '--progress-seconds', '0', '--output', str(output)])
+    benchmark.main()
     report = json.loads((output/'results.json').read_text())
     assert len(report['measurements']) == 4
     assert len(report['searches']) == 4
@@ -219,8 +224,8 @@ def test_benchmark_archives_identical_work_and_iteration_counts(tmp_path, monkey
         assert m['verified_searches']+m['unresolved_searches'] == 4
         assert len(m['newton_iterations']) == len(m['krylov_iterations']) == 4
         assert sum(m['batch_sizes'].values()) == m['multiply_calls']
-        assert m['end_to_end_seconds'] > 0
-    with pytest.raises(SystemExit): main()
+        assert m['end_to_end_seconds'] == 1
+    with pytest.raises(SystemExit): benchmark.main()
 
 
 @pytest.mark.cpu

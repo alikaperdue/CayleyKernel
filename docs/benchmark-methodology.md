@@ -74,23 +74,24 @@ cargo test --manifest-path rust/Cargo.toml --locked --release \
 
 ## GPU / CUDA baseline
 
-The `benchmark-results/*.json` baselines are produced by the pytest
-harness, not by a standalone script. The Makefile exposes two targets:
+The pytest harness produces the `benchmark-results/*.json` baselines. Use the
+same idle GPU and software environment when recording and comparing.
 
 ```sh
-# Compare a fresh run against a stored baseline; fails if regression
-# exceeds BENCHMARK_MAX_REGRESSION (default 0.20 = 20%).
-make benchmark
+# Record a fresh baseline at a path that does not exist.
+make benchmark-record BENCHMARK_BASELINE=benchmark-results/my-gpu.json
 
-# Overwrite the stored baseline with the current run.
-make benchmark-record
+# Compare with the stored baseline using the default 20% slowdown allowance.
+make benchmark BENCHMARK_BASELINE=benchmark-results/my-gpu.json
 ```
 
-Both run `tests/test_benchmark.py --run-benchmarks ...`. Pick a baseline
-filename on the `BENCHMARK_BASELINE` variable. This target is intentionally
-**opt-in** (the default `make test` and `make test-all` do not run it): it
-requires a GPU, a stable driver, and is sensitive to clocks/thermals, so it
-is not safe for CI.
+Both commands select `tests/test_benchmark.py` with `--run-benchmarks`.
+The sampler uses three warmups and five calibrated, synchronized samples.
+For sparse versus dense, multi-GPU overlap, and Torch adapter timing,
+use `make benchmark-sparse`, `make benchmark-multi-gpu`, and
+`make benchmark-torch`. These use the same sampler with alternating
+measurement order. See the [testing guide](testing.md#gpu-performance-workloads)
+for timing scopes, thresholds, and direct pytest commands.
 
 A new `benchmark-results/<name>.json` is written locally and stays gitignored.
 If you want to ship a reference baseline, the right vehicle is a GitHub

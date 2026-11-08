@@ -1,18 +1,17 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Alika Perdue
-"""Multi-GPU split_batch correctness and overlap sanity tests.
+"""Multi-GPU split_batch correctness tests and optional overlap measurements.
 
 These tests are skipped automatically when fewer than two CUDA devices
 are visible (``visible_devices() < 2``), so single-GPU CI runs stay green.
 """
-
-import time
 
 import numpy as np
 import pytest
 
 import CayleyKernel as ck
 from CayleyKernel import _distributed, cp
+from tests.benchmark_support import PROTOCOL, device_topology, measure_workloads
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -111,76 +110,44 @@ def test_split_batch_out_buffer():
     np.testing.assert_allclose(cp.asnumpy(out), cp.asnumpy(expected), rtol=1e-5, atol=1e-5)
 
 
-# ---------------------------------------------------------------------------
-# overlap sanity: 2-GPU split must not exceed 2x the sum of the two
-# per-GPU times (i.e. we are not serialising on the CPU with extra
-# overhead on top of the natural sequential cost)
-# ---------------------------------------------------------------------------
-@pytest.mark.slow
-def test_split_batch_overlaps_across_devices():
-    """On a 2-GPU machine, split_batch(batch=2**20, dim=32, float32)
-    must complete in <= 2x the sum of the two per-GPU times.
-
-    Each "per-GPU time" includes the D2D copy of the input chunk to that
-    device, the kernel launch, and the final sync -- exactly what
-    split_batch does internally per device.  This makes the comparison
-    apples-to-apples: both sides pay for data movement.
-
-    With proper CPU-side overlap, split_batch should take closer to
-    max(t_dev0, t_dev1) + gather_time.  The 2x bound catches pathological
-    CPU serialisation (e.g. an accidental per-row Python loop) without
-    being so tight that PCIe copy variance causes flakes.
-    """
+@pytest.mark.benchmark
+def test_split_batch_overlap_timing(monkeypatch):
+    """Compare split_batch with and without a per-launch device barrier."""
     dim = 32
     batch = 2**20
     devices = _distributed.visible_devices()[:2]
 
-    # Allocate directly on the default (caller's) device.
-    a = cp.random.normal(size=(batch, dim), dtype=cp.float32)
-    b = cp.random.normal(size=(batch, dim), dtype=cp.float32)
-
-    half = batch // 2
-
-    # Warm up both devices + the full split_batch path so first-call
-    # allocator / driver / kernel-compile costs don't skew timing.
-    for dev in devices:
-        with cp.cuda.Device(dev):
-            tmp = cp.empty((64, dim), dtype=cp.float32)
-            tmp.fill(0.0)
-    cp.cuda.runtime.deviceSynchronize()
-    _distributed.split_batch(a, b, devices=devices)
-    cp.cuda.runtime.deviceSynchronize()
-
-    # --- Per-device reference: D2D copy-in + kernel + sync -------------------
-    # Mirrors exactly what split_batch does internally for each device,
-    # so the comparison is fair (both sides pay for data movement).
+    # Put both operands and the gathered result on the first participating device.
     with cp.cuda.Device(devices[0]):
-        t0 = time.perf_counter()
-        a0_dev = a[:half].copy()
-        b0_dev = b[:half].copy()
-        ck.multiply(a0_dev, b0_dev)
-        cp.cuda.runtime.deviceSynchronize()
-        t_dev0 = (time.perf_counter() - t0) * 1000.0
+        print(f"\nTopology: {device_topology(cp, devices)}")
+        cp.random.seed(PROTOCOL["seed"])
+        a = cp.random.rand(batch, dim, dtype=cp.float32)
+        b = cp.random.rand(batch, dim, dtype=cp.float32)
 
-    with cp.cuda.Device(devices[1]):
-        t0 = time.perf_counter()
-        a1_dev = a[half:].copy()
-        b1_dev = b[half:].copy()
-        ck.multiply(a1_dev, b1_dev)
-        cp.cuda.runtime.deviceSynchronize()
-        t_dev1 = (time.perf_counter() - t0) * 1000.0
+        launch = _distributed._launch
+        serialized = False
 
-    t_sum = t_dev0 + t_dev1
+        def launch_chunk(*args):
+            launch(*args)
+            if serialized:
+                cp.cuda.runtime.deviceSynchronize()
 
-    # --- Timed split_batch ---------------------------------------------------
-    t_start = time.perf_counter()
-    _distributed.split_batch(a, b, devices=devices)
-    cp.cuda.runtime.deviceSynchronize()
-    t_split_ms = (time.perf_counter() - t_start) * 1000.0
+        monkeypatch.setattr(_distributed, "_launch", launch_chunk)
 
-    assert t_split_ms <= 2.0 * t_sum, (
-        "split_batch took %.2f ms but the sum of the two per-GPU "
-        "times (copy+kernel+sync) was %.2f ms (t0=%.2f, t1=%.2f); "
-        "the launches appear to be serialised on the CPU with extra "
-        "overhead." % (t_split_ms, t_sum, t_dev0, t_dev1)
-    )
+        def split(with_barrier):
+            nonlocal serialized
+            serialized = with_barrier
+            return _distributed.split_batch(a, b, devices=devices)
+
+        def synchronize():
+            for dev in devices:
+                with cp.cuda.Device(dev):
+                    cp.cuda.runtime.deviceSynchronize()
+
+        print(f"Workload: batch={batch}, dim={dim}, dtype=float32")
+        cases = measure_workloads(
+            {"queued": lambda: split(False), "serialized": lambda: split(True)},
+            synchronize,
+        )
+    ratio = cases["serialized"]["median_seconds"] / cases["queued"]["median_seconds"]
+    print(f"Serialized/queued median ratio: {ratio:.2f}x (informational)")

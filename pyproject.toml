@@ -129,7 +129,8 @@ markers = [
     "gpu_device: requires a CuPy device but can run without the compiled CayleyKernel library",
     "sparse_zd: CPU-only sparse zero-divisor validation (opt-in: --run-sparse-zd)",
     "slow: expensive products and other long workloads (opt-in: pytest -m slow)",
-    "benchmark: GPU timing checks (opt-in: --run-benchmarks with a local baseline)",
+    "benchmark: GPU timing workloads (opt-in: --run-benchmarks)",
+    "benchmark_baseline: GPU workloads that record or compare a local baseline",
 ]
 filterwarnings = [
     # Keep unknown markers fatal even on pytest releases that ignore --strict-markers in addopts.

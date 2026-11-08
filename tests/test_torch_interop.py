@@ -8,14 +8,11 @@ These tests run against a CUDA ``torch.Tensor`` and validate:
 * ``out=`` identity preservation,
 * cross-device / dtype preservation,
 * the autograd guard (v1 raises ``NotImplementedError``),
-* zero-copy behaviour (no D2H round-trip when inputs are already CUDA).
+* shared CUDA storage for contiguous inputs and ``out=``.
 
 Run with:
     pytest -q tests/test_torch_interop.py
 """
-
-import statistics
-import time
 
 import numpy as np
 import pytest
@@ -23,6 +20,7 @@ import pytest
 torch = pytest.importorskip("torch")
 
 import CayleyKernel as ck  # noqa: E402
+from tests.benchmark_support import PROTOCOL, measure_workloads  # noqa: E402
 from tests.support.comparisons import assert_product_close  # noqa: E402
 from tests.support.oracles import recursive_product  # noqa: E402
 
@@ -192,48 +190,47 @@ def test_torch_autograd_guard_disabled():
 
 
 # ---------------------------------------------------------------------------
-# Zero-copy / no D2H round-trip check
+# Zero-copy correctness and optional adapter timing
 # ---------------------------------------------------------------------------
-def _time_call(fn, warmup=3, reps=10):
-    """Time ``fn`` with CUDA synchronisation on both sides (wall seconds)."""
-    for _ in range(warmup):
-        fn()
-    torch.cuda.synchronize()
-    samples = []
-    for _ in range(reps):
-        torch.cuda.synchronize()
-        t0 = time.perf_counter()
-        fn()
-        torch.cuda.synchronize()
-        samples.append(time.perf_counter() - t0)
-    return statistics.median(samples)
+def test_torch_multiply_shares_cuda_storage(monkeypatch):
+    a = _cuda_tensor_factory(2, 8)
+    b = _cuda_tensor_factory(2, 8)
+    out = torch.empty_like(a)
+    launch = ck._launch
+    seen = []
+
+    def check_views(kernel, a_view, b_view, out_view, dim, batch):
+        seen.append((a_view.data.ptr, b_view.data.ptr, out_view.data.ptr))
+        launch(kernel, a_view, b_view, out_view, dim, batch)
+
+    monkeypatch.setattr(ck, "_launch", check_views)
+    assert ck.torch.multiply(a, b, out=out) is out
+    assert seen == [(a.data_ptr(), b.data_ptr(), out.data_ptr())]
 
 
-def test_torch_zero_copy_vs_pure_cupy():
-    """A torch multiply call with already-CUDA inputs should be within 5%
-    of a pure-CuPy multiply call at the same shape/dtype.
-
-    This is a heuristic check: if the adapter accidentally introduced a
-    D2H copy, the torch path would be many times slower than the CuPy path.
-    """
+@pytest.mark.benchmark
+def test_torch_overhead_vs_pure_cupy():
+    """Apply a local ceiling of 3x the CuPy median to the Torch adapter."""
     dim, batch = 32, 4096
-    a_t = _cuda_tensor_factory(batch, dim, dtype=torch.float32)
-    b_t = _cuda_tensor_factory(batch, dim, dtype=torch.float32)
+    device = torch.cuda.current_device()
+    generator = torch.Generator(device=f"cuda:{device}").manual_seed(PROTOCOL["seed"])
+    a_t = torch.randn(batch, dim, device=f"cuda:{device}", dtype=torch.float32, generator=generator)
+    b_t = torch.randn(batch, dim, device=f"cuda:{device}", dtype=torch.float32, generator=generator)
 
-    # Build the same data as CuPy arrays (sharing memory where possible).
-    a_c = ck.torch._torch_to_cupy(a_t)
-    b_c = ck.torch._torch_to_cupy(b_t)
-
-    t_cupy = _time_call(lambda: ck.multiply(a_c, b_c))
-    t_torch = _time_call(lambda: ck.torch.multiply(a_t, b_t))
-
-    # The torch path should be within 300% of the CuPy path.  The adapter
-    # adds Python-level validation, torch.empty_like allocation, and three
-    # UnownedMemory wrappings per call.  A D2H round-trip would be an order
-    # of magnitude slower (10x+), so a 3x ceiling safely distinguishes
-    # normal dispatch overhead from an actual data copy.
-    ratio = t_torch / t_cupy
+    with ck.cp.cuda.Device(device):
+        a_c = ck.torch._torch_to_cupy(a_t)
+        b_c = ck.torch._torch_to_cupy(b_t)
+        print(f"\nWorkload: batch={batch}, dim={dim}, dtype=float32")
+        cases = measure_workloads(
+            {
+                "cupy": lambda: ck.multiply(a_c, b_c),
+                "torch": lambda: ck.torch.multiply(a_t, b_t),
+            },
+            lambda: torch.cuda.synchronize(device),
+        )
+    ratio = cases["torch"]["median_seconds"] / cases["cupy"]["median_seconds"]
+    print(f"Torch/CuPy median ratio: {ratio:.2f}x (limit 3.0x)")
     assert ratio <= 3.0, (
-        "torch path (%.4fs) is not within 300%% of CuPy path (%.4fs); "
-        "ratio=%.3f — possible D2H round-trip" % (t_torch, t_cupy, ratio)
+        f"Torch/CuPy median ratio {ratio:.2f}x exceeds the 3.0x adapter overhead limit. "
+        "Check GPU load and repeat before diagnosing a regression."
     )

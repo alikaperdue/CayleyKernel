@@ -2,8 +2,10 @@
 # Copyright (c) 2026 Alika Perdue
 """Shared pytest fixtures and guards for the CayleyKernel test suite."""
 
+import math
 import os
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -25,11 +27,11 @@ def pytest_addoption(parser):
         action="store_true",
         help="Fail selected GPU tests if their device or compiled kernel is unavailable.",
     )
-    timing = parser.getgroup("GPU performance baselines")
+    timing = parser.getgroup("GPU performance")
     timing.addoption(
         "--run-benchmarks",
         action="store_true",
-        help="Enable GPU timing tests (also choose record or baseline).",
+        help="Enable selected GPU timing tests. Baseline workloads also need record or baseline.",
     )
     timing.addoption(
         "--benchmark-record",
@@ -87,14 +89,28 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("zd_level", levels, ids=lambda n: "level-%d" % n)
 
 
+@pytest.hookimpl(trylast=True)
 def pytest_collection_modifyitems(config, items):
     if not config.getoption("--run-benchmarks"):
-        skip = pytest.mark.skip(
-            reason="opt-in: --run-benchmarks plus --benchmark-record or --benchmark-baseline"
-        )
+        skip = pytest.mark.skip(reason="opt-in: --run-benchmarks (see docs/testing.md)")
         for item in items:
             if item.get_closest_marker("benchmark"):
                 item.add_marker(skip)
+    else:
+        baseline_workloads = any(item.get_closest_marker("benchmark_baseline") for item in items)
+        baseline_mode = config.getoption("--benchmark-record") or config.getoption(
+            "--benchmark-baseline"
+        )
+        if baseline_workloads and not baseline_mode:
+            raise pytest.UsageError(
+                "Selected baseline workloads require exactly one of "
+                "--benchmark-record PATH or --benchmark-baseline PATH"
+            )
+        if baseline_mode and not baseline_workloads:
+            raise pytest.UsageError(
+                "Benchmark recording/comparison requires selecting baseline workloads "
+                "(see tests/test_benchmark.py)"
+            )
     if not config.getoption("--run-sparse-zd"):
         skip = pytest.mark.skip(reason="opt-in: use make test-sparse-zd")
         for item in items:
@@ -103,28 +119,25 @@ def pytest_collection_modifyitems(config, items):
 
 
 def pytest_configure(config):
-    import math
-
     enabled = config.getoption("--run-benchmarks")
     record = config.getoption("--benchmark-record")
     baseline = config.getoption("--benchmark-baseline")
-    if enabled and bool(record) == bool(baseline):
+    if record and baseline:
         raise pytest.UsageError(
-            "--run-benchmarks requires exactly one of --benchmark-record PATH or --benchmark-baseline PATH"
+            "Choose exactly one of --benchmark-record PATH or --benchmark-baseline PATH"
         )
     if not enabled and (record or baseline):
         raise pytest.UsageError("Benchmark recording/comparison requires --run-benchmarks")
-    if baseline:
-        from pathlib import Path
-
-        if not Path(baseline).is_file():
-            raise pytest.UsageError(
-                "--benchmark-baseline requires an existing JSON file, "
-                "not a directory or missing path: "
-                + str(baseline)
-                + ". To create a baseline, use --run-benchmarks "
-                "--benchmark-record PATH.json instead."
-            )
+    if baseline and not Path(baseline).is_file():
+        raise pytest.UsageError(
+            "--benchmark-baseline requires an existing JSON file, "
+            "not a directory or missing path: "
+            + str(baseline)
+            + ". To create a baseline, use --run-benchmarks "
+            "--benchmark-record PATH.json instead."
+        )
+    if record and Path(record).exists():
+        raise pytest.UsageError("Refusing to overwrite an existing baseline: " + str(record))
     allowance = config.getoption("--benchmark-max-regression")
     if not math.isfinite(allowance) or allowance < 0:
         raise pytest.UsageError("--benchmark-max-regression must be finite and nonnegative")
@@ -186,4 +199,5 @@ def gpu_benchmark(request, gpu_kernel):
         max_regression=request.config.getoption("--benchmark-max-regression"),
     )
     yield session
-    session.finish()
+    if not request.session.testsfailed:
+        session.finish()

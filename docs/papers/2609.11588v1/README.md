@@ -40,7 +40,7 @@ are in `results/`. NumPy is required for this companion.
 | 3 Corollary 3.4 / Algorithm 3.5 / Proposition 3.6 | `03_2_all_basis_and_dense_products_against_module_and_doubling` | Every ordered basis pair in dimensions 1-64, plus 16 dense integer pairs per dimension: QL vs independent four-call recursion and module signed basis table. No QL output is used as its own expectation. |
 | 4 Theorem 4.2 / Proposition 4.4 / Table 1 | `04_operation_counts_and_table_1` | All ten printed M/A/T rows reproduced from formulas. At levels 1-12, instrument recursive node visits and count six complex/real bilinear products per lower imaginary coordinate, then reconstruction products; real-product totals agree with the bound. Formula tables extended through level 20. Check total-operation crossover vs direct at N>=16 and CC at N>=32. |
 | 5 numerical protocol | `05_broadcasting_and_float_error_protocol` | Seeded normalized floating inputs at levels 3,5,8, batch shape (2,3), against independent recursion; finite results satisfy the paper's 128*N*epsilon norm-scaled bound (operand norms are one). |
-| 6 extension beyond reported dimensions | `06_dense_extension_through_level_20` | Actual dense vectors at levels 10,12,14,16,18,20, up to **1,048,576 coefficients**. Dense bipolar output coordinates 0,1,N//3,N-1 checked by independent full signed-XOR sums using `twist()`. A dense-by-four-term product at every level checks **every output coordinate** against module signs. Exact equality is required for these small-integer/dyadic calculations. CPU elapsed times saved as observations. |
+| 6 extension beyond reported dimensions | `06_dense_extension_through_level_20` | Actual dense vectors at levels 10,12,14,16,18,20, up to **1,048,576 coefficients**. Dense bipolar output coordinates 0,1,N//3,N-1 checked by independent full signed-XOR sums using `twist()`. A dense-by-four-term product at every level checks **every output coordinate** against module signs. Exact equality is required for these small-integer/dyadic calculations. |
 | Device comparison | `07_gpu_direct_comparison` | When GPU prerequisites exist, direct `CayleyKernel.multiply()` vs independent QL for eight dense integer pairs per dimension 8,16,32,256,1024. The saved JSON snapshot records this test as passed with CuPy available; current execution still depends on GPU prerequisites. |
 
 ## Interpretation
@@ -48,10 +48,8 @@ are in `results/`. NumPy is required for this companion.
 The tested quasilinear recursion agrees with the standard module convention.
 The paper's operation reduction is meaningful independently of a parallel
 GPU implementation: counting total arithmetic work and measuring elapsed
-GPU time answer different questions. The saved Python CPU timings are not
-a replication of the paper's optimized C benchmarks, and no CPU/GPU speedup
-ratio is claimed here. The user's supplied timing table is not treated as
-an independently reproduced benchmark.
+GPU time answer different questions. The historical snapshot includes Python
+CPU timings. The current test checks numerical results and operation counts.
 
 The 20-level extension allocates real dense input/output arrays; it is not
 merely a high-index sparse test. Nevertheless, for two fully dense operands
