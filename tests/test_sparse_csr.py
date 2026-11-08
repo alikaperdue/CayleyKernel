@@ -10,65 +10,21 @@ See ``docs/sparse-csr-design.md`` for the design and
 
 The sparse API dispatches to the GPU kernel when the library exposes
 the Phase C symbols for the operand dtype (float16 / bfloat16 /
-float32 / float64 / complex64 / complex128) and otherwise falls back
-transparently to a bit-for-bit CPU reference, so the tests remain
-meaningful on hosts without a GPU.
+float32 / float64 / complex64 / complex128). Otherwise it uses a CPU
+reference. SparseVector storage and conversion still use CuPy device arrays.
 
 Run with::
 
     pytest -q tests/test_sparse_csr.py
 """
 
-import os
-import sys
 import time
 
 import numpy as np
 import pytest
 
-# Make the repository root importable regardless of where pytest is launched
-# from, so that `import CayleyKernel` resolves to the local package.
-_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _REPO_ROOT not in sys.path:
-    sys.path.insert(0, _REPO_ROOT)
-
 import CayleyKernel
-from CayleyKernel import (  # noqa: E402
-    from_sparse,
-    is_sparse_beneficial,
-    sparse_multiply,
-    to_sparse,
-)
-
-cp = pytest.importorskip("cupy", reason="sparse API tests require CuPy")
-
-# Opt out of the _require_gpu_kernel autouse fixture (most tests are
-# CPU-side and do not need cuda_kernel.so).  The one benchmark that does
-# needs it guards itself with a pytest.skip.
-pytestmark = pytest.mark.cpu
-
-
-def _dense_ref(a, b):
-    """Dense reference product.
-
-    Uses the GPU kernel when available (fast, batched); otherwise falls
-    back to the pure-Python ``py_multiply`` row-by-row.
-    """
-    if CayleyKernel.loaded():
-        return CayleyKernel.multiply(a, b)
-    # CPU fallback: py_multiply is 1D; loop over the batch axis.
-    a_np = cp.asnumpy(a)
-    b_np = cp.asnumpy(b)
-    if a_np.ndim == 1:
-        out = CayleyKernel.py_multiply(a_np, b_np)
-        return cp.asarray(out, dtype=a.dtype)
-    # Batched: loop rows.
-    batch = a_np.shape[0]
-    dim = a_np.shape[1]
-    out = np.zeros((batch, dim), dtype=np.float64)
-    for r in range(batch):
-        out[r] = CayleyKernel.py_multiply(a_np[r], b_np[r])
-    return cp.asarray(out, dtype=a.dtype)
+from CayleyKernel import cp, from_sparse, is_sparse_beneficial, sparse_multiply, to_sparse
 
 
 def _make_dense_batch(batch, dim, K, seed, dtype):
@@ -107,8 +63,9 @@ def _known_zero_divisor_supports(dim):
 # ---------------------------------------------------------------------------
 # Tests: round-trip to_sparse / from_sparse (no dense kernel needed)
 # ---------------------------------------------------------------------------
+@pytest.mark.gpu_device
 @pytest.mark.parametrize("dim", [256, 1024])
-@pytest.mark.parametrize("dtype", [cp.float32, cp.float64])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_roundtrip_dense_to_sparse_and_back(dim, dtype):
     """Round-trip a dense vector (and a batch of K-sparse rows) through
     to_sparse / from_sparse and require exact recovery."""
@@ -129,6 +86,7 @@ def test_roundtrip_dense_to_sparse_and_back(dim, dtype):
 # ---------------------------------------------------------------------------
 # Tests: zero-divisor cases (no dense kernel needed)
 # ---------------------------------------------------------------------------
+@pytest.mark.gpu_device
 def test_sparse_product_known_zero_divisor():
     """The embedded witness from tests/test_sparse_zd.py must produce
     an empty support (K == 0) on the sparse path."""
@@ -145,6 +103,7 @@ def test_sparse_product_known_zero_divisor():
     )
 
 
+@pytest.mark.gpu_device
 def test_sparse_product_zero_divisor_batch():
     """A batch of the known witness must yield K_out == 0 across the batch."""
     dim = 16
@@ -169,7 +128,7 @@ def test_sparse_product_zero_divisor_batch():
 # exports sparse_mult_complex64 and sparse_mult_complex128) and the
 # Phase B spec requires the parity test to cover every supported
 # floating dtype, so they are included here as well.
-_SPARSE_DTYPES = [cp.float16, cp.float32, cp.float64, cp.complex64, cp.complex128]
+_SPARSE_DTYPES = [np.float16, np.float32, np.float64, np.complex64, np.complex128]
 if hasattr(cp, "bfloat16"):
     _SPARSE_DTYPES.append(cp.bfloat16)
 
@@ -257,7 +216,7 @@ def test_sparse_multiply_matches_dense(K, dtype):
     xs = to_sparse(x)
     ys = to_sparse(y)
     got = sparse_multiply(xs, ys)
-    want = _dense_ref(x, y)
+    want = CayleyKernel.multiply(x, y)
 
     got_np = cp.asnumpy(from_sparse(got).reshape(-1, dim))
     want_np = cp.asnumpy(want).reshape(-1, dim)
@@ -286,6 +245,7 @@ def test_sparse_multiply_matches_dense(K, dtype):
 # ---------------------------------------------------------------------------
 # Tests: is_sparse_beneficial heuristic
 # ---------------------------------------------------------------------------
+@pytest.mark.cpu
 @pytest.mark.parametrize(
     "dim, k_a, k_b, expected",
     [

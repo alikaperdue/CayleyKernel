@@ -12,9 +12,20 @@ from email.parser import BytesParser
 from importlib import metadata as package_metadata
 from pathlib import Path
 
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    pytestmark = pytest.mark.cpu
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
+@unittest.skipUnless(
+    sys.platform.startswith("linux") and shutil.which("bash") and shutil.which("make"),
+    "wheel build script requires Linux, bash, and make",
+)
 class WheelBuildScriptTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()

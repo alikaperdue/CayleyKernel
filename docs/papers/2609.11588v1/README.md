@@ -14,6 +14,8 @@ implements (3.5). This distinction is essential to the algorithm.
 
 ```bash
 python3 -m unittest tests.papers.desktop_batch.test_2609_11588v1 -v
+# Equivalent pytest selection including the slow level-20 CPU check:
+python3 -m pytest -v -m "" tests/papers/desktop_batch/test_2609_11588v1.py
 ```
 
 Direct use from the repository root:

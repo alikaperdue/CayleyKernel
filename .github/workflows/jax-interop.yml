@@ -6,6 +6,8 @@ on:
       - '.github/workflows/jax-interop.yml'
       - 'CayleyKernel/_jax.py'
       - 'CayleyKernel/__init__.py'
+      - 'tests/conftest.py'
+      - 'tests/gpu_support.py'
       - 'tests/test_jax_interop.py'
       - 'pyproject.toml'
       - 'Makefile'
@@ -16,16 +18,13 @@ on:
 permissions:
   contents: read
 
-# Runs on a CUDA-enabled runner when the org has one (label e.g. `gpu-cuda`);
-# otherwise falls back to the standard `ubuntu-latest` runner, which has no
-# CUDA devices — the tests self-skip via the module-level
-# `pytest.importorskip("jax")` and the CuPy import guard, and the job is
-# marked `continue-on-error: true` so a CUDA-less CI box still passes.
+# Use the configured GPU runner when available. The hosted fallback can
+# skip device-dependent tests when the GPU stack is unavailable.
 jobs:
   jax-interop:
     name: tests/test_jax_interop.py on CUDA runner (else self-skip)
     runs-on: ${{ vars.CI_GPU_LABEL || 'ubuntu-latest' }}
-    continue-on-error: true
+    continue-on-error: ${{ vars.CI_GPU_LABEL == '' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -41,9 +40,6 @@ jobs:
           # on a CUDA-less runner the CPU jaxlib is installed and the
           # tests still run (or self-skip where CuPy is unavailable).
           python -m pip install 'jax[cuda]' 'jaxlib[cuda]' || python -m pip install 'jax>=0.4' 'jaxlib>=0.4'
-          # CuPy needs a matching CUDA toolkit at runtime; on a CUDA-less
-          # runner the import fails and the tests self-skip, which is
-          # exactly what we want.
           python -m pip install cupy-cuda12x || true
           python -m pip install --no-deps -e .
 
@@ -57,7 +53,7 @@ jobs:
 
       - name: Run the JAX interop test file
         run: |
-          python -m pytest -v tests/test_jax_interop.py
+          python -m pytest -v tests/test_jax_interop.py ${{ vars.CI_GPU_LABEL && '--require-gpu' || '' }}
         env:
           CAYLEY_KERNEL_BLOCK_SIZE: '256'
 

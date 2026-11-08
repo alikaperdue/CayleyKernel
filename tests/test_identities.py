@@ -22,9 +22,7 @@ Run with:
 
 import pytest
 
-cp = pytest.importorskip("cupy")
-
-from CayleyKernel import conjugate, multiply  # noqa: E402
+from CayleyKernel import conjugate, cp, multiply  # noqa: E402
 
 
 def _rand(dtype, dim):
@@ -127,8 +125,9 @@ def test_higher_levels_have_zero_divisors(dim):
 
 
 # ---------------------------------------------------------------------------
-# A spot of high-dimensional identity checking (cheap via unity + involution)
+# Dense unity multiplication still visits every term at this dimension.
 # ---------------------------------------------------------------------------
+@pytest.mark.slow
 def test_high_dim_unity_and_involution_2pow20():
     dim = 2**20
     x = cp.zeros(dim, dtype=cp.float32)

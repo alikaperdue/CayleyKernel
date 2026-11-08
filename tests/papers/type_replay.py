@@ -7,6 +7,7 @@ and complexification, not extensions of real norm/topology theorems.
 import numpy as np
 
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 
 DTYPES = (np.float16, np.complex64, np.complex128)
 
@@ -81,19 +82,6 @@ def replay_product(a, b):
         np.testing.assert_allclose(actual, expected, rtol=rtol, atol=atol,
                                    err_msg=f'{x.dtype} {mode} paper replay')
     return original
-
-
-def require_gpu(case):
-    if CK.cp is None:
-        case.skipTest('CuPy unavailable; typed multiply() was not executed')
-    if not CK.loaded():
-        case.skipTest('compiled kernel unavailable; build with make kernel')
-    try:
-        count = CK.cp.cuda.runtime.getDeviceCount()
-    except CK.cp.cuda.runtime.CUDARuntimeError as exc:
-        case.skipTest('CUDA device unavailable: ' + str(exc))
-    if not count:
-        case.skipTest('no CUDA device')
 
 
 def signature_fixture(gammas):

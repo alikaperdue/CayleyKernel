@@ -52,7 +52,7 @@ jobs:
       - name: Verify Python fallback before installing Rust
         env:
           CAYLEY_KERNEL_CPU_BACKEND: python
-        run: python -m pytest -q -m cpu tests/
+        run: python -m pytest -q -m "cpu and not slow" tests/
       - name: Check Rust formatting
         run: cargo fmt --manifest-path rust/Cargo.toml --check
       - name: Test standalone Rust library
@@ -74,7 +74,7 @@ jobs:
         env:
           CAYLEY_KERNEL_CPU_BACKEND: rust
           CAYLEY_TEST_REQUIRE_RUST: '1'
-        run: python -m pytest -q -m cpu tests/
+        run: python -m pytest -q -m "cpu and not slow" tests/
       - name: Verify independent sparse zero-divisor oracle
         env:
           CAYLEY_KERNEL_CPU_BACKEND: rust

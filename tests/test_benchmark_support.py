@@ -153,6 +153,8 @@ def test_opt_in_requires_flag_and_baseline_mode(tmp_path):
         "-m",
         "pytest",
         "-q",
+        "-c",
+        str(bs.ROOT / "pyproject.toml"),
         "-p",
         "tests.conftest",
         "--confcutdir",

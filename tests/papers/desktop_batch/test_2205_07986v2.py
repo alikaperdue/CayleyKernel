@@ -16,11 +16,6 @@ from .common import (
     recursive_basis,
 )
 
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:
-    pass
 MEASUREMENTS={}
 
 
@@ -64,10 +59,6 @@ def assoc_parity(a,b,c):
 
 
 class Sections(unittest.TestCase):
-    def test_08_gpu_complex_split_last_parameter(self):
-        from tests.papers.type_replay import replay_signatures
-        replay_signatures(self,([-1]*(n-1)+[1] for n in range(1,7)))
-
     def test_02_doubling_generator_relations_and_involution(self):
         rng=random.Random(220507986)
         for n in range(1,7):
@@ -151,9 +142,21 @@ class Sections(unittest.TestCase):
             rows.append(dict(index_bits=bits,samples=24))
         MEASUREMENTS['high_index_coverage']=rows
 
+class GPUVerification(unittest.TestCase):
+    def test_08_gpu_complex_split_last_parameter(self):
+        from tests.papers.type_replay import replay_signatures
+        replay_signatures(self,([-1]*(n-1)+[1] for n in range(1,7)))
+
     def test_07_gpu_basis_and_dense_doubling(self):
         rng=random.Random(220507988)
         vectors=[(e(a),e(b)) for a,b in product(range(16),repeat=2)]
         for _ in range(16):
             vectors.append(tuple({i:rng.randrange(-2,3) for i in range(16)} for _ in range(2)))
         gpu_replay(self,vectors,16)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

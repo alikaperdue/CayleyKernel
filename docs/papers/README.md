@@ -118,11 +118,3 @@ For the 16-paper collection, the individual per-paper snapshots and the older
 [collection index](desktop-review/README.md) explains their differing counts.
 Use the linked per-paper evidence for the outcomes summarized there.
 
-## What belongs in Git
-
-Keep explanations, findings, compact reference JSON/CSV/SVG evidence, and
-required test fixtures. Downloaded PDFs, OCR text, rendered pages, and new raw
-console logs remain local. Existing tracked logs remain historical evidence;
-adding an ignore rule does not remove them from Git. Save new console logs
-outside the repository or in an ignored location, and use separate output
-paths rather than overwriting historical results.

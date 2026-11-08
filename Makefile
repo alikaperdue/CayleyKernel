@@ -8,7 +8,7 @@
 #   make kernel-amd      compile the HIP/ROCm kernel (AMD)
 #   make sign-check      host-side equivalence test of the sign function
 #   make test            run the default pytest suite
-#   make test-all        default + slow suites (excludes opt-in sparse/timing checks)
+#   make test-all        default + slow suites (opt-in flags still apply)
 #   make benchmark      opt-in timing comparison against BENCHMARK_BASELINE
 #   make test-sparse-zd  opt-in CPU sparse zero-divisor validation
 #   make zd-showcase     random million-bit zero-divisor confirmations
@@ -83,7 +83,7 @@ lint-fix:
 	$(RUFF) check --fix .
 
 test-cpu:
-	$(PYTHON) -m pytest -q -m cpu tests/
+	$(PYTHON) -m pytest -q -m "cpu and not slow" tests/
 
 all: kernel
 
@@ -107,7 +107,7 @@ sign-check:
 	./$(SIGN_TOOL) 16
 
 test:
-	$(PYTHON) -m pytest -q -m "not slow" tests/
+	$(PYTHON) -m pytest -q tests/
 
 ZD_LEVELS  ?= 4,8,32,128,1024,4096
 ZD_SAMPLES ?= 128
@@ -122,13 +122,12 @@ zd-showcase:
 	    --witnesses=$(ZD_WITNESSES) --seed=$(ZD_SEED)
 
 test-sparse-zd:
-	python3 -m pytest -q -s tests/test_sparse_zd.py --run-sparse-zd \
+	$(PYTHON) -m pytest -q -s tests/test_sparse_zd.py --run-sparse-zd \
 	    --zd-levels=$(ZD_LEVELS) --zd-samples=$(ZD_SAMPLES) --zd-seed=$(ZD_SEED) \
 	    --zd-repeats=$(ZD_REPEATS)
 
 test-all:
-	$(PYTHON) -m pytest -q -m "not slow" tests/
-	$(PYTHON) -m pytest -q -m slow tests/
+	$(PYTHON) -m pytest -q -m "" tests/
 
 BENCHMARK_BASELINE ?= benchmark-results/gpu.json
 BENCHMARK_MAX_REGRESSION ?= 0.20

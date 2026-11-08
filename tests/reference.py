@@ -45,43 +45,16 @@ def ref_mult(x, y):
 
 
 def ref_sign(row, col):
-    """Basis product sign  e_row * e_col = sign * e_(row ^ col).
-
-    Closed-form branch-free expression mirroring the CUDA kernel's
-    ``cayley_sign`` (see cuda/cuda_kernel.cu).  Kept here so the host-side sign
-    table can be cross-checked against the kernel's behaviour without
-    needing to run device code.
-    """
-    r = row
-    c = row ^ col
-    if r == 0 or c == 0:
+    """Basis product sign from the recursive doubling rule."""
+    if row == 0 or col == 0:
         return 1
-    if r == c:
-        return -1
-
-    ur, uc = r, c
-    tr = _ffs(ur) - 1
-    tc = _ffs(uc) - 1
-    tx = _ffs(ur ^ uc) - 1
-
-    if tc < tr:
-        s = ~uc >> tr
-    elif tc < tx:
-        s = ~ur >> tx
-    else:
-        s = ur >> tc
-
-    m = max(tc, tx, tr)
-    parity = s ^ _popcount((ur | uc) >> m)
-    return 1 if (parity & 1) else -1
-
-
-def _ffs(x):
-    """Find-first-set, 1-based (CUDA __ffs semantics); 0 for x == 0."""
-    if x == 0:
-        return 0
-    return (x & -x).bit_length()
-
-
-def _popcount(x):
-    return bin(x & 0xFFFFFFFF).count("1")
+    half = 1 << ((row | col).bit_length() - 1)
+    if row < half:
+        # d*a
+        return ref_sign(col - half, row)
+    if col < half:
+        # b*conj(c), with a nonzero basis index for c
+        return -ref_sign(row - half, col)
+    # -conj(d)*b, with d scalar exactly when col == half
+    sign = -1 if col == half else 1
+    return sign * ref_sign(col - half, row - half)

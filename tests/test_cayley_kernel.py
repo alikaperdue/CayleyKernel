@@ -23,8 +23,7 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-cp = pytest.importorskip("cupy", reason="GPU tests require CuPy")
-from CayleyKernel import _select_kernel, multiply  # noqa: E402
+from CayleyKernel import _select_kernel, cp, multiply  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -52,26 +51,17 @@ def ref_mult(x, y):
 
 
 # ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
-@pytest.fixture(autouse=True)
-def _seed():
-    np.random.seed(0)
-    cp.random.seed(0)
-
-
-# ---------------------------------------------------------------------------
 # 1D: kernel vs. recursive reference (single vector, legacy path)
 # ---------------------------------------------------------------------------
 @pytest.mark.parametrize("dim", [2, 4, 8, 16])
-@pytest.mark.parametrize("dtype", [cp.float32, cp.float64])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_1d_float_against_recursive(dim, dtype):
     a = cp.random.randn(dim).astype(dtype)
     b = cp.random.randn(dim).astype(dtype)
     got = multiply(a, b)
     want = ref_mult(a, b)
     assert got.shape == (dim,)
-    rtol, atol = (1e-4, 1e-5) if dtype is cp.float32 else (1e-10, 1e-12)
+    rtol, atol = (1e-4, 1e-5) if dtype is np.float32 else (1e-10, 1e-12)
     cp.testing.assert_allclose(got, want, rtol=rtol, atol=atol)
 
 

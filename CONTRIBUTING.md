@@ -130,29 +130,29 @@ Style notes for new code:
 
 ## Testing
 
-All tests live in `tests/` and use `pytest` markers declared in
-`pyproject.toml`:
+All tests live in `tests/`. Pytest validates markers against `pyproject.toml`.
 
 | Marker | Meaning |
 | --- | --- |
-| *(default)* | Core correctness, identity, broadcast, dtype tests. |
-| `cpu` | Runs without a GPU. |
-| `slow` | Heavy identity / batch tests at `2^20` and above. |
+| `cpu` | Runs without a GPU. Some checks use optional host dependencies or inspect the compiled library. |
+| `gpu_device` | Needs a CuPy device and can run without the compiled CayleyKernel library. |
+| `slow` | Expensive products and other long workloads. |
 | `sparse_zd` | CPU sparse zero-divisor validation (opt-in via `--run-sparse-zd`). |
 | `benchmark` | GPU timing checks (opt-in via `--run-benchmarks`). |
 
-Run the default suite (no GPU needed if `CAYLEY_KERNEL_CPU_BACKEND=python`):
+The default selection excludes `slow`. Tests without a `cpu` or
+`gpu_device` marker normally need CuPy, a usable device, and the compiled library.
 
 ```bash
-make test                  # pytest -q -m "not slow" tests/
-make test-all              # + the slow suite
-make test-cpu              # -m cpu only, safe without a GPU
+make test                  # python3 -m pytest -q tests/
+make test-all              # python3 -m pytest -q -m "" tests/
+make test-cpu              # python3 -m pytest -q -m "cpu and not slow" tests/
 ```
 
-The opt-in suites and their flags are in the `Makefile`; they are not run in
-CI. See [`docs/testing.md`](docs/testing.md) for details and
-[`docs/benchmark-methodology.md`](docs/benchmark-methodology.md) for the
-benchmark reproduction workflow.
+Pass `--require-gpu` on dedicated GPU runners to fail setup when a selected GPU
+test lacks its device or compiled library. Optional capability checks such as
+BF16 support still apply. The test guide lists selection and opt-in flags.
+[`docs/testing.md`](docs/testing.md)
 
 ## Pull requests
 
@@ -287,12 +287,10 @@ GPU pair) without breaking the helper:
    *which devices are used* and *how results are gathered*, never *how a
    single device's kernel is launched*.
 
-4. **Tests.** Any new topology-related test belongs in
-   `tests/test_multi_gpu.py` and must keep the module-level
-   `skipif(len(visible_devices()) < 2, ...)` guard so single-GPU CI
-   runners and the `cpu.yml` lint matrix stay green. CI runs
-   `tests/test_multi_gpu.py` with `continue-on-error: true` on
-   single-GPU runners.
+4. **Tests.** Place topology checks in `tests/test_multi_gpu.py`. Its
+   module fixture uses the shared device probe at test setup and skips when
+   fewer than two devices are visible. The GPU workflow selects both the
+   regular cases and the slow overlap check.
 
 5. **Documentation.** Update `docs/multi-gpu.md` with a new row in the
    "When split_batch wins / does not" tables and, if the topology changes

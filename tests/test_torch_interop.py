@@ -28,10 +28,17 @@ import CayleyKernel as ck  # noqa: E402
 # ---------------------------------------------------------------------------
 # Fixtures / helpers
 # ---------------------------------------------------------------------------
+@pytest.fixture(autouse=True)
+def _require_torch_cuda(pytestconfig, gpu_kernel):
+    if not torch.cuda.is_available():
+        reason = "PyTorch CUDA is unavailable"
+        if pytestconfig.getoption("--require-gpu"):
+            pytest.fail(f"--require-gpu: {reason}", pytrace=False)
+        pytest.skip(reason)
+
+
 def _cuda_tensor_factory(*shape, dtype=torch.float32):
     """Allocate a random CUDA tensor on device 0."""
-    if not torch.cuda.is_available():
-        pytest.skip("PyTorch CUDA not available on this machine.")
     return torch.randn(*shape, device="cuda", dtype=dtype)
 
 
@@ -76,8 +83,6 @@ def _tolerance(dtype):
     ids=["float32", "float64", "complex64"],
 )
 def test_torch_multiply_matches_numpy_reference(dim, batch, dtype):
-    if not torch.cuda.is_available():
-        pytest.skip("PyTorch CUDA not available")
     if dtype == torch.complex64:
         a = _cuda_tensor_factory(batch, dim, dtype=dtype) + 1j * _cuda_tensor_factory(
             batch, dim, dtype=dtype

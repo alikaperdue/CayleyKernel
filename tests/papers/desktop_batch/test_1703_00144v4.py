@@ -7,11 +7,6 @@ try:
     import numpy as np
 except ImportError:
     np=None
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:
-    pass
 
 
 def left_matrix(unit,dim):
@@ -103,5 +98,14 @@ class Sections(unittest.TestCase):
             np.testing.assert_array_equal(A.T@A,np.eye(dim))
             np.testing.assert_array_equal(A@A,-np.eye(dim))
 
+@unittest.skipIf(np is None,'NumPy unavailable for matrix experiments')
+class GPUVerification(unittest.TestCase):
     def test_08_gpu_operator_replay(self):
         gpu_replay(self,[(e(15),e(i)) for i in range(16)],16)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

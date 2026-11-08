@@ -11,6 +11,7 @@ try:
 except ModuleNotFoundError as exc:
     raise unittest.SkipTest("paper companion requires NumPy and SymPy: " + str(exc))
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 
 from .algebra import (
     PAPER,
@@ -36,12 +37,6 @@ from .algebra import (
     vector,
     words,
 )
-
-try:
-    import pytest
-    pytestmark = pytest.mark.cpu
-except ImportError:
-    pass
 
 EVIDENCE = {}
 
@@ -459,11 +454,7 @@ class Sections(unittest.TestCase):
 
 class GPUVerification(unittest.TestCase):
     def setUp(self):
-        if CK.cp is None:self.skipTest('multiply(): CuPy unavailable')
-        if not CK.loaded():self.skipTest('multiply(): compiled kernel unavailable')
-        try:count=CK.cp.cuda.runtime.getDeviceCount()
-        except CK.cp.cuda.runtime.CUDARuntimeError as exc:self.skipTest('multiply(): '+str(exc))
-        if count<1:self.skipTest('multiply(): no CUDA device')
+        require_gpu(self)
 
     def test_26_multiply_all_paper_basis_pairs_and_nested_operators(self):
         cp=CK.cp
@@ -499,3 +490,11 @@ class GPUVerification(unittest.TestCase):
             np.testing.assert_array_equal(actual,expected)
             rows.append({'level':n,'dimension':d,'dtype':'float64','batch':2})
         EVIDENCE['gpu_dense_array_replay']=rows
+
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

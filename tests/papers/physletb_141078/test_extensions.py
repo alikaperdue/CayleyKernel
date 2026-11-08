@@ -10,6 +10,7 @@ try:
 except ModuleNotFoundError as exc:
     raise unittest.SkipTest('follow-up needs NumPy and SymPy: '+str(exc))
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 
 from .algebra import comm, e, flat, matrix_units, operator, oracle, restrict, span_rank
 from .extension_algebra import (
@@ -40,12 +41,6 @@ from .particle_reconstruction import (
     restriction_matrix,
     sparse_matrix,
 )
-
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:
-    pass
 
 CONFIG={'max_exhaustive_level':9,'high_samples':256,'max_unit_level':10,'gpu_max_level':12}
 EVIDENCE={}
@@ -308,10 +303,7 @@ class Extensions(unittest.TestCase):
 
 class ExtensionGPU(unittest.TestCase):
     def setUp(self):
-        if CK.cp is None or not CK.loaded():self.skipTest('batched multiply(): CuPy or compiled kernel unavailable')
-        try:count=CK.cp.cuda.runtime.getDeviceCount()
-        except CK.cp.cuda.runtime.CUDARuntimeError as exc:self.skipTest('batched multiply(): '+str(exc))
-        if count<1:self.skipTest('batched multiply(): no CUDA device')
+        require_gpu(self)
 
     def test_14_batched_composition_and_noncomposition_products(self):
         cp=CK.cp;rows=[]
@@ -332,3 +324,11 @@ class ExtensionGPU(unittest.TestCase):
             np.testing.assert_array_equal(actual,expected)
             rows.append({'level':n,'dimension':d,'batch':batch,'dtype':'float64'})
         EVIDENCE['gpu_batches']=rows
+
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Extensions = pytest.mark.cpu(Extensions)

@@ -29,7 +29,7 @@ python3 -m tests.papers.physletb_141078.run \
   --output /tmp/cern-verification-new.json
 ```
 
-This runner executes `Sections` first in paper order, then `GPUVerification`. Plain `unittest` discovery also works, but sorts the GPU class first. The recorded run used a Python environment with NumPy, SymPy, CuPy and the loaded kernel; repository pytest integration was checked in a separate Python environment. Tests carry the `cpu` marker so that the repository's general GPU fixture does not skip their CPU work. The GPU class checks its own prerequisites; an error or mismatch after those checks succeed is a failure, not a skip.
+This runner executes `Sections` first in paper order, then `GPUVerification`. Plain `unittest` discovery also works, but sorts the GPU class first. The recorded run used a Python environment with NumPy, SymPy, CuPy and the loaded kernel; repository pytest integration was checked in a separate Python environment. The host classes carry the `cpu` marker. Pytest checks the GPU classes through the shared device and library fixtures, and standalone unittest checks the same prerequisites in setup.
 
 GPU test 27 runs full arrays through level 20, dimension 1,048,576. It uses sparse coefficients in those arrays; the actual GPU `multiply()` still executes. This can be expensive and is a correctness experiment, not a timing baseline. These GPU products passed in the subsequent GPU run; they did not run in the original no-device environment. Sparse CPU level 1024 means arithmetic on 1024-bit indices, **not** allocation or multiplication of arrays of length 2^1024.
 

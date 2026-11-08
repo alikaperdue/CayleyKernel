@@ -6,6 +6,8 @@ on:
       - '.github/workflows/multi-gpu.yml'
       - 'CayleyKernel/_distributed.py'
       - 'CayleyKernel/__init__.py'
+      - 'tests/conftest.py'
+      - 'tests/gpu_support.py'
       - 'tests/test_multi_gpu.py'
       - 'docs/multi-gpu.md'
       - 'pyproject.toml'
@@ -17,17 +19,13 @@ on:
 permissions:
   contents: read
 
-# Run on a GPU-enabled runner when the org has one (label `gpu-2x`);
-# otherwise fall back to the standard `ubuntu-latest` runner, which has
-# no CUDA devices — the tests self-skip via the module-level
-# `pytestmark = pytest.mark.skipif(len(visible_devices()) < 2, ...)`
-# guard, and we mark the job `continue-on-error: true` so a single-GPU
-# (or zero-GPU) CI box still passes.
+# Use the configured GPU runner when available. The hosted fallback can
+# skip device-dependent tests when the GPU stack is unavailable.
 jobs:
   multi-gpu:
     name: tests/test_multi_gpu.py on 2-GPU runner (else self-skip)
     runs-on: ${{ vars.CI_GPU_2X_LABEL || 'ubuntu-latest' }}
-    continue-on-error: true
+    continue-on-error: ${{ vars.CI_GPU_2X_LABEL == '' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -39,9 +37,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pytest numpy
-          # CuPy needs a matching CUDA toolkit at runtime; on a CUDA-less
-          # runner the import fails and the module-level pytestmark
-          # guard skips the whole file, which is exactly what we want.
           python -m pip install cupy-cuda12x || true
           python -m pip install --no-deps -e .
 
@@ -55,11 +50,8 @@ jobs:
 
       - name: Run the multi-GPU test file
         run: |
-          python -m pytest -v tests/test_multi_gpu.py
+          python -m pytest -v tests/test_multi_gpu.py -m "" ${{ vars.CI_GPU_2X_LABEL && '--require-gpu' || '' }}
         env:
-          # Keep the test's module-level skip guard honest: if the
-          # runner only has one (or zero) CUDA devices, the guard
-          # skips every test in the file.
           CAYLEY_KERNEL_BLOCK_SIZE: '256'
 
       - name: Show device topology (informational)

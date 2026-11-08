@@ -4,6 +4,8 @@ import json
 import numpy as np
 import pytest
 
+pytest.importorskip("scipy", minversion="1.12")
+
 from scripts.batched_eigen_frontier import (
     BatchProducts,
     derivative,
@@ -14,14 +16,12 @@ from scripts.batched_eigen_frontier import (
 )
 from scripts.paper_quadratic_frontier import Products, encoded, newton, reference_product
 
-pytestmark = pytest.mark.cpu
-
-
 def independent_rows(co, x, lam):
     a, b, c, d = co
     return a+reference_product(b, x)-lam, c+reference_product(d, x)-reference_product(x, lam)
 
 
+@pytest.mark.cpu
 def test_products_residual_and_derivative_against_individual_and_reference():
     rng = np.random.default_rng(456)
     for dim in (2, 8, 16):
@@ -53,6 +53,7 @@ def mixed_problem():
     return co, x
 
 
+@pytest.mark.cpu
 def test_mixed_convergence_compaction_partial_chunk_and_both_rows():
     co, x = mixed_problem()
     results, stats = solve_batch(co, x, batch_size=3, maxiter=20)
@@ -70,6 +71,7 @@ def test_mixed_convergence_compaction_partial_chunk_and_both_rows():
             assert max(np.linalg.norm(v) for v in rows) < 1e-8
 
 
+@pytest.mark.cpu
 def test_dense_small_newton_matches_existing_solver():
     rng = np.random.default_rng(123)
     co = tuple(rng.normal(size=(3, 8))*.1 for _ in range(4))
@@ -86,6 +88,7 @@ def test_dense_small_newton_matches_existing_solver():
         np.testing.assert_allclose(r['_root'], ref, atol=1e-8)
 
 
+@pytest.mark.cpu
 def test_retry_rounds_stop_success_and_keep_seeds():
     co, x = mixed_problem()
     records = [{'dimension': 4, 'level': 2, 'seed': 100+i, 'matrix_id': f'matrix-{i}',
@@ -99,6 +102,7 @@ def test_retry_rounds_stop_success_and_keep_seeds():
         np.testing.assert_array_equal(a[0], b[0])
 
 
+@pytest.mark.cpu
 def test_budget_nonfinite_and_shape_validation():
     co, x = mixed_problem()
     result, _ = solve_batch(co, x, maxiter=0)
@@ -116,10 +120,6 @@ def test_budget_nonfinite_and_shape_validation():
 
 def test_gpu_uses_real_2d_inputs_and_device_outputs(monkeypatch):
     import CayleyKernel as CK
-    try:
-        BatchProducts(4, 'gpu')
-    except Exception as exc:
-        pytest.skip(f'CUDA unavailable: {exc}')
     original = CK.multiply
     shapes = []
     def traced(a, b):
@@ -161,6 +161,7 @@ def test_gpu_uses_real_2d_inputs_and_device_outputs(monkeypatch):
 
 
 
+@pytest.mark.cpu
 def test_batched_cli_and_retry_archive(tmp_path, monkeypatch):
     from scripts.paper_quadratic_frontier import main
     from scripts.retry_eigen_frontier import main as retry_main
@@ -184,6 +185,7 @@ def test_batched_cli_and_retry_archive(tmp_path, monkeypatch):
     with pytest.raises(SystemExit): retry_main()
 
 
+@pytest.mark.cpu
 def test_restarted_krylov_against_dense_independent_jacobian():
     from scripts.batched_eigen_frontier import gmres_batch
     rng = np.random.default_rng(99)
@@ -203,6 +205,7 @@ def test_restarted_krylov_against_dense_independent_jacobian():
         np.testing.assert_allclose(step[i], expected, atol=1e-9)
 
 
+@pytest.mark.cpu
 def test_benchmark_archives_identical_work_and_iteration_counts(tmp_path, monkeypatch):
     from scripts.benchmark_eigen_frontier import main
     output = tmp_path/'benchmark'
@@ -220,6 +223,7 @@ def test_benchmark_archives_identical_work_and_iteration_counts(tmp_path, monkey
     with pytest.raises(SystemExit): main()
 
 
+@pytest.mark.cpu
 def test_independent_line_search_decisions():
     co = [np.zeros((2, 2)) for _ in range(4)]
     co[1][:, 0] = 1
@@ -236,6 +240,7 @@ def test_independent_line_search_decisions():
         assert r['solver'] == s['solver']
 
 
+@pytest.mark.cpu
 def test_benchmark_screen_overrides_labels_and_interrupt(tmp_path, monkeypatch, capsys):
     from argparse import Namespace
 
@@ -274,6 +279,7 @@ def test_benchmark_screen_overrides_labels_and_interrupt(tmp_path, monkeypatch, 
     assert 'INTERRUPTED' in text
 
 
+@pytest.mark.cpu
 def test_benchmark_heartbeat_stops(capsys):
     import time
 

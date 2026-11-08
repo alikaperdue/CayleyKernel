@@ -21,6 +21,8 @@ def test_invalid_block_size_rejected_before_launch(monkeypatch, value):
 @pytest.mark.cpu
 @pytest.mark.parametrize("value", [None, *map(str, BLOCK_SIZES)])
 def test_block_size_can_change_between_calls(monkeypatch, value):
+    # This test supplies a fake launch function and does not need a CUDA stream.
+    monkeypatch.setattr(ck, "cp", None)
     if value is None:
         monkeypatch.delenv("CAYLEY_KERNEL_BLOCK_SIZE", raising=False)
     else:
@@ -87,7 +89,7 @@ def test_all_block_sizes_against_recursive(monkeypatch, threads, dim, dtype):
     np.testing.assert_array_equal(ck.multiply(a, b), expected)
 
 
-@pytest.mark.parametrize("dim", [1, 4, 16, 32, 1024])
+@pytest.mark.parametrize("dim", [1, 4, 16, 32, pytest.param(1024, marks=pytest.mark.slow)])
 def test_flat_grid_stride_and_partial_last_tile(monkeypatch, dim):
     monkeypatch.setenv("CAYLEY_KERNEL_BLOCK_SIZE", "32")
     # Force a second grid-stride iteration, including a partial final block.

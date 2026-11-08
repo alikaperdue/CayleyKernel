@@ -4,11 +4,6 @@ from itertools import combinations, product
 
 from .common import Algebra, add, e, gpu_replay, mul, scale
 
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:
-    pass
 MEASUREMENTS={}
 
 
@@ -65,10 +60,6 @@ def translate(x,images):return add(*(scale(images[i],c) for i,c in x.items()))
 
 
 class Sections(unittest.TestCase):
-    def test_07_gpu_complex_split_signatures(self):
-        from tests.papers.type_replay import replay_signatures
-        replay_signatures(self,product((-1,1),repeat=3))
-
     def test_02_hurwitz_subalgebras_via_module_map(self):
         images=basis_map((1,1,1),1)
         for i,j in product(range(8),repeat=2):
@@ -131,5 +122,17 @@ class Sections(unittest.TestCase):
             for i,j in product(range(8),repeat=2):
                 self.assertEqual(twist(i<<shift,j<<shift),twist(i,j))
 
+class GPUVerification(unittest.TestCase):
+    def test_07_gpu_complex_split_signatures(self):
+        from tests.papers.type_replay import replay_signatures
+        replay_signatures(self,product((-1,1),repeat=3))
+
     def test_06_gpu_octonion_products(self):
         gpu_replay(self,[(e(i),e(j)) for i,j in product(range(8),repeat=2)],8)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

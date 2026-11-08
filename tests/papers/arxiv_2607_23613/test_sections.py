@@ -38,12 +38,6 @@ from .method import (
     sparse,
 )
 
-try:
-    import pytest
-    pytestmark = pytest.mark.cpu
-except ImportError:
-    pass
-
 
 EVIDENCE = {}
 
@@ -372,6 +366,7 @@ class Sections(unittest.TestCase):
                 rows.append({'p': p, 'gammas': gammas, 'vectors': p**4, 'roots': roots, 'distinct_traces': len(traces)})
         EVIDENCE['finite_field_reference'] = rows
 
+class GPUVerification(unittest.TestCase):
     def test_21_gpu_multiply_replay(self):
         rng = random.Random(19)
         for dim in (2, 4, 8, 16, 64, 256):
@@ -397,6 +392,13 @@ class Sections(unittest.TestCase):
             x = dense(q, 1 << n)
             expected = dense(add(scale(q, 2*q.get(0, 0)), {0: -sum(v*v for v in q.values())}), 1 << n)
             np.testing.assert_allclose(product(x, x), expected, rtol=0, atol=1e-12)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)
 
 
 if __name__ == '__main__':

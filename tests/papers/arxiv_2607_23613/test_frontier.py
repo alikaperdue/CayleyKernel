@@ -1,13 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """Regression checks for the exploratory solver, not universal existence claims."""
-import unittest
-
-try:
-    import numpy as np
-    import scipy
-except ModuleNotFoundError as exc:
-    raise unittest.SkipTest(str(exc))
+import numpy as np
 import pytest
+
+pytest.importorskip("scipy", minversion="1.12")
 
 from scripts.paper_quadratic_frontier import (
     Products,
@@ -20,9 +16,8 @@ from scripts.paper_quadratic_frontier import (
     square_root,
 )
 
-pytestmark = pytest.mark.cpu
 
-
+@pytest.mark.cpu
 def test_signed_permutation_against_recursive_doubling():
     rng = np.random.default_rng(71)
     for level in (2, 3, 4, 6):
@@ -36,12 +31,14 @@ def test_signed_permutation_against_recursive_doubling():
         np.testing.assert_allclose(square(x), reference_product(x, x), atol=1e-12)
 
 
+@pytest.mark.cpu
 def test_square_root_negative_scalar_and_near_negative_axis():
     for w in (np.array([-4.,0.,0.,0.]), np.array([-4.,1e-12,0.,0.]),
               np.array([4.,0.,0.,0.]), np.array([0.,1.,2.,-3.])):
         np.testing.assert_allclose(reference_product(square_root(w), square_root(w)), w, atol=1e-12)
 
 
+@pytest.mark.cpu
 def test_derivative_matches_independent_product():
     rng = np.random.default_rng(73)
     x, h = rng.normal(size=(2, 16))
@@ -49,12 +46,14 @@ def test_derivative_matches_independent_product():
     np.testing.assert_allclose(square_derivative(x, h), expected, atol=1e-12)
 
 
+@pytest.mark.cpu
 def test_unplanted_sedenion_root_checked_by_full_product():
     result = root_experiment(4, 27613, 'cpu', 0.5, 1e-9)
     assert all(b['status'] == 'root_verified' for b in result['branches'])
     assert all(b['direct_product_residual'] < 1e-8 for b in result['branches'])
 
 
+@pytest.mark.cpu
 def test_octonion_eigenvalue_pipeline():
     result = eigen_experiment(3, 26613, 'cpu', 1e-9)
     assert result['transformed_converged']
@@ -62,12 +61,14 @@ def test_octonion_eigenvalue_pipeline():
     assert result['status'] == 'eigenpair_verified'
 
 
+@pytest.mark.cpu
 def test_stalled_solver_is_not_a_root():
     x, info = newton(lambda x: np.ones(2), lambda x,h: np.zeros(2), np.zeros(2))
     assert not info['converged']
     assert info['residuals'][-1] > 1
 
 
+@pytest.mark.cpu
 def test_sedenion_transformation_failure_and_direct_recovery():
     result = eigen_experiment(4, 27613, 'cpu', 1e-9)
     assert result['transformed_converged']
@@ -78,21 +79,13 @@ def test_sedenion_transformation_failure_and_direct_recovery():
 
 
 def test_gpu_root_and_eigen_pipeline():
-    import CayleyKernel as CK
-    if CK.cp is None or not CK.loaded():
-        pytest.skip('CuPy/kernel unavailable')
-    try:
-        devices = CK.cp.cuda.runtime.getDeviceCount()
-    except CK.cp.cuda.runtime.CUDARuntimeError as exc:
-        pytest.skip(str(exc))
-    if not devices:
-        pytest.skip('No CUDA device')
     roots = root_experiment(4, 27613, 'gpu', 0.5, 1e-9)
     assert all(b['status'] == 'root_verified' for b in roots['branches'])
     eigen = eigen_experiment(3, 26613, 'gpu', 1e-9)
     assert eigen['status'] == 'eigenpair_verified'
 
 
+@pytest.mark.cpu
 def test_saved_vectors_reproduce_original_equation(tmp_path, monkeypatch):
     import hashlib
     import json

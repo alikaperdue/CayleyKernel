@@ -2,10 +2,10 @@
 # Copyright (c) 2026 Alika Perdue
 """Correctness tests: GPU kernel vs the recursive Cayley-Dickson reference.
 
-Default-suite budget: dense reference comparisons stay at small dimensions
-(recursion is O(dim^2) with heavy launch overhead), while high dimensions
-(up to 2^20) are verified exactly using sparse inputs against a closed-form
-basis-sign expansion -- which is just as rigorous and far cheaper.
+Small products are compared against recursive doubling. Larger products
+use sparse operands and a reference that expands only their nonzero terms.
+The kernel still evaluates the full dense product, so the largest cases
+carry the slow marker.
 
 Run with:
     pytest -q tests/test_correctness.py
@@ -14,9 +14,7 @@ Run with:
 import numpy as np
 import pytest
 
-cp = pytest.importorskip("cupy")
-
-from CayleyKernel import _select_kernel, multiply  # noqa: E402
+from CayleyKernel import _select_kernel, cp, multiply, twist
 from tests.reference import ref_mult, ref_sign  # noqa: E402
 
 
@@ -34,7 +32,8 @@ def sparse_product(dim, ix, vx, iy, vy):
 
 def random_sparse(dim, k, rng):
     ix = rng.choice(dim, size=k, replace=False)
-    vx = rng.normal(size=k)
+    # Small integer coefficients make both GPU precision modes exact.
+    vx = rng.integers(1, 9, size=k) * rng.choice([-1, 1], size=k)
     return ix, vx
 
 
@@ -48,14 +47,14 @@ def as_dense(dim, ix, vx, dtype):
 # 1D: kernel vs. recursive reference (dense, small dims)
 # ---------------------------------------------------------------------------
 @pytest.mark.parametrize("dim", [2, 4, 8, 16, 32, 64])
-@pytest.mark.parametrize("dtype", [cp.float32, cp.float64])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_1d_float_against_recursive(dim, dtype):
     a = cp.random.randn(dim).astype(dtype)
     b = cp.random.randn(dim).astype(dtype)
     got = multiply(a, b)
     want = ref_mult(a, b)
     assert got.shape == (dim,)
-    rtol, atol = (1e-4, 1e-5) if dtype is cp.float32 else (1e-10, 1e-12)
+    rtol, atol = (1e-4, 1e-5) if dtype is np.float32 else (1e-10, 1e-12)
     cp.testing.assert_allclose(got, want, rtol=rtol, atol=atol)
 
 
@@ -93,8 +92,15 @@ def test_bool_matches_int32_nonzero_pattern():
 # ---------------------------------------------------------------------------
 # High dimensions: exact sparse verification (no recursion needed)
 # ---------------------------------------------------------------------------
-@pytest.mark.parametrize("dim", [1024, 2**14, 2**16])
-def FAILStest_sparse_high_dim_exact(dim):
+@pytest.mark.parametrize(
+    "dim",
+    [
+        1024,
+        pytest.param(2**14, marks=pytest.mark.slow),
+        pytest.param(2**16, marks=pytest.mark.slow),
+    ],
+)
+def test_sparse_high_dim_exact(dim):
     rng = np.random.default_rng(1234)
     ix, vx = random_sparse(dim, 8, rng)
     iy, vy = random_sparse(dim, 8, rng)
@@ -102,10 +108,11 @@ def FAILStest_sparse_high_dim_exact(dim):
     got = multiply(as_dense(dim, ix, vx, np.float64), as_dense(dim, iy, vy, np.float64))
     want = sparse_product(dim, ix, vx, iy, vy)
 
-    cp.testing.assert_allclose(got, cp.asarray(want), rtol=1e-12, atol=1e-12)
+    cp.testing.assert_array_equal(got, cp.asarray(want))
 
 
-def FAILStest_sparse_spot_2pow20():
+@pytest.mark.slow
+def test_sparse_spot_2pow20():
     """2^20 spot check: one exact sparse product at ~1M dimensions."""
     dim = 2**20
     rng = np.random.default_rng(2020)
@@ -115,13 +122,20 @@ def FAILStest_sparse_spot_2pow20():
     got = multiply(as_dense(dim, ix, vx, np.float32), as_dense(dim, iy, vy, np.float32))
     want = sparse_product(dim, ix, vx, iy, vy)
 
-    cp.testing.assert_allclose(got, cp.asarray(want.astype(np.float32)), rtol=1e-3, atol=1e-4)
+    cp.testing.assert_array_equal(got, cp.asarray(want, dtype=cp.float32))
 
 
 # ---------------------------------------------------------------------------
 # Full basis sign table (dim = 16): every e_row * e_col
 # ---------------------------------------------------------------------------
-def FAILStest_basis_sign_table_dim16():
+@pytest.mark.cpu
+def test_basis_sign_oracle_matches_cpu_dim16():
+    for row in range(16):
+        for col in range(16):
+            assert ref_sign(row, col) == twist(row, col), (row, col)
+
+
+def test_basis_sign_table_dim16():
     dim = 16
     for row in range(dim):
         for col in range(dim):

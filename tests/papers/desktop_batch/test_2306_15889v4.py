@@ -7,11 +7,6 @@ from tests.papers.arxiv_2608_28176.algebra import Algebra, witness
 
 from .common import add, close, conj, e, gpu_replay, mul, neg, pair, rank, scale
 
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:
-    pass
 MEASUREMENTS={}
 
 
@@ -227,7 +222,15 @@ class Sections(unittest.TestCase):
             coeff=[e(3),a,{},e(0),a,e(1)]
             self.assertEqual(regular(friend(coeff,half),pair({},x,half)),conj(alt(coeff,x)))
 
+class GPUVerification(unittest.TestCase):
     def test_07_gpu_root_and_friend_products(self):
         coeff=[{0:-1,3:-1},e(1),e(0)]
         gpu_replay(self,[(e(1),e(2)),(e(1),add(e(1),e(2))),
                          (friend(coeff,4)[1],pair({},e(2),4))],8)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

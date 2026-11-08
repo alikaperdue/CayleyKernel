@@ -8,10 +8,6 @@ from .test_2205_07986v2 import independent_sign
 try:
     import numpy as np
 except ImportError:np=None
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:pass
 MEASUREMENTS={}
 
 
@@ -113,6 +109,8 @@ class Sections(unittest.TestCase):
             self.assertEqual(mul(x,y),expected)
         MEASUREMENTS['explicit_tensor_storage_scaling']=[dict(dimension=d,entries=d**3,nonzero=d**2) for d in (8,16,64,1024)]
 
+@unittest.skipIf(np is None,'NumPy unavailable')
+class GPUVerification(unittest.TestCase):
     def test_06_gpu_tensor_replay(self):
         gpu_replay(self,[({0:1,1:2,15:-1},{0:3,2:1,7:2})],16)
 
@@ -136,3 +134,10 @@ class Sections(unittest.TestCase):
                     actual=products.sum(axis=1)
                     expected=dense(X.transpose(0,2,1),K.transpose(2,0,1),tensor(dim)).transpose(0,2,1)
                     np.testing.assert_array_equal(actual,expected)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

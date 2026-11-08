@@ -56,9 +56,7 @@ class TestHalfWrapper:
         with pytest.raises(TypeError, match="Rebuild the kernel"):
             ck._select_kernel(np.dtype(np.float16))
 
-    def test_library_binds_half_entry_points(self):
-        if not ck.loaded():
-            pytest.skip("Build the shared library with make kernel first.")
+    def test_library_binds_half_entry_points(self, compiled_kernel):
         legacy, batched = ck._select_kernel(np.dtype(np.float16))
         assert legacy.argtypes == [ctypes.c_void_p] * 3 + [ctypes.c_int]
         assert batched is not None
@@ -67,9 +65,7 @@ class TestHalfWrapper:
         assert batched.restype is None
 
     @pytest.mark.parametrize("entry", ["legacy", "batched"])
-    def test_empty_c_launch_is_noop(self, entry):
-        if not ck.loaded():
-            pytest.skip("Build the shared library with make kernel first.")
+    def test_empty_c_launch_is_noop(self, entry, compiled_kernel):
         legacy, batched = ck._select_kernel(np.dtype(np.float16))
         # The launch helper returns before touching the GPU for empty work.
         out = np.array([7.5], dtype=np.float16)

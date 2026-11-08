@@ -7,6 +7,7 @@ from itertools import combinations, product
 import numpy as np
 
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 
 from .finite import (
     add,
@@ -373,9 +374,7 @@ class PaperVerification(unittest.TestCase):
 
 class GPUVerification(unittest.TestCase):
     def setUp(self):
-        if CK.cp is None:self.skipTest('CuPy is unavailable')
-        if not CK.loaded():self.skipTest('Build CayleyKernel CUDA library first')
-        if CK.cp.cuda.runtime.getDeviceCount()<1:self.skipTest('No CUDA device')
+        require_gpu(self)
 
     def test_05_05_half_exact_modp_products(self):
         # With p<=7 and d<=16, |each integer output| <= 16*6^2=576.
@@ -441,4 +440,3 @@ except ImportError:
     pass
 else:
     PaperVerification=pytest.mark.cpu(PaperVerification)
-    GPUVerification=pytest.mark.cpu(GPUVerification)

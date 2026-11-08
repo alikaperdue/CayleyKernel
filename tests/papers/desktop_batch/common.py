@@ -6,6 +6,7 @@ API (currently named basis). Sparse products never stand in for GPU execution.
 import math
 
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 from tests.papers.arxiv_2608_28176.algebra import (
     Algebra, add, conj, e, neg, scale, pair, rank, nullity, recursive_basis,
@@ -39,16 +40,7 @@ def close(case, x, y, tol=1e-12):
 
 
 def gpu_replay(case, vectors, dim):
-    if CK.cp is None:
-        case.skipTest('CuPy is unavailable; multiply() was not executed')
-    if not CK.loaded():
-        case.skipTest('compiled kernel unavailable')
-    try:
-        count = CK.cp.cuda.runtime.getDeviceCount()
-    except CK.cp.cuda.runtime.CUDARuntimeError as exc:
-        case.skipTest('CUDA device unavailable: ' + str(exc))
-    if not count:
-        case.skipTest('no CUDA device')
+    require_gpu(case)
     import numpy as np
     a = np.zeros((len(vectors), dim), dtype=np.float64)
     b = np.zeros_like(a)

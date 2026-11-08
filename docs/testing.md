@@ -1,8 +1,39 @@
-# Benchmarks and sparse validation
+# Testing CayleyKernel
 
 [Back to the README](../README.md)
 
 Commands below run from the repository root.
+
+## Test selection
+
+| Workload | Make | Pytest |
+| --- | --- | --- |
+| Default | `make test` | `python3 -m pytest -q tests/` |
+| Default host-only | `make test-cpu` | `python3 -m pytest -q -m "cpu and not slow" tests/` |
+| Slow only | | `python3 -m pytest -q -m slow tests/` |
+| Default and slow | `make test-all` | `python3 -m pytest -q -m "" tests/` |
+
+An explicit `-m` expression replaces the default `not slow` filter, so
+`-m cpu` includes slow host checks. The `--run-sparse-zd` and
+`--run-benchmarks` flags independently enable their suites.
+
+The default suite includes the dimension-16 basis table and dimension-1024
+sparse-input dense product. The larger sparse-input products at dimensions
+`2^14`, `2^16`, and `2^20`, the `2^20` unity check, and other expensive
+products are slow. The quasilinear paper's million-component CPU check is
+also slow.
+
+GPU tests check CuPy and device availability before seeding the GPU RNG.
+Most GPU tests also need the compiled CayleyKernel library. Tests marked
+`gpu_device` can run with CuPy and a device alone, including CSR conversion
+and checks that can use the sparse product's host fallback.
+
+Use `python3 -m pytest -q --require-gpu tests/` on a dedicated GPU runner.
+Missing GPU prerequisites produce setup failures for selected GPU tests.
+Local runs skip those tests. Host tests, tests deselected by markers, and
+disabled opt-in suites bypass GPU setup. Optional dependencies and
+capability-specific skips such as CuPy 14+ for BF16 or a second device
+still apply.
 
 ## GPU performance baselines
 

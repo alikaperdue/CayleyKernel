@@ -7,11 +7,6 @@ from .common import add, conj, e, gpu_replay
 from .test_1602_02843v3 import kernel_shuffle, omega
 from .test_1474295358 import tree2
 
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:
-    pass
 
 
 @lru_cache(None)
@@ -122,5 +117,13 @@ class Sections(unittest.TestCase):
                 for p,q in [(2**n+r,2**m+s),(2**m+2**n+r,2**n+s),(2**m+r,2**m+2**n+s)]:
                     self.assertEqual(tree2(p,q),1)
 
+class GPUVerification(unittest.TestCase):
     def test_17_gpu_standard_octonions(self):
         gpu_replay(self,[(add(e(2),e(5)),add(e(3),e(4)))],8)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

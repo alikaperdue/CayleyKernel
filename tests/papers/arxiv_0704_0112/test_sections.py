@@ -6,6 +6,7 @@ from fractions import Fraction
 from itertools import combinations, product
 
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 
 from .emanation import (
@@ -463,9 +464,7 @@ class PaperVerification(unittest.TestCase):
 
 class GPUVerification(unittest.TestCase):
     def setUp(self):
-        if CK.cp is None:self.skipTest('CuPy is unavailable')
-        if not CK.loaded():self.skipTest('Build CayleyKernel CUDA library first')
-        if CK.cp.cuda.runtime.getDeviceCount()<1:self.skipTest('No CUDA device')
+        require_gpu(self)
 
     def test_06_01_multiply_all_basis_pairs(self):
         import numpy as np
@@ -515,4 +514,3 @@ except ImportError:
     pass
 else:
     PaperVerification=pytest.mark.cpu(PaperVerification)
-    GPUVerification=pytest.mark.cpu(GPUVerification)

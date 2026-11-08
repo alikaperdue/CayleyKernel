@@ -7,6 +7,7 @@ from itertools import product
 import numpy as np
 
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 
 from .loops import (
@@ -436,16 +437,7 @@ class PaperVerification(unittest.TestCase):
 
 class GPUVerification(unittest.TestCase):
     def setUp(self):
-        if CK.cp is None:
-            self.skipTest('CuPy unavailable; multiply() not executed')
-        if not CK.loaded():
-            self.skipTest('cuda_kernel.so unavailable; build with make kernel')
-        try:
-            devices = CK.cp.cuda.runtime.getDeviceCount()
-        except CK.cp.cuda.runtime.CUDARuntimeError as exc:
-            self.skipTest('CUDA device unavailable: '+str(exc))
-        if not devices:
-            self.skipTest('No CUDA device')
+        require_gpu(self)
 
     def test_02_multiply_all_4096_signed_loop_products(self):
         eye = np.eye(32)
@@ -479,4 +471,3 @@ except ImportError:
     pass
 else:
     PaperVerification=pytest.mark.cpu(PaperVerification)
-    GPUVerification=pytest.mark.cpu(GPUVerification)

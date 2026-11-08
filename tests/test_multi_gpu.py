@@ -12,22 +12,13 @@ import numpy as np
 import pytest
 
 import CayleyKernel as ck
-from CayleyKernel import _distributed
+from CayleyKernel import _distributed, cp
 
-try:
-    import cupy as cp
-except ImportError:  # pragma: no cover
-    cp = None
 
-# ---------------------------------------------------------------------------
-# module-level skip: requires at least 2 visible CUDA devices
-# ---------------------------------------------------------------------------
-if cp is None:
-    pytestmark = pytest.mark.skip(reason="CuPy not available; multi-GPU tests skipped")
-elif len(_distributed.visible_devices()) < 2:
-    pytestmark = pytest.mark.skip(
-        reason="Fewer than 2 CUDA devices visible; multi-GPU tests skipped"
-    )
+@pytest.fixture(scope="module", autouse=True)
+def _two_devices(gpu_device_count):
+    if gpu_device_count < 2:
+        pytest.skip("Multi-GPU tests require at least two visible devices")
 
 
 def _rng(batch, dim, dtype, seed=2026):
@@ -125,6 +116,7 @@ def test_split_batch_out_buffer():
 # per-GPU times (i.e. we are not serialising on the CPU with extra
 # overhead on top of the natural sequential cost)
 # ---------------------------------------------------------------------------
+@pytest.mark.slow
 def test_split_batch_overlaps_across_devices():
     """On a 2-GPU machine, split_batch(batch=2**20, dim=32, float32)
     must complete in <= 2x the sum of the two per-GPU times.

@@ -12,6 +12,7 @@ from fractions import Fraction
 from functools import lru_cache
 
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 
 from .algebra import (
@@ -33,16 +34,6 @@ from .algebra import (
     witness,
 )
 from .tables import octonion_table, quaternion_table, table1
-
-try:
-    import pytest
-except ImportError:
-    pass
-else:
-    # CPU marker bypasses the repository's blanket GPU skip, even for the
-    # CUDA tests below: those perform their own prerequisite check.
-    pytestmark = pytest.mark.cpu
-
 
 @lru_cache(None)
 def ordinary_graph(n):
@@ -710,16 +701,7 @@ class GPUVerification(unittest.TestCase):
         replay_signatures(self,(g for n in range(1,5) for g in it.product((-1,1),repeat=n)))
 
     def setUp(self):
-        if CK.cp is None:
-            raise unittest.SkipTest('multiply(): CuPy is not installed; CPU checks still run')
-        if not CK.loaded():
-            raise unittest.SkipTest('multiply(): cuda_kernel.so missing; run make kernel')
-        try:
-            count=CK.cp.cuda.runtime.getDeviceCount()
-        except CK.cp.cuda.runtime.CUDARuntimeError as exc:
-            raise unittest.SkipTest('multiply(): CUDA device unavailable: '+str(exc))
-        if not count:
-            raise unittest.SkipTest('multiply(): no CUDA devices')
+        require_gpu(self)
 
     def batch_check(self,A,pairs):
         cp=CK.cp
@@ -758,6 +740,14 @@ def load_tests(loader, tests, pattern):
     # replay follows it, using the same mathematics on a different backend.
     return unittest.TestSuite([loader.loadTestsFromTestCase(PaperSections),
                                loader.loadTestsFromTestCase(GPUVerification)])
+
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    PaperSections = pytest.mark.cpu(PaperSections)
 
 
 if __name__=='__main__':

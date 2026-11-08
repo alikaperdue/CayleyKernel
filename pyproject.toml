@@ -123,11 +123,16 @@ quote-style = "double"   # match the existing docstring style
 line-ending = "lf"
 
 [tool.pytest.ini_options]
+addopts = "--strict-markers -m 'not slow'"
 markers = [
+    "cpu: host-only checks that need no GPU",
+    "gpu_device: requires a CuPy device but can run without the compiled CayleyKernel library",
     "sparse_zd: CPU-only sparse zero-divisor validation (opt-in: --run-sparse-zd)",
-    "slow: heavy identity/batch tests at 2^20 and above (opt-in: pytest -m slow)",
+    "slow: expensive products and other long workloads (opt-in: pytest -m slow)",
     "benchmark: GPU timing checks (opt-in: --run-benchmarks with a local baseline)",
 ]
 filterwarnings = [
+    # Keep unknown markers fatal even on pytest releases that ignore --strict-markers in addopts.
+    "error::pytest.PytestUnknownMarkWarning",
     "ignore::DeprecationWarning:ml_dtypes",
 ]

@@ -13,20 +13,18 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 
-try:
-    import numpy as np
-except ImportError:
-    np = None
-
-try:
-    import cupy as cp
-except Exception:
-    cp = None
+import numpy as np
 
 import CayleyKernel
+from tests.gpu_support import GPUUnavailable, check_compiled_kernel, device_count
 
 
 def pytest_addoption(parser):
+    parser.addoption(
+        "--require-gpu",
+        action="store_true",
+        help="Fail selected GPU tests if their device or compiled kernel is unavailable.",
+    )
     timing = parser.getgroup("GPU performance baselines")
     timing.addoption(
         "--run-benchmarks",
@@ -130,62 +128,62 @@ def pytest_configure(config):
     allowance = config.getoption("--benchmark-max-regression")
     if not math.isfinite(allowance) or allowance < 0:
         raise pytest.UsageError("--benchmark-max-regression must be finite and nonnegative")
-    # Register custom markers (also declared in pyproject.toml).
-    config.addinivalue_line("markers", "slow: heavy 2^20+ identity/batch tests (pytest -m slow)")
-    config.addinivalue_line(
-        "markers", "benchmark: GPU timing checks (opt-in: --run-benchmarks with a local baseline)"
-    )
-    config.addinivalue_line("markers", "sparse_zd: opt-in CPU sparse zero-divisor checks")
-    config.addinivalue_line("markers", "cpu: CPU-only checks without a CUDA runtime")
 
 
-@pytest.fixture(autouse=True)
-def _seed(request):
-    if (
-        request.node.get_closest_marker("sparse_zd")
-        or request.node.get_closest_marker("cpu")
-        or request.node.get_closest_marker("benchmark")
-    ):
-        return
-    if np is not None:
-        np.random.seed(0)
-    if cp is not None:
-        cp.random.seed(0)
+def _gpu_unavailable(config, reason):
+    if config.getoption("--require-gpu"):
+        pytest.fail(f"--require-gpu: {reason}", pytrace=False)
+    pytest.skip(str(reason))
 
 
 @pytest.fixture(scope="session")
-def gpu_benchmark(request):
+def gpu_device_count(pytestconfig):
+    try:
+        return device_count()
+    except GPUUnavailable as exc:
+        _gpu_unavailable(pytestconfig, exc)
+
+
+@pytest.fixture(scope="session")
+def compiled_kernel():
+    """Host-only ABI checks can use the library without a device."""
+    try:
+        check_compiled_kernel()
+    except GPUUnavailable as exc:
+        pytest.skip(str(exc))
+
+
+@pytest.fixture(scope="session")
+def gpu_kernel(pytestconfig, gpu_device_count):
+    try:
+        check_compiled_kernel()
+    except GPUUnavailable as exc:
+        _gpu_unavailable(pytestconfig, exc)
+    return CayleyKernel.cp
+
+
+@pytest.fixture(autouse=True)
+def _prepare_gpu_test(request):
+    if request.node.get_closest_marker("cpu"):
+        return
+    if request.node.get_closest_marker("gpu_device"):
+        request.getfixturevalue("gpu_device_count")
+    else:
+        request.getfixturevalue("gpu_kernel")
+    if not request.node.get_closest_marker("benchmark"):
+        np.random.seed(0)
+        CayleyKernel.cp.random.seed(0)
+
+
+@pytest.fixture(scope="session")
+def gpu_benchmark(request, gpu_kernel):
     from tests.benchmark_support import BenchmarkSession
 
-    if cp is None or not CayleyKernel.loaded():
-        pytest.skip("Benchmark requires CuPy and the compiled kernel")
-    try:
-        if cp.cuda.runtime.getDeviceCount() < 1:
-            pytest.skip("Benchmark requires a CUDA device")
-    except cp.cuda.runtime.CUDARuntimeError as exc:
-        pytest.skip("CUDA device unavailable: " + str(exc))
     session = BenchmarkSession(
-        cp,
+        gpu_kernel,
         baseline=request.config.getoption("--benchmark-baseline"),
         record=request.config.getoption("--benchmark-record"),
         max_regression=request.config.getoption("--benchmark-max-regression"),
     )
     yield session
     session.finish()
-
-
-@pytest.fixture(autouse=True)
-def _require_gpu_kernel(request):
-    """Skip the whole suite when the GPU stack is unavailable.
-
-    A fresh clone has no compiled kernel (it is built with `make kernel`).
-    Skipping instead of failing keeps `pytest` green in environments
-    without nvcc/CUDA, while the message tells developers exactly what
-    to run.
-    """
-    if request.node.get_closest_marker("sparse_zd") or request.node.get_closest_marker("cpu"):
-        return
-    if cp is None:
-        pytest.skip("CuPy/CUDA runtime not available on this machine.")
-    if not CayleyKernel.loaded():
-        pytest.skip("cuda_kernel.so not found -- build it first:  make kernel")

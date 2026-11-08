@@ -10,7 +10,7 @@ new experiments below have separate local CPU evidence and an optional GPU test.
 
 ## Run the new experiments
 
-Run these commands from the repository root in a Python environment with NumPy and SciPy. Install the
+Run these commands from the repository root in a Python environment with NumPy and SciPy 1.12 or newer. Install the
 additional dependencies if needed:
 
 ```bash

@@ -7,6 +7,7 @@ from itertools import combinations, product
 import numpy as np
 
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 
 from .algebra import (
@@ -386,12 +387,7 @@ class PaperVerification(unittest.TestCase):
 
 class GPUVerification(unittest.TestCase):
     def setUp(self):
-        if CK.cp is None:raise unittest.SkipTest('CuPy/CUDA runtime unavailable; multiply() was not executed')
-        if not CK.loaded():raise unittest.SkipTest('Compiled CayleyKernel shared library unavailable')
-        try:
-            if CK.cp.cuda.runtime.getDeviceCount()<1:raise unittest.SkipTest('No CUDA device')
-        except unittest.SkipTest:raise
-        except Exception as exc:raise unittest.SkipTest('CUDA runtime unavailable: '+str(exc))
+        require_gpu(self)
 
     def test_04_01_multiply_all_basis_pairs_through_sedenions(self):
         for d in (1,2,4,8,16):
@@ -431,4 +427,3 @@ except ImportError:
     pass
 else:
     PaperVerification=pytest.mark.cpu(PaperVerification)
-    GPUVerification=pytest.mark.cpu(GPUVerification)

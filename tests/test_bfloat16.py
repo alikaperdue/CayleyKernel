@@ -18,17 +18,10 @@ def bf16():
 
 
 @pytest.fixture
-def gpu(bf16):
-    cp = ck.cp
-    if cp is None or int(cp.__version__.split(".")[0]) < 14:
+def gpu(bf16, gpu_kernel):
+    cp = gpu_kernel
+    if int(cp.__version__.split(".")[0]) < 14:
         pytest.skip("BF16 GPU tests require CuPy 14+ and ml_dtypes")
-    try:
-        if cp.cuda.runtime.getDeviceCount() < 1:
-            pytest.skip("No CUDA device")
-    except cp.cuda.runtime.CUDARuntimeError as exc:
-        pytest.skip("CUDA device unavailable: " + str(exc))
-    if not ck.loaded():
-        pytest.fail('Build the CUDA library first: make kernel ARCHS="sm_120"')
     # A stale build is a failure, not an optional-dependency skip.
     ck._select_kernel(np.dtype(bf16))
     return cp
@@ -62,9 +55,7 @@ def test_registry_and_missing_library(monkeypatch):
 
 
 @pytest.mark.cpu
-def test_library_abi_and_empty_launch():
-    if not ck.loaded():
-        pytest.skip("Build the shared library first: make kernel")
+def test_library_abi_and_empty_launch(compiled_kernel):
     legacy, batched = ck._select_kernel(SimpleNamespace(name="bfloat16"))
     assert legacy.argtypes == [ctypes.c_void_p] * 3 + [ctypes.c_int]
     assert batched is not None

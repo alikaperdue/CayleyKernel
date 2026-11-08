@@ -7,11 +7,6 @@ from CayleyKernel import twist
 
 from .common import basis_product, e, gpu_replay, recursive_basis
 
-try:
-    import pytest
-    pytestmark = pytest.mark.cpu
-except ImportError:
-    pass
 
 
 def omega2(p, q):
@@ -88,5 +83,13 @@ class Sections(unittest.TestCase):
         for p,q in product(range(128),repeat=2):
             self.assertEqual(reverse_bits(p^q,7),reverse_bits(p,7)^reverse_bits(q,7))
 
+class GPUVerification(unittest.TestCase):
     def test_06_gpu_standard_convention(self):
         gpu_replay(self,[(e(p),e(q)) for p,q in product(range(16),repeat=2)],16)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

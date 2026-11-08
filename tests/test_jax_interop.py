@@ -112,35 +112,46 @@ def test_jax_multiply_1d_single_vector():
 # ---------------------------------------------------------------------------
 # 2. Validation errors
 # ---------------------------------------------------------------------------
-def test_jax_rejects_non_power_of_two_dim():
+@pytest.fixture
+def cpu_jax():
+    with jax.default_device(jax.devices("cpu")[0]):
+        yield
+
+
+@pytest.mark.cpu
+def test_jax_rejects_non_power_of_two_dim(cpu_jax):
     a = jnp.zeros(3, dtype=jnp.float32)
     b = jnp.zeros(3, dtype=jnp.float32)
     with pytest.raises(ValueError, match="power of two"):
         ck.jax.multiply(a, b)
 
 
-def test_jax_rejects_mixed_dtype():
+@pytest.mark.cpu
+def test_jax_rejects_mixed_dtype(cpu_jax):
     a = jnp.zeros(8, dtype=jnp.float32)
     b = jnp.zeros(8, dtype=jnp.float64)
     with pytest.raises(TypeError, match="homogeneous"):
         ck.jax.multiply(a, b)
 
 
-def test_jax_rejects_unsupported_dtype():
+@pytest.mark.cpu
+def test_jax_rejects_unsupported_dtype(cpu_jax):
     a = jnp.zeros(8, dtype=jnp.int32)
     b = jnp.zeros(8, dtype=jnp.int32)
     with pytest.raises(TypeError, match="float32, float64, complex64"):
         ck.jax.multiply(a, b)
 
 
-def test_jax_rejects_shape_mismatch():
+@pytest.mark.cpu
+def test_jax_rejects_shape_mismatch(cpu_jax):
     a = jnp.zeros((4,), dtype=jnp.float32)
     b = jnp.zeros((8,), dtype=jnp.float32)
     with pytest.raises(ValueError, match="identical shapes"):
         ck.jax.multiply(a, b)
 
 
-def test_jax_rejects_dim_above_v1_limit():
+@pytest.mark.cpu
+def test_jax_rejects_dim_above_v1_limit(cpu_jax):
     dim = 512
     a = jnp.zeros(dim, dtype=jnp.float32)
     b = jnp.zeros(dim, dtype=jnp.float32)
@@ -148,7 +159,8 @@ def test_jax_rejects_dim_above_v1_limit():
         ck.jax.multiply(a, b)
 
 
-def test_jax_rejects_out():
+@pytest.mark.cpu
+def test_jax_rejects_out(cpu_jax):
     a = jnp.zeros(8, dtype=jnp.float32)
     b = jnp.zeros(8, dtype=jnp.float32)
     o = jnp.zeros(8, dtype=jnp.float32)

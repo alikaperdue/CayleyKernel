@@ -5,10 +5,6 @@ from itertools import combinations, permutations, product
 
 from .common import add, conj, e, gpu_replay, mul
 
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:pass
 MEASUREMENTS={}
 
 
@@ -146,5 +142,13 @@ class Sections(unittest.TestCase):
         self.assertEqual(len(F),294)
         MEASUREMENTS['spinor_form_norm_squared']=294
 
+class GPUVerification(unittest.TestCase):
     def test_06_gpu_cayley_basis_replay(self):
         gpu_replay(self,[(e(i),e(j)) for i,j in product(range(8),repeat=2)],8)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

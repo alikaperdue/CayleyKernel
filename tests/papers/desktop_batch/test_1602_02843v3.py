@@ -7,11 +7,6 @@ from CayleyKernel import twist
 
 from .common import basis_product, e, gpu_replay
 
-try:
-    import pytest
-    pytestmark = pytest.mark.cpu
-except ImportError:
-    pass
 
 
 def omega(p,q,kind):
@@ -116,5 +111,13 @@ class Sections(unittest.TestCase):
                     self.assertEqual(omega(p,q,kind),omega(h+p%h,h+q%h,kind))
                 self.assertEqual(kernel_shuffle(p,q),kernel_shuffle(h+p%h,h+q%h))
 
+class GPUVerification(unittest.TestCase):
     def test_08_gpu_standard_products(self):
         gpu_replay(self,[(e(i),e(j)) for i,j in product(range(8),repeat=2)],8)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

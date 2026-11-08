@@ -85,9 +85,7 @@ class TestComplexWrapper:
             ck._select_kernel(np.dtype(dtype))
 
     @pytest.mark.parametrize("dtype", [np.complex64, np.complex128])
-    def test_library_binds_both_complex_entry_points(self, dtype):
-        if not ck.loaded():
-            pytest.skip("Build the shared library with make kernel first.")
+    def test_library_binds_both_complex_entry_points(self, dtype, compiled_kernel):
         legacy, batched = ck._select_kernel(np.dtype(dtype))
         assert legacy.argtypes == [ctypes.c_void_p] * 3 + [ctypes.c_int]
         assert batched is not None

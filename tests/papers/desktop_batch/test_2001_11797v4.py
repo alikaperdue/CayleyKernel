@@ -10,11 +10,6 @@ try:
     import numpy as np
 except ImportError:
     np=None
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:
-    pass
 MEASUREMENTS={}
 
 
@@ -90,6 +85,15 @@ class Sections(unittest.TestCase):
         self.assertNotEqual(left,right)
         MEASUREMENTS['cd_trigram_parentheses']={'left':left,'right':right}
 
+@unittest.skipIf(np is None,'NumPy unavailable')
+class GPUVerification(unittest.TestCase):
     def test_05_gpu_binding_counterexample(self):
         a,b,c,d=witness(Algebra(4))
         gpu_replay(self,[(pair(a,b,8),pair(c,d,8))],16)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

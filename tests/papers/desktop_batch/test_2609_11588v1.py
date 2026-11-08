@@ -4,15 +4,12 @@ import unittest
 from itertools import product
 
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 
 try:
     import numpy as np
 except ImportError:np=None
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:pass
 if np is not None:
     from scripts.quasilinear_cd import (
         arithmetic_counts,
@@ -106,13 +103,10 @@ class Sections(unittest.TestCase):
             self.assertTrue(np.all(np.isfinite(out)))
             self.assertLessEqual(float(np.max(abs(out-ref))),tolerance)
 
+@unittest.skipIf(np is None,'NumPy unavailable')
+class GPUVerification(unittest.TestCase):
     def test_07_gpu_direct_comparison(self):
-        # Once prerequisites are satisfied, compare QL directly to multiply().
-        if CK.cp is None:self.skipTest('CuPy unavailable; direct GPU comparison not executed')
-        if not CK.loaded():self.skipTest('compiled kernel unavailable')
-        try:count=CK.cp.cuda.runtime.getDeviceCount()
-        except CK.cp.cuda.runtime.CUDARuntimeError as exc:self.skipTest(str(exc))
-        if not count:self.skipTest('no CUDA device')
+        require_gpu(self)
         rng=np.random.default_rng(260911593)
         for n in (3,4,5,8,10):
             N=1<<n;a=rng.integers(-2,3,size=(8,N)).astype(float);b=rng.integers(-2,3,size=(8,N)).astype(float)
@@ -135,3 +129,13 @@ class Sections(unittest.TestCase):
                 actual=host(CK.multiply(a.astype(dtype),b.astype(dtype)))
                 self.assertEqual(actual.dtype,np.dtype(dtype))
                 np.testing.assert_array_equal(actual,expected)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)
+    Sections.test_06_dense_extension_through_level_20 = pytest.mark.slow(
+        Sections.test_06_dense_extension_through_level_20
+    )

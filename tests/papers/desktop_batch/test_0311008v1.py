@@ -6,11 +6,6 @@ from itertools import combinations, product
 
 from .common import close, e, gpu_replay, mul, phase
 
-try:
-    import pytest
-    pytestmark = pytest.mark.cpu
-except ImportError:
-    pass
 
 
 def delta(cochain, vertices, degree):
@@ -75,6 +70,7 @@ class Sections(unittest.TestCase):
             self.assertEqual(mul(e(u), e(u)), {0:-1})
             close(self, mul(phase(.3,u), phase(-.7,u)), phase(-.4,u))
 
+class GPUVerification(unittest.TestCase):
     def test_05_gpu_phase_products(self):
         gpu_replay(self, [(e(1), e(1)), ({0:3,1:4}, {0:5,1:-2})], 2)
 
@@ -93,3 +89,10 @@ class Sections(unittest.TestCase):
             np.testing.assert_allclose(result[...,0],a[...,0]*b[...,0],rtol=tol,atol=tol)
             inverse=host(CK.multiply(a,np.conjugate(a)))
             np.testing.assert_allclose(inverse,1,rtol=tol,atol=tol)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

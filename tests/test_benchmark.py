@@ -28,7 +28,6 @@ proof of asymptotic scaling. Baselines are never updated by comparison.
 
 import pytest
 
-cp = pytest.importorskip("cupy")
 from CayleyKernel import multiply, multiply_add, multiply_subtract
 
 pytestmark = pytest.mark.benchmark

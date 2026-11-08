@@ -7,6 +7,7 @@ from itertools import product
 import numpy as np
 
 import CayleyKernel as CK
+from tests.gpu_support import require_gpu
 from tests.papers.type_replay import replay_product
 
 from .algebra import (
@@ -632,16 +633,7 @@ class PaperVerification(unittest.TestCase):
 
 class GPUVerification(unittest.TestCase):
     def setUp(self):
-        if CK.cp is None:
-            self.skipTest('CuPy unavailable; multiply() not executed')
-        if not CK.loaded():
-            self.skipTest('cuda_kernel.so unavailable; build with make kernel')
-        try:
-            devices=CK.cp.cuda.runtime.getDeviceCount()
-        except CK.cp.cuda.runtime.CUDARuntimeError as exc:
-            self.skipTest('CUDA device unavailable: '+str(exc))
-        if not devices:
-            self.skipTest('No CUDA device')
+        require_gpu(self)
 
     def test_02_multiply_basis_and_dense_independent_oracle(self):
         for n in range(1,7):
@@ -676,4 +668,3 @@ except ImportError:
     pass
 else:
     PaperVerification=pytest.mark.cpu(PaperVerification)
-    GPUVerification=pytest.mark.cpu(GPUVerification)

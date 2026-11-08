@@ -3,15 +3,15 @@
 **GPU Cayley-Dickson doubling products with O(1) basis-sign determination.**
 
 CayleyKernel computes the Cayley-Dickson doubling product of arbitrary
-`2^n`-dimensional hypercomplex algebras (complex numbers, quaternions,
+$2^n$-dimensional hypercomplex algebras (complex numbers, quaternions,
 octonions, sedenions, and beyond) on NVIDIA GPUs. For a given row and column
 of the Cayley-Dickson sign table, a closed-form function determines the sign
 in **O(1) time** using a fixed number of bitwise operations and a population
 count on fixed-width GPU integers, without traversing the doubling levels
 or storing the sign table. Each output component is computed by its own
 thread, and independent products are batched in a single kernel launch via
-a grid-stride loop. Each thread sums `dim` signed terms for its output;
-a full dense product therefore requires `O(dim^2)` work.
+a grid-stride loop. Each thread sums $dim$ signed terms for its output;
+a full dense product therefore requires $O(dim^2)$ work.
 
 * Kernel source: [`cuda/cuda_kernel.cu`](cuda/cuda_kernel.cu) (NVIDIA CUDA) and
   [`cuda/amd_kernel.cu`](cuda/amd_kernel.cu) (AMD HIP/ROCm port).
@@ -27,7 +27,7 @@ supported dtype.
 
 ## Computation
 
-Given two algebra elements `x, y ∈ A` of dimension `2^n`, the Cayley-Dickson
+Given two algebra elements $x, y ∈ A$ of dimension $2^n$, the Cayley-Dickson
 doubling product is defined recursively by
 
 ```
@@ -499,31 +499,35 @@ download a wheel from Releases.
 ## Testing
 
 ```bash
-make test          # default suite, excluding slow tests
-make test-cpu      # CPU-marked checks
-make test-all      # default suite followed by slow tests
+make test          # same selection as python3 -m pytest -q tests/
+make test-cpu      # CPU-marked checks from the default suite
+make test-all      # default and slow tests
 ```
 
-`test-all` excludes the opt-in sparse zero-divisor and benchmark checks;
-run `make test-sparse-zd` and `make benchmark` separately to enable them.
+Sparse zero-divisor validation and baseline benchmarks still need their
+opt-in flags. Use `make test-sparse-zd` and `make benchmark` to enable them.
 The obsolete `run-native-zd` target has been removed because its C source
 is unavailable. Use `make zd-showcase` for huge-index zero-divisor checks.
 
 The default suite covers small dense products against a recursive reference,
-batching, broadcasting, dtypes, and algebraic identities. Norm multiplicativity
+all 256 dimension-16 basis products, and an exact dimension-1024 product
+with sparse operands. It also covers batching, broadcasting, dtypes, and
+algebraic identities. Norm multiplicativity
 is checked only in dimensions 1, 2, 4, and 8. Higher-dimensional checks cover
 other identities and sparse CPU operations; they do not establish norm
 multiplicativity beyond the octonions.
 
-Some experimental correctness functions are currently named `FAILStest_...`
-and are not collected by pytest. They are excluded from this coverage summary.
-Runtime depends on the selected tests, hardware, and installed dependencies.
-
-* `slow`: large dense products at dimensions `2^20`–`2^22`, selected with
-  `python3 -m pytest -q -m slow tests/`. Dense work is quadratic in dimension.
-* `benchmark`: GPU timings require `--run-benchmarks` and an explicit baseline
-  recording or comparison path. Selecting `-m benchmark` alone does not enable them.
+* `slow` covers expensive products and other long workloads. Select it with
+  `python3 -m pytest -q -m slow tests/`. Dense GPU work is quadratic in
+  dimension even when operands contain few nonzero coefficients.
+* `benchmark`: GPU baseline measurements require `--run-benchmarks` and an
+  explicit recording or comparison path. Selecting `-m benchmark` alone does
+  not enable them.
 * `sparse_zd`: additional CPU sparse validation requires `--run-sparse-zd`.
+
+Local GPU tests skip if their GPU prerequisites are missing. Dedicated GPU CI
+can pass `--require-gpu` to make missing prerequisites fail setup for selected
+GPU tests.
 
 Details and commands for [GPU performance baselines, huge-index showcases,
 and sparse zero-divisor validation](docs/testing.md) are documented separately.

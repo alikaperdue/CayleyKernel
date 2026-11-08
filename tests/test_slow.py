@@ -7,17 +7,14 @@ pyproject.toml).  Run them explicitly with:
 
     pytest -q -m slow tests/test_slow.py
 
-Budget note (tune per machine): 2^20 ~ a few seconds per identity check,
-2^21 ~ tens of seconds, 2^22 ~ minutes.  The default suite already covers
-all of the same laws at smaller dimensions.
+Dense multiplication costs O(batch * dim**2), even with sparse inputs.
+The default suite covers the same laws at smaller dimensions.
 """
 
 import numpy as np
 import pytest
 
-cp = pytest.importorskip("cupy")
-
-from CayleyKernel import conjugate, multiply  # noqa: E402
+from CayleyKernel import conjugate, cp, multiply  # noqa: E402
 
 
 def _unity_check(dim, n_nonzero, dtype):
@@ -45,7 +42,7 @@ def test_deep_unity(dim):
 
 # ---------------------------------------------------------------------------
 # Conjugation involution + anti-automorphism at deep dimensions.
-# (Anti-automorphism needs a full product: use sparse operands.)
+# The anti-automorphism check uses sparse operands in the dense kernel.
 # ---------------------------------------------------------------------------
 @pytest.mark.slow
 @pytest.mark.parametrize("dim", [2**20, 2**21])
@@ -96,5 +93,5 @@ def test_batched_deep_products():
 @pytest.mark.slow
 @pytest.mark.parametrize("dim", [2**22])
 def test_very_deep_unity_smoke(dim):
-    """2^22 smoke test: single sparse unity product (minutes-scale)."""
+    """Check both unity products at 2^22 through the dense kernel."""
     _unity_check(dim, n_nonzero=16, dtype=cp.float32)

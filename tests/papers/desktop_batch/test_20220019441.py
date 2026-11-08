@@ -5,11 +5,6 @@ from itertools import product
 from .common import e, gpu_replay, mul
 from .test_1703_00144v4 import np
 
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:
-    pass
 MEASUREMENTS={}
 
 
@@ -120,5 +115,14 @@ class Sections(unittest.TestCase):
         # Componentwise e1*e1 would be e1, a different operation.
         self.assertNotEqual(mul(e(1),e(1)),e(1))
 
+@unittest.skipIf(np is None,'NumPy unavailable')
+class GPUVerification(unittest.TestCase):
     def test_11_gpu_distinction(self):
         gpu_replay(self,[(e(1),e(1))],2)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

@@ -191,16 +191,8 @@ class TestAlgebra:
         assert ck.exp(a).shape == (0, 4)
 
 
-@pytest.mark.cpu  # Check device prerequisites locally before the global GPU RNG fixture.
-def test_gpu_helpers():
-    cp = pytest.importorskip("cupy")
-    if not ck.loaded():
-        pytest.skip("GPU algebra helpers require the compiled kernel")
-    try:
-        if cp.cuda.runtime.getDeviceCount() < 1:
-            pytest.skip("No CUDA device")
-    except cp.cuda.runtime.CUDARuntimeError as exc:
-        pytest.skip("CUDA device unavailable: " + str(exc))
+def test_gpu_helpers(gpu_kernel):
+    cp = gpu_kernel
     a = cp.array([[1.0, 2.0, 3.0, 4.0], [2.0, 0.0, 0.0, 0.0]])
     b = cp.array([2.0, -1.0, 3.0, 1.0])
     host_a, host_b = cp.asnumpy(a), cp.asnumpy(b)

@@ -4,11 +4,6 @@ import unittest
 from .common import close, e, gpu_replay, mul
 from .test_1703_00144v4 import left_matrix, np
 
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:
-    pass
 MEASUREMENTS={}
 
 
@@ -81,5 +76,14 @@ class Sections(unittest.TestCase):
             rows.append(dict(iterations=s,normalized_errors=ratios))
         MEASUREMENTS['little_o_counterexample']=rows
 
+@unittest.skipIf(np is None,'NumPy unavailable')
+class GPUVerification(unittest.TestCase):
     def test_06_gpu_rotation_replay(self):
         gpu_replay(self,[({0:3,15:4},e(i)) for i in range(16)],16)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

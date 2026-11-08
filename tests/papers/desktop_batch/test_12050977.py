@@ -5,11 +5,6 @@ from itertools import product
 
 from .common import e, gpu_replay, mul, neg
 
-try:
-    import pytest
-    pytestmark = pytest.mark.cpu
-except ImportError:
-    pass
 
 
 def shift(x, k):
@@ -74,5 +69,13 @@ class Sections(unittest.TestCase):
         # Ordinary +1 cyclic shift has a different index map from XOR 1.
         self.assertNotEqual([i^1 for i in range(8)], [(i+1)%8 for i in range(8)])
 
+class GPUVerification(unittest.TestCase):
     def test_06_gpu_signed_action_negative_control(self):
         gpu_replay(self, [(e(3), e(3)), (e(3), {0:1,1:1,3:1})], 8)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

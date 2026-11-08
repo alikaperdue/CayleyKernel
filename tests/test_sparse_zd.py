@@ -17,7 +17,7 @@ import pytest
 
 from CayleyKernel import basis, twist
 
-pytestmark = pytest.mark.sparse_zd
+pytestmark = [pytest.mark.cpu, pytest.mark.sparse_zd]
 
 
 def safe_getrandbits(rng, total_bits):

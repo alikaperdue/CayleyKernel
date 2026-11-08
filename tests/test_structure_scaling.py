@@ -5,6 +5,13 @@ import unittest
 
 from scripts import structure_scaling as s
 
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    pytestmark = pytest.mark.cpu
+
 
 class StructureScalingTests(unittest.TestCase):
     def test_signed_convention(self):

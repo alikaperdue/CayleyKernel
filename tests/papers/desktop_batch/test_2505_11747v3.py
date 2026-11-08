@@ -11,10 +11,6 @@ import CayleyKernel as CK
 
 from .common import Algebra, add, e, gpu_replay, mul, neg, scale
 
-try:
-    import pytest
-    pytestmark=pytest.mark.cpu
-except ImportError:pass
 MEASUREMENTS={}
 
 
@@ -57,10 +53,6 @@ def graded(s):
 
 
 class Sections(unittest.TestCase):
-    def test_08_gpu_complex_split_signatures(self):
-        from tests.papers.type_replay import replay_signatures
-        replay_signatures(self,(g for n in range(1,5) for g in product((-1,1),repeat=n)))
-
     def test_02_graded_basis_and_blade_laws(self):
         for n in range(1,9):
             for i in range(1,1<<n):
@@ -177,5 +169,17 @@ class Sections(unittest.TestCase):
                 b,c,d=sorted(rng.sample(range(1,1<<20),3)) if n==20 else sorted(rng.getrandbits(n) or 1 for _ in range(3))
                 self.assertNotEqual(kind(b,c,d),'INVALID')
 
+class GPUVerification(unittest.TestCase):
+    def test_08_gpu_complex_split_signatures(self):
+        from tests.papers.type_replay import replay_signatures
+        replay_signatures(self,(g for n in range(1,5) for g in product((-1,1),repeat=n)))
+
     def test_07_gpu_table_8_example(self):
         gpu_replay(self,[({1:1,15:-1},{2:1,12:1})],16)
+
+try:
+    import pytest
+except ImportError:
+    pass
+else:
+    Sections = pytest.mark.cpu(Sections)

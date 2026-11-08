@@ -18,9 +18,8 @@ All GPU tests are skipped when CuPy or the compiled kernel is unavailable
 import numpy as np
 import pytest
 
-cp = pytest.importorskip("cupy")
-
-import CayleyKernel as ck  # noqa: E402
+import CayleyKernel as ck
+from CayleyKernel import cp
 
 # ---------------------------------------------------------------------------
 # Reference helpers
@@ -342,20 +341,23 @@ def test_multiply_subtract_accepts_nondefault_stream():
 # ---------------------------------------------------------------------------
 # (e) ABI / binding smoke tests
 # ---------------------------------------------------------------------------
-def test_abi_version_is_4_or_higher():
+@pytest.mark.cpu
+def test_abi_version_is_4_or_higher(compiled_kernel):
     assert ck.abi_version() >= 4, (
         "Expected ABI >= 4 for fused multiply-add; got %d. Rebuild with `make kernel`."
         % ck.abi_version()
     )
 
 
-def test_fma_symbol_bound():
+@pytest.mark.cpu
+def test_fma_symbol_bound(compiled_kernel):
     """Verify the ctypes binding for fma_mult_float is configured correctly."""
     fn = ck._select_fma(np.dtype(np.float32))
     assert len(fn.argtypes) == 7
     assert fn.restype is None
 
 
+@pytest.mark.cpu
 def test_fma_symbol_missing_raises(monkeypatch):
     """A stale library without fma_mult_* symbols should raise RuntimeError."""
     monkeypatch.setattr(ck, "_lib", None)
