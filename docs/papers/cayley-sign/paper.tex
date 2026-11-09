@@ -1,0 +1,615 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=.92in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,listings,microtype,needspace}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Table-Free Evaluation of Cayley--Dickson Basis Signs in Constant Word Time},
+  pdfauthor={Alika Perdue}}
+\urlstyle{same}
+
+\newtheorem{theorem}{Theorem}
+\newcommand{\ctz}{\operatorname{ctz}}
+\newcommand{\lowbit}{\operatorname{lowbit}}
+\newcommand{\pc}{\operatorname{popcount}}
+\newcommand{\bor}{\mathbin{\vert}}
+\newcommand{\band}{\mathbin{\&}}
+\lstset{basicstyle=\small\ttfamily,columns=fullflexible,keepspaces=true,
+  showstringspaces=false,xleftmargin=1em,aboveskip=.65\baselineskip,
+  belowskip=.65\baselineskip}
+
+\title{Table-Free Evaluation of Cayley--Dickson\\Basis Signs in Constant Word Time}
+\author{Alika Perdue\\[.25em]\small Yotta Space Corp, Vancouver, BC, Canada}
+\date{CayleyKernel technical report}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+In a real Cayley--Dickson algebra, the product of two basis elements has an
+index given by bitwise XOR and a sign determined by the doubling convention.
+This report derives the low-bit mask evaluator used by CayleyKernel from the
+ordinary doubling product. For distinct nonzero indices, the lowest set bits of the
+operands and of their XOR identify a position below which the doubling
+recurrence reduces to an identity or a diagonal product. The higher positions
+contribute the parity of the operand OR. The resulting unsigned evaluator
+uses constant word operations and constant auxiliary words per sign when both
+indices fit in one word and population count is a unit-cost primitive.
+The report relates the evaluator to Ren and Zhao's twist formula and
+documents the Python, Rust, CUDA, and HIP implementations at a pinned
+CayleyKernel revision. An executable C listing and independent recurrence
+checks make the sign evaluation reproducible. The word bound applies to an
+individual sign. Arbitrary-precision indices require width-dependent work,
+and direct dense multiplication still evaluates a quadratic number of terms.
+\end{abstract}
+
+\section{Introduction and related work}
+A direct Cayley--Dickson product repeatedly asks whether to add or subtract a
+coefficient product. A sign table answers that question by lookup. At
+dimension \(N\), a full table has \(N^2\) entries, while a direct descent
+through the doubling construction can recover one sign from the two indices
+alone. The distinction between a sign query and the full coefficient
+contraction determines which costs a table-free sign rule can remove.
+
+Albuquerque and Majid formulated the octonions and higher Cayley--Dickson
+algebras using a twist of a group algebra \cite{albuquerque}. Ren and Zhao
+gave an explicit general twist formula \cite{ren,renv2}. Maher Ben Abdessalem
+developed a table-free constant-word evaluator by collapsing a descent to a
+lowest-bit test and population-count parity. CayleyKernel credits his work
+for its evaluator \cite{abdessalem,cayley}. We cite the author-posted
+manuscript dated 24 September 2026, whose Section~6 states the evaluator.
+This technical report documents CayleyKernel's implementation of the known
+sign law. It presents a derivation of the implemented mask form, relates it
+to the published formula, and provides reproducible checks for a pinned
+software revision.
+
+\section{Doubling and basis signs}
+Set \(A_0=\mathbb R\), with conjugation the identity, and let
+\(A_n=A_{n-1}\oplus A_{n-1}\). We use ordinary real doubling
+\begin{equation}
+ (a,b)(c,d)=(ac-\bar d b,\ da+b\bar c),
+ \qquad \overline{(a,b)}=(\bar a,-b).
+ \label{eq:doubling}
+\end{equation}
+At level \(n\geq 1\), write \(m=2^{n-1}\) and embed the lower-level
+basis by \(e_i\mapsto(e_i,0)\) and \(e_{m+i}=(0,e_i)\), where
+\(0\leq i<m\). The label \(e_0\) denotes the unit at every level.
+Conjugation gives \(\bar e_b=\eta(b)e_b\), where \(\eta(0)=1\)
+and \(\eta(b)=-1\) for \(b>0\). This follows inductively because the
+lower half inherits conjugation and the upper half is negated.
+
+Write \(r=\alpha m+a\) and \(c=\beta m+b\), with
+\(\alpha,\beta\in\{0,1\}\). Substituting the basis embeddings into
+\eqref{eq:doubling} leaves one product in each case. The table uses
+\(s_{n-1}\) for the lower-level sign.
+\begin{center}
+\begin{tabular}{@{}c l l@{}}
+\toprule
+\((\alpha,\beta)\) & Surviving lower-level product & Sign \(s_n(r,c)\)\\
+\midrule
+\((0,0)\) & \(e_a e_b\) in the lower half & \(s_{n-1}(a,b)\)\\
+\((0,1)\) & \(e_b e_a\) in the upper half & \(s_{n-1}(b,a)\)\\
+\((1,0)\) & \(e_a\bar e_b\) in the upper half & \(\eta(b)s_{n-1}(a,b)\)\\
+\((1,1)\) & \(-\bar e_b e_a\) in the lower half & \(-\eta(b)s_{n-1}(b,a)\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+At level zero \(e_0e_0=e_0\). By induction the surviving product has
+lower index \(a\oplus b\) in either order and the output half is
+\(\alpha\oplus\beta\), where \(\oplus\) is bitwise XOR. Thus
+\begin{equation}
+ e_r e_c=s_n(r,c)e_{r\oplus c},\qquad s_n(r,c)\in\{+1,-1\}.
+ \label{eq:twist}
+\end{equation}
+The XOR selects the output basis element. The sign is a scalar twist over
+\(\mathbb R\). Arithmetic modulo two is used for bits and sign
+exponents. Associativity would require
+\(s(r,c)s(r\oplus c,t)=s(c,t)s(r,c\oplus t)\) for all triples.
+The octonions are nonassociative, so the twist in this family need not
+satisfy the associative 2-cocycle identity \cite{albuquerque}.
+
+The recurrence gives the following identities by induction on \(n\).
+When \(r=0\), the \((0,0)\) and \((0,1)\) cases reduce to a
+lower-level product with a zero index. When \(c=0\), the \((0,0)\)
+and \((1,0)\) cases do the same, with \(\eta(0)=1\). Thus both
+identity cases give \(+1\), including \((0,0)\). A nonzero diagonal
+in the lower half inherits its sign. In the upper half its sign is
+\(-\eta(a)s_{n-1}(a,a)\), which is \(-1\) for \(a=0\) and
+\(-1\) for \(a>0\) by the induction hypothesis.
+
+For distinct nonzero indices in the lower half, antisymmetry is inherited.
+For a mixed pair with the lower-half index first, that index is \(a>0\).
+Its sign is \(s_{n-1}(b,a)\) and the reversed sign is
+\(\eta(a)s_{n-1}(b,a)=-s_{n-1}(b,a)\). For an upper-half pair the
+suffixes are distinct. If both are nonzero, the factors
+\(-\eta(a)=-\eta(b)=1\) leave antisymmetry to the lower-level signs.
+If one suffix is zero, both lower products have sign \(+1\) and the
+two conjugation factors have opposite signs. This proves
+\(s_n(r,c)=-s_n(c,r)\) for distinct nonzero inputs. One extra leading
+zero bit in both inputs uses the \((0,0)\) case and preserves the sign,
+so we omit the level subscript when the indices fit.
+
+The table is also an independent sign algorithm. Start with a sign
+accumulator of \(+1\) and process bits from highest to lowest. At each
+position strip both top bits, negate the accumulator if the row bit was
+set and the column suffix is nonzero, and negate again if both top bits
+were set. If the column bit was set, swap the two remaining suffixes.
+The final accumulator is the sign because \(s_0(0,0)=1\). The oracle
+in Appendix~\ref{app:c} implements this descent.
+
+\section{From the recurrence to one word}
+For a nonzero integer \(x\), \(\ctz(x)\) is the position of its least
+significant set bit, numbered from zero. We write \(r_i,c_i\) for the
+bits at position \(i\) and \(u=r\bor c\).
+
+In a descent from the highest bit, as long as the two lower suffixes
+are nonzero and distinct, antisymmetry lets us account for a swap
+by flipping the sign. The four doubling cases then reduce to a
+single OR bit at each position. The position \(k\) below marks where
+one suffix first becomes zero or the two become equal. At that point,
+the identity or diagonal rule evaluates the lower product directly.
+
+\Needspace{13\baselineskip}
+\begin{theorem}[Mask parity for ordinary doubling]
+\label{thm:mask}
+Let \(0\leq r,c<2^n\). A zero operand gives sign \(+1\), and
+an equal nonzero pair gives sign \(-1\). Otherwise define
+\[
+ h=\ctz(r),\quad v=\ctz(c),\quad d_0=\ctz(r\oplus c),
+ \qquad k=\max(h,v,d_0).
+\]
+Set \(q=1-c_k\) if \(h>v\), \(q=r_k\) if \(v>h\), and
+\(q=c_k\) if \(h=v\). Then
+\begin{equation}
+ s(r,c)=(-1)^{\,q\oplus U},\qquad
+ U=\bigoplus_{i>k}(r_i\lor c_i).
+ \label{eq:upper}
+\end{equation}
+Equivalently, the mask evaluator in Listing~\ref{lst:mask} returns
+\(s(r,c)\). It uses \(O(1)\) word operations and \(O(1)\) auxiliary
+words per sign when the two indices fit in one unsigned word and word
+population count is a unit-cost primitive.
+\end{theorem}
+
+\begin{proof}
+The identity and diagonal cases were proved from doubling and are handled
+before any trailing-zero counts or shifts. For the remaining inputs, if
+\(h\ne v\), exactly one operand has a set bit at \(\min(h,v)\) and
+both have zero bits below it. Hence \(d_0=\min(h,v)\). If \(h=v\),
+the operands agree up to and including bit \(h\), so \(d_0>h=v\).
+In each case the maximum \(k\) is unique among the three positions.
+
+At a position \(i>k\), each suffix below \(i\) contains its first set
+bit, and the two suffixes differ at \(d_0<i\). Write them in original
+order as \((a,b)\). They are nonzero and distinct. For \((0,0)\) the
+sign is \(s(a,b)\). For \((0,1)\) the swapped product contributes
+\(s(b,a)=-s(a,b)\). For \((1,0)\) the factor \(\eta(b)=-1\)
+gives \(-s(a,b)\). For \((1,1)\) the factor \(-\eta(b)=1\)
+leaves \(s(b,a)=-s(a,b)\). The normalized lower pair therefore
+stays in its original order and each of the three nonzero bit pairs
+contributes one flip. The exponent of these flips is \(U\).
+
+At \(i=k\), write \(a=r\bmod 2^k\) and \(b=c\bmod 2^k\).
+The first-set and first-differing positions give the following cases.
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Order & Suffixes & Bits at \(k\) & Local exponent \(q\)\\
+\midrule
+\(h>v=d_0\) & \(a=0,\ b>0\) & \(r_k=1\) & \(1-c_k\)\\
+\(v>h=d_0\) & \(a>0,\ b=0\) & \(c_k=1\) & \(r_k\)\\
+\(d_0>h=v\) & \(a=b>0\) & \(r_k\ne c_k\) & \(c_k\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+If \(h>v\), \(c_k=0\) gives \(\eta(b)s(0,b)=-1\), and
+\(c_k=1\) gives \(-\eta(b)s(b,0)=+1\).
+If \(v>h\), \(r_k=0\) gives \(s(0,a)=+1\), and
+\(r_k=1\) gives \(-\eta(0)s(0,a)=-1\).
+If \(h=v\), the bits \((1,0)\) give \(\eta(a)s(a,a)=+1\)
+and \((0,1)\) gives \(s(a,a)=-1\).
+This proves \eqref{eq:upper}. Exchanging the operands preserves \(k\)
+and \(U\). It interchanges the first two cases, replacing \(1-c_k\)
+by \(c_k\) or \(r_k\) by \(1-r_k\). In the third case it replaces
+\(c_k\) by \(r_k=1-c_k\). The sign therefore reverses.
+
+For the mask form, work in unsigned words modulo \(2^w\). In
+\(-x=\mathord{\sim}x+1\), the trailing zeros of \(x\) reappear as
+zeros and its first set bit reappears as one, while all higher bits are
+complemented. Consequently \(x\band(-x)=2^{\ctz(x)}\) for
+\(x\ne0\). For a one-hot mask \(M=2^k\), \(-M=2^w-2^k\)
+has ones from \(k\) through \(w-1\). Hence \(u\band(-M)\)
+retains the suffix at and above \(k\). In every case \(u_k=1\),
+so \(P=\pc(u\gg k)\bmod 2=1\oplus U\).
+Here \(\gg\) is a logical right shift.
+
+Let \(R=\lowbit(r)\), \(C=\lowbit(c)\), and
+\(d=\lowbit(r\oplus c)\). Comparing these masks compares their
+bit positions. The test \(C<R\) selects \(h>v\) and
+\(\mathord{\sim}c\band R=qR\). If that test fails, \(d<C\)
+selects \(v>h\) and \(r\band C=qC\). The remaining case
+\(h=v\) uses \(c\band d=qd\). Thus the final mask is
+\((u\band(-M))\oplus(qM)\), where \(M=R,C,d\), respectively.
+Population-count parity is linear under XOR, so the mask parity is the
+\emph{positive-sign flag} \(p=P\oplus q\). Equation~\eqref{eq:upper}
+gives \(s=2p-1=(-1)^{1\oplus p}\). The listing uses a bounded number
+of word operations with one population count and a bounded number of
+temporary words, proving the word-cost claim.
+\end{proof}
+
+\begin{lstlisting}[float=tbp,caption={Unsigned word evaluator. Negation and NOT act on the full word.},label={lst:mask}]
+basis_sign(r, c):
+    if r == 0 or c == 0:
+        return +1
+    if r == c:
+        return -1
+
+    d = lowbit(r XOR c)
+    R = lowbit(r)
+    C = lowbit(c)
+    u = r OR c
+    if C < R:
+        mask = ((NOT c) AND R) XOR (u AND (-R))
+    else if d < C:
+        mask = (r AND C) XOR (u AND (-C))
+    else:
+        mask = (c AND d) XOR (u AND (-d))
+    p = popcount(mask) AND 1
+    return 2*p - 1
+\end{lstlisting}
+
+\subsection{Shifted population count and the general twist formula}
+The shifted-popcount form uses \(P\) directly. In the third case
+\(r_k\ne c_k\), so testing whether bit \(k\) of \(r\) is clear
+also obtains \(q=c_k\). These are precisely the three tests in the
+Rust evaluator, ordered as \(h>v\), \(v<d_0\), and the remaining
+case. Under the trailing-zero identities, \(v<d_0\) is equivalent to
+\(h=v\). With fixed limbs, the first retained limb is shifted locally
+and the popcount parities of all retained limbs are XORed. The result is
+the same \(P\) because the limbs partition the retained bits.
+
+Ren and Zhao's arXiv v2, Theorem~1 and equation (4.1), use
+\(e_Ae_B=(-1)^{\sigma(A,B)}e_{A\oplus B}\) \cite{renv2}.
+Their equation (2.1) is \eqref{eq:doubling} in \(a+bg_n\)
+notation. Multiplication on the right by the newest generator
+\((0,1)\) sends \((a,0)\) to \((0,a)\). Their left-associated,
+ascending generator labels thus agree inductively with half-split indexing.
+Their degree is \(\ctz\), their \(l\) is our \(k\), and their
+sum of bitwise OR terms from \(l\) upward equals \(P\) modulo two.
+Their three additions to the sum are \(c_k\), \(1\oplus r_k\),
+and \(r_k\) for \(h>v\), \(h<v\), and \(h=v\), respectively.
+Each equals \(1\oplus q\), using \(r_k\ne c_k\) in the last
+case. Thus \(\sigma=P\oplus(1\oplus q)=1\oplus p\). Equation
+(4.1) assigns exponent zero on the identity and one on the nonzero
+diagonal, also agreeing with the evaluator.
+
+\subsection{Worked products}
+The following calculations show three-bit words with the least significant
+bit on the right. Unsigned negatives and complements are truncated to three
+bits for display. For each pair, the mask is formed from the retained
+operand OR and the selected correction bit.
+
+\begin{description}
+\item[\((2,1)=(010,001)_2\).]
+Here \((R,C,d)=(010,001,001)_2\) and \(u=011_2\).
+The test \(C<R\) selects \(M=R=010_2\), with \(-M=110_2\).
+Then \(u\band(-M)=010_2\) and \((\mathord{\sim}c)\band R=010_2\).
+Their XOR is \(000_2\), so \(p=0\). The index is
+\(010_2\oplus001_2=011_2\), giving \(-e_3\).
+\item[\((1,6)=(001,110)_2\).]
+Here \((R,C,d)=(001,010,001)_2\) and \(u=111_2\).
+The test \(d<C\) selects \(M=C=010_2\), with \(-M=110_2\).
+Then \(u\band(-M)=110_2\) and \(r\band C=000_2\).
+Their XOR is \(110_2\), which has even parity \(p=0\).
+The index is \(001_2\oplus110_2=111_2\), giving \(-e_7\).
+\item[\((5,7)=(101,111)_2\).]
+Here \((R,C,d)=(001,001,010)_2\) and \(u=111_2\).
+The last branch selects \(M=d=010_2\), with \(-M=110_2\).
+Then \(u\band(-M)=110_2\) and \(c\band d=010_2\).
+Their XOR is \(100_2\), so \(p=1\).
+The index is \(101_2\oplus111_2=010_2\), giving \(+e_2\).
+\item[Reversal.]
+Reversing the first pair gives \((1,2)=(001,010)_2\),
+with \((R,C,d)=(001,010,001)_2\) and \(u=011_2\).
+Here \(M=C=010_2\), \(-M=110_2\), and the mask is
+\(010_2\oplus000_2=010_2\), so \(p=1\) and the product is
+\(+e_3\).
+\item[Identity and diagonal.]
+For \((0,5)\), the guard returns \(+1\) without a
+mask and the XOR gives index 5. For \((5,5)\), the guard returns
+\(-1\) without a mask and the XOR gives index 0. The pair \((0,0)\)
+uses the identity guard and gives \(+e_0\).
+\end{description}
+
+\section{Cost model and dense multiplication}
+The table compares sign evaluators in the single-word model of
+Theorem~\ref{thm:mask}. The table row assumes directly addressable
+entries and excludes the cost of building the table. The doubling row
+uses an iterative scan over the \(n\) bit positions.
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Evaluator & Worst-case word work per sign & Sign storage or workspace\\
+\midrule
+Full precomputed table & \(\Theta(1)\) & \(\Theta(N^2)\) stored bits\\
+Iterative doubling & \(\Theta(n)=\Theta(\log_2 N)\) & \(O(1)\) auxiliary words\\
+Low-bit mask & \(\Theta(1)\) & \(O(1)\) auxiliary words\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For unbounded \(n\)-bit indices a direct implementation of the mask
+rule uses \(O(n)\) bit work or \(O(\lceil n/w\rceil)\) machine-word
+work with word population count. The parity alone can scan every limb
+of the retained suffix. For a bit-probe lower bound, fix \(r=1\),
+\(c_0=0\), and \(c_1=1\), leaving \(c_i\) free for \(2\leq i<n\).
+Then \(h=d_0=0\), \(v=k=1\), \(q=r_1=0\), and
+\(s(1,c)=(-1)^{\bigoplus_{i=2}^{n-1}c_i}\). Any exact bit-probe
+algorithm must inspect every free bit in the worst case because changing
+an unprobed bit reverses the answer. The resulting \(\Omega(n)\)
+bound is for bit probes. Python integer and Rust \texttt{BigUint}
+operations have width-dependent costs.
+
+For \(x=\sum_r x_r e_r\) and \(y=\sum_c y_c e_c\), bilinearity
+gives \(xy=\sum_{r,c} x_r y_c s(r,c)e_{r\oplus c}\).
+Writing \(xy=\sum_k z_k e_k\), each row \(r\) contributes to
+output \(k\) at the unique column \(c=k\oplus r\). Therefore
+\begin{equation}
+ z_k=\sum_{r=0}^{N-1}s(r,k\oplus r)x_r y_{k\oplus r}.
+ \label{eq:dense}
+\end{equation}
+The direct dense kernel uses \(\Theta(N)\) terms per output and
+\(\Theta(BN^2)\) total arithmetic work for \(B\) independent products.
+Device threads parallelize outputs and batch items. The direct scheme
+stores \(\Theta(BN)\) input and output coefficients and needs no
+\(N\)-by-\(N\) sign table. This arithmetic work bound describes the
+direct kernel. Elapsed time also depends on scheduling, arithmetic
+throughput, memory traffic, and any interface and transfer costs included
+in the measurement.
+
+\section{CayleyKernel implementation}
+All source descriptions refer to commit \texttt{926f8e8} of
+CayleyKernel \cite{cayley}. The software is distributed under
+Apache License 2.0.
+
+\paragraph{Python.}
+\path{CayleyKernel/_cpu.py} implements the low-bit cases in
+\texttt{\_python\_twist} using Python integers and \texttt{bit\_count()}.
+Its locals \texttt{v} and \texttt{h} correspond to \(R\) and \(C\),
+respectively. Python's unbounded complement and negation yield the same
+selected bits because the result is intersected with finite nonnegative
+masks. The public \texttt{twist(r,c)} takes nonnegative zero-based
+indices and returns \(\pm1\). The public \texttt{basis(r,c)} takes
+nonzero signed one-based labels. For example, \texttt{twist(2,1)}
+returns \(-1\) and \texttt{basis(3,2)} returns \(-4\), the label
+for \(-e_3\).
+
+\paragraph{Rust.}
+In \path{rust/src/lib.rs}, \texttt{twist} dispatches on the
+larger operand bit length. Up to 64 bits it uses \texttt{twist\_u64}.
+From 65 through 128 bits it uses two stack-allocated \texttt{u64}
+limbs per operand, and from 129 through 256 bits it uses four.
+The fixed-limb path finds the first nonzero limb of each operand and
+their XOR, selects the correction bit, and accumulates retained-limb
+parity. Above 256 bits \texttt{twist\_big} uses \texttt{BigUint}
+trailing zeros, XOR, OR, shift, and population count. Both the Python
+and Rust interfaces support nonnegative indices beyond machine-word
+width, subject to available resources.
+
+\paragraph{CUDA and HIP.}
+The \texttt{cayley\_sign} bodies in \path{cuda/cuda_kernel.cu} and
+\path{cuda/amd_kernel.cu} use the mask form and \texttt{\_\_popc}.
+The guard in each ternary selects a popcount input of one for a zero
+operand and zero for a nonzero diagonal. The bodies return flag 1 to
+add a coefficient term and flag 0 to subtract it. They compute low-bit
+masks directly and contain no \texttt{\_\_ffs} call. The bodies have
+a bounded operation count on their fixed-width operands. Their source
+uses conditional expressions, and generated branch behavior, instruction
+latency, and hardware throughput require separate evidence.
+
+The device evaluators take nonnegative signed 32-bit \texttt{int}
+indices. For such inputs \texttt{r}, \texttt{c}, their XOR, and
+the extracted low bits are at most \(2^{31}-1\), so negating them
+fits the signed type. Dense paths use \(0\leq r,c<\texttt{dim}\)
+with \texttt{dim} also passed as a signed \texttt{int}. A positive
+power-of-two dimension in that type is at most \(2^{30}\), an ABI
+ceiling rather than a tested capacity. Memory and launch constraints
+apply separately. The appendix's unsigned C reference, in contrast,
+accepts all \(0\leq r,c<2^{32}\) as individual indices.
+
+\section{Validation and limitations}
+\label{sec:validation}
+The host checks below ran on 8 November 2026 (9 November UTC) on an
+AMD Ryzen 9 7900X with Ubuntu 24.04.5 LTS, Linux
+\texttt{7.0.0-42-generic}, and x86-64. The C and C++ compiler was GCC
+13.3.0. The Python environment was CPython 3.12.3 with NumPy 2.4.6
+and pytest 9.0.3. The Rust extension was built with rustc and Cargo
+1.99.1 in release mode from the pinned lockfile (PyO3 0.27.2,
+\texttt{num-bigint} 0.4.8). Appendix~\ref{app:reproduce} gives the
+commands.
+
+\begin{itemize}
+\item The repository's \path{cuda/tools/compare_sign_tables.cpp}
+  agreed with independent doubling for all \(16{,}777{,}216\) ordered
+  pairs in dimension 4096. Its Mersenne Twister seeded with 2026
+  supplied 10,000 pairs masked to 31 bits. The pair, a diagonal,
+  and both zero-operand positions gave 40,000 further checks.
+  This executable compares an unsigned host translation of the device
+  expression with doubling.
+\item The appendix C listing agreed with its own iterative doubling
+  reference for the same exhaustive range and 50,000 further checks.
+  A 32-bit xorshift generator seeded with 2026 supplied 10,000 full-width
+  pairs. The check includes each pair, its reversal, a diagonal,
+  and both zero-operand positions.
+\item The pinned CPU test module \path{tests/core/test_cpu_backend.py}
+  passed all 62 tests with both backends available. The companion width
+  check passed 603 dispatch-width pairs and 72 limb-boundary pairs per
+  backend, plus \((0,0)\). It compares each result to
+  \path{tests/support/oracles.py}'s doubling recurrence at the minimum
+  level and with seven leading zero bits added. The dispatch cases use
+  widths 63, 64, 65, 127, 128, 129, 255, 256, and 257, with 32
+  seeded draws and their reversals, two identity orientations, and one
+  nonzero diagonal per width. The limb cases place the first set bit or
+  first differing bit at positions one below, at, and one above 64, 128,
+  192, and 256. The first-set cases include both values of the other
+  operand's bit and both operand orders.
+\item The CPU class in
+  \path{tests/papers/desktop_batch/test_2205_07986v2.py}
+  passed all seven tests separately under Python and Rust. Its exhaustive
+  test compares equation (4.1), the CPU interfaces, and an independent
+  recurrence for all \(1{,}048{,}576\) pairs in dimension 1024.
+  Seeded higher-width cases and a check of the final split parameter
+  supplement that comparison.
+\end{itemize}
+
+\paragraph{Version-specific octonion check.}
+Ren and Zhao's arXiv v2 Example 1 gives incorrect degrees for
+\((5,6)\). Their definition gives \((h,v,d_0)=(0,1,0)\)
+and \(k=1\). Its final product \(-e_3\) agrees with doubling.
+The shortcut printed in equation (4.11) uses bit 2 and includes
+all three OR terms. For \((1,2)\) it gives exponent
+\(r_2+0+1+1+1\equiv1\pmod 2\), whereas equation (4.1) gives
+\(1+r_1+\phi(r_1,c_1)+\phi(r_2,c_2)\equiv0\pmod 2\).
+Doubling likewise gives \(+e_3\). The repository companion
+reproduces this discrepancy for the specified arXiv v2 copy, with
+24 mismatches among the 42 ordered pairs of distinct nonzero octonion
+indices \cite{renv2,cayley}.
+
+\paragraph{Scope of the final split parameter.}
+Replacing the minus in the first component of \eqref{eq:doubling}
+by a plus only at the last doubling changes the sign of the
+\((1,1)\) case, since that is the only case where the
+\(\bar d b\) term survives. The split exponent is therefore
+\(\sigma\oplus(r_{n-1}c_{n-1})\), as in Ren and Zhao's
+Theorem~2 \cite{renv2}. The evaluator and the implementation
+scope of this paper use ordinary doubling.
+
+\paragraph{Evidence scope.}
+The finite comparisons corroborate the theorem. The saved
+\texttt{2205.07986v2} JSON snapshot records a separate run on
+26 October 2026 at commit \texttt{399309c}, including device
+coverage in that recorded suite. The fresh runs reported here are
+host-only. No CUDA or HIP execution, instruction inspection, or
+performance benchmark was part of this run. The repository's
+benchmark methodology separates native sign throughput, Python
+interface timings, and dense-product timings.
+
+\section*{Declarations}
+\paragraph{Author contribution and AI use.}
+Alika Perdue developed CayleyKernel with AI assistance, explored sign
+patterns in computed basis products, and defined the scope and verification
+requirements for this report. OpenAI Codex generated most of the manuscript,
+including the derivation and proof, drawing on the author's observations,
+the implementation, and the cited mathematical work. Codex also prepared the
+companion C and Python checks and ran the verification reported here.
+
+\paragraph{Affiliation and competing interests.}
+The author owns Yotta Space Corp and developed CayleyKernel through the
+company. The CayleyKernel README carries the company's copyright notice.
+% Confirm formal funding status before any submission that requires it.
+
+\appendix
+
+\section{Executable C reference}
+\label{app:c}
+Listing~\ref{lst:c} is the complete companion file
+\path{basis_sign.c}. It uses \texttt{uint32\_t}, requires 32-bit
+\texttt{unsigned int}, and uses the GCC/Clang intrinsic
+\texttt{\_\_builtin\_popcount}. The doubling reference processes
+32 positions and never calls the mask evaluator. The executable
+returns a nonzero status on the first mismatch.
+\lstinputlisting[language=C,caption={Unsigned mask evaluator and independent test harness.},label={lst:c}]{basis_sign.c}
+
+\section{Reproduction}
+\label{app:reproduce}
+To build the manuscript, enter its directory and run
+\texttt{latexmk -pdf paper.tex}. Keep \path{basis_sign.c} next to
+\path{paper.tex} because the listing is read directly from the file.
+
+Set \texttt{paper\_dir} to the absolute path of this manuscript
+directory. Run the following in a shell on a Linux host with GCC,
+Rust and Cargo, and Python with NumPy and pytest. Use an environment
+with the dependencies for the pinned project, for example
+\verb|python -m pip install -e '.[test]'| in that checkout.
+The Cargo step below builds a CPython extension using the lockfile.
+It uses Linux shared-library filenames and places the result on the
+test import path.
+\Needspace{31\baselineskip}
+\begin{lstlisting}
+git clone https://github.com/alikaperdue/CayleyKernel.git
+cd CayleyKernel
+git checkout --detach 926f8e85506187086a8ca2ea3577385f4a578b96
+git rev-parse HEAD
+
+check_dir=$(mktemp -d /tmp/cayley-sign.XXXXXX)
+c++ -std=c++17 -O3 -Wall -Wextra \
+    cuda/tools/compare_sign_tables.cpp -o "$check_dir/compare"
+"$check_dir/compare" 4096
+
+cc -std=c11 -O3 -Wall -Wextra -Werror -pedantic \
+    "$paper_dir/basis_sign.c" -o "$check_dir/basis_sign"
+"$check_dir/basis_sign"
+
+PYO3_PYTHON=$(command -v python) CARGO_TARGET_DIR="$check_dir/target" \
+    cargo rustc --locked --release --manifest-path rust/Cargo.toml \
+    --features python,pyo3/extension-module --crate-type cdylib
+cp "$check_dir/target/release/libcayley_kernel_rust.so" \
+    "$check_dir/cayley_kernel_rust.so"
+export PYTHONPATH="$PWD:$check_dir"
+CAYLEY_TEST_REQUIRE_RUST=1 python -m pytest -q \
+    tests/core/test_cpu_backend.py
+
+for backend in python rust; do
+    export CAYLEY_KERNEL_CPU_BACKEND="$backend"
+    python "$paper_dir/check_widths.py"
+    python -m unittest \
+        tests.papers.desktop_batch.test_2205_07986v2.Sections -v
+done
+\end{lstlisting}
+The reported Cargo build used \texttt{--offline} with cached crates.
+The two files supplied with the manuscript are separate from the pinned
+software checkout. The repository's
+\href{https://github.com/alikaperdue/CayleyKernel/blob/926f8e85506187086a8ca2ea3577385f4a578b96/docs/papers/2205.07986v2/README.md}{literature companion}
+describes the comparison and saved snapshot. Its
+\href{https://github.com/alikaperdue/CayleyKernel/blob/926f8e85506187086a8ca2ea3577385f4a578b96/docs/benchmark-methodology.md}{benchmark methodology}
+documents the separate timing protocols.
+
+\begin{thebibliography}{9}
+\bibitem{albuquerque}
+H. Albuquerque and S. Majid.
+Quasialgebra Structure of the Octonions.
+\emph{Journal of Algebra}, 220(1), 188--224, 1999.
+\href{https://doi.org/10.1006/jabr.1998.7850}{doi:10.1006/jabr.1998.7850}.
+\href{https://arxiv.org/abs/math/9802116}{arXiv:math/9802116}.
+
+\bibitem{ren}
+G. Ren and X. Zhao.
+The Explicit Twisted Group Algebra Structure of the Cayley--Dickson Algebra.
+\emph{Advances in Applied Clifford Algebras}, 33, article 49, 2023.
+\href{https://doi.org/10.1007/s00006-023-01296-6}{doi:10.1007/s00006-023-01296-6}.
+
+\bibitem{renv2}
+G. Ren and X. Zhao.
+The Twisted Group Algebra Structure of the Cayley--Dickson Algebra.
+\href{https://arxiv.org/html/2205.07986v2}{arXiv:2205.07986v2},
+13 March 2023. Theorem and equation numbers in this manuscript
+refer to this version.
+
+\bibitem{abdessalem}
+M. Ben Abdessalem.
+An \(O(1)\) Bitwise Evaluator for Cayley--Dickson Sign Structure:
+Ordinary, Split, Dual, and Tensor Constructions.
+\href{https://www.academia.edu/179628334/An_O_1_Bitwise_Evaluator_for_Cayley_Dickson_Sign_Structure_Ordinary_Split_Dual_and_Tensor_Constructions}{Author-posted preprint}, manuscript dated 24 September 2026.
+The posting associates this copy with Figshare DOI
+\href{https://doi.org/10.6084/m9.figshare.33705022}{\nolinkurl{10.6084/m9.figshare.33705022}}.
+The Figshare version and any journal publication remain unverified.
+
+\bibitem{cayley}
+CayleyKernel contributors. \emph{CayleyKernel}. Research software.\\
+Commit \href{https://github.com/alikaperdue/CayleyKernel/tree/926f8e85506187086a8ca2ea3577385f4a578b96}
+{\nolinkurl{926f8e85506187086a8ca2ea3577385f4a578b96}}.
+\href{https://github.com/alikaperdue/CayleyKernel/blob/926f8e85506187086a8ca2ea3577385f4a578b96/LICENSE}{Apache License 2.0}.
+\end{thebibliography}
+\end{document}

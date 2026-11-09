@@ -56,6 +56,9 @@ __pycache__/
 /docs/papers/**
 !/docs/papers/**/
 !/docs/papers/**/*.md
+!/docs/papers/cayley-sign/paper.tex
+!/docs/papers/cayley-sign/basis_sign.c
+!/docs/papers/cayley-sign/check_widths.py
 !/docs/papers/desktop-review/manifest.json
 !/docs/papers/desktop-review/summary.json
 !/docs/papers/**/results/*.json

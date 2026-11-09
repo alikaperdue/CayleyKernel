@@ -1,5 +1,15 @@
 # Paper verification and saved evidence
 
+## CayleyKernel manuscript
+
+[Table-Free Evaluation of Cayley–Dickson Basis Signs in Constant Word Time](cayley-sign/paper.tex)
+documents the sign evaluator and its verification at a pinned software
+revision. Run `latexmk -pdf paper.tex` in `docs/papers/cayley-sign` to
+build the manuscript. The appendix gives the commands for the C and Python
+checks in that directory.
+
+## Literature companions
+
 These companions connect published Cayley–Dickson results with reproducible
 computational checks. Each review records the supplied paper version,
 arithmetic conventions, tested cases, findings, and limits of coverage.
