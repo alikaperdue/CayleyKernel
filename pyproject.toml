@@ -7,7 +7,10 @@ name = "cayley_kernel"
 version = "0.3.0"
 description = "O(1)-order GPU kernel for high-dimensional Cayley-Dickson doubling products (CUDA)."
 authors = [
-    { name = "Alika Perdue", email = "alikaperdue@gmail.com" }
+    { name = "Yotta Space Corp" }
+]
+maintainers = [
+    { name = "Yotta Space Corp", email = "alikaperdue@gmail.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.10"

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """Slow, opt-in tests: deep identities and batched products at 2^20..2^22.
 
 These are excluded from the default run (they are marked ``slow`` in

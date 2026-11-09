@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """Correctness tests: GPU kernel vs the recursive Cayley-Dickson reference.
 
 Small products are compared against recursive doubling. Larger products

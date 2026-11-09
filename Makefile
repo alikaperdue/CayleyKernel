@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
+# Yotta Space Corp, Vancouver, BC
 #
 # CayleyKernel Makefile
 #

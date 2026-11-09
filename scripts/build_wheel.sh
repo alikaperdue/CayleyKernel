@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 #
 # scripts/build_wheel.sh -- build a redistributable CayleyKernel wheel.
 #

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """Algebraic identity tests for the Cayley-Dickson product.
 
 These tests exercise the *laws* the algebra must obey rather than raw

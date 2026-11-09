@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """Exact, CPU-only checks; explicitly enable with ``make test-sparse-zd``.
 
 All support indices here are zero-based. Only the adapter to basis

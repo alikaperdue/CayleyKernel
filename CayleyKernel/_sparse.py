@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """Sparse (CSR-style) Cayley-Dickson product — Python API.
 
 Experimental / research.  See ``docs/sparse-csr-design.md``.

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """Multi-GPU split_batch correctness tests.
 
 These tests are skipped automatically when fewer than two CUDA devices

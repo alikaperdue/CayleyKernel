@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """Multi-GPU batch splitting for CayleyKernel.
 
 This module provides :func:`visible_devices` and :func:`split_batch` for

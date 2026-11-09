@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """Optional PyTorch interop adapter for CayleyKernel.
 
 This module provides a thin, zero-copy adapter that lets CUDA

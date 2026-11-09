@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """PyTorch interop tests for CayleyKernel.
 
 These tests run against a CUDA ``torch.Tensor`` and validate:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """Optional JAX interop adapter for CayleyKernel.
 
 This module exposes ``CayleyKernel.jax.multiply`` — a thin adapter that lets

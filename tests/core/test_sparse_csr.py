@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# Copyright (c) 2026 Alika Perdue
+# Copyright (c) 2026 Yotta Space Corp
 """Tests for the sparse (CSR-style) Cayley-Dickson product.
 
 Deliverable of ``feat/sparse-csr`` (Phases A–C): design document,
