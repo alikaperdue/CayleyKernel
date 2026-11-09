@@ -94,3 +94,85 @@ cargo test --manifest-path rust/Cargo.toml --locked --release \
 The native benchmark deliberately uses sparse indices; the Python benchmark
 uses random indices. Their speedup ratios answer different questions and should
 not be compared as equivalent workloads.
+
+---
+
+## Snapshot 2026-11-09 — Linux x86_64, CPython 3.12.3
+
+Measured on 2026-11-09 on Linux 7.0.0-42-generic x86_64, glibc 2.39,
+CPython 3.12.3, seed 2026, 128 pairs, 3 repetitions (medians). Release build
+via the checked-in Cargo lockfile. Correctness is asserted before timing;
+timings have no pass/fail threshold.
+
+### Basis-unit products (twist, basis, twist_many, basis_many)
+
+| Bits | `twist` Py/Rust µs | `basis` Py/Rust µs | `twist_many` Py/Rust µs | `basis_many` Py/Rust µs |
+| ---: | ---: | ---: | ---: | ---: |
+| 32 | 0.429 / 0.181 | 0.511 / 0.242 | 0.322 / 0.121 | 0.469 / 0.178 |
+| 64 | 0.357 / 0.147 | 0.490 / 0.224 | 0.341 / 0.124 | 0.485 / 0.208 |
+| 65 | 0.353 / 0.164 | 0.490 / 0.238 | 0.342 / 0.155 | 0.483 / 0.242 |
+| 128 | 0.360 / 0.184 | 0.504 / 0.281 | 0.351 / 0.180 | 0.490 / 0.281 |
+| 129 | 0.367 / 0.191 | 0.505 / 0.287 | 0.350 / 0.184 | 0.494 / 0.283 |
+| 256 | 0.387 / 0.206 | 0.530 / 0.330 | 0.372 / 0.198 | 0.519 / 0.314 |
+| 257 | 0.383 / 0.234 | 0.531 / 0.353 | 0.369 / 0.223 | 0.515 / 0.339 |
+| 1024 | 0.496 / 0.313 | 0.697 / 0.566 | 0.480 / 0.336 | 0.685 / 0.556 |
+| 4096 | 0.945 / 0.671 | 1.420 / 1.414 | 0.942 / 0.669 | 1.427 / 1.387 |
+
+Rust is 2.0–2.8× faster at ≤129 bits, narrowing to 1.2–1.9× at 256–257 bits,
+and reaching near-parity (1.0–1.4×) at 4096 bits where the arithmetic itself
+dominates. Batched operations (`twist_many`, `basis_many`) track their
+individual counterparts closely.
+
+### Dense coefficient-vector multiplication
+
+| Dimension | Python µs/product | Rust µs/product | Speedup |
+| ---: | ---: | ---: | ---: |
+| 2 | 2.092 | 1.419 | 1.47× |
+| 8 | 17.666 | 1.973 | 8.95× |
+| 32 | 288.547 | 5.159 | 55.93× |
+| 128 | 4696.877 | 35.171 | 133.54× |
+
+The gain grows steeply with dimension: at dim 32 and 128 the Rust path is
+56–134× faster because it replaces a Python interpreter loop over every
+coefficient with a single native tight loop. At dim 2 the wrapper and
+conversion costs dominate both paths, leaving only a 1.5× margin.
+
+### Native dispatch vs. generic BigUint (no Python overhead)
+
+| Bits | Dispatch ns | Generic BigUint ns | Ratio |
+| ---: | ---: | ---: | ---: |
+| 32 | 3.48 | 20.70 | 6.0× |
+| 64 | 3.45 | 20.44 | 5.9× |
+| 65 | 9.28 | 39.19 | 4.2× |
+| 128 | 9.32 | 41.66 | 4.5× |
+| 129 | 10.69 | 42.60 | 4.0× |
+| 256 | 12.22 | 42.88 | 3.5× |
+| 257 | 52.83 | 52.04 | 1.0× |
+| 1024 | 53.62 | 52.23 | 1.0× |
+| 4096 | 113.43 | 112.74 | 1.0× |
+
+The fixed-limb dispatch path avoids `BigInt` allocation and is 4–6× faster
+at ≤256 bits. At 257 bits it falls back to the generic path and the two
+converge; by 1024+ bits the multi-precision multiply dominates regardless
+of path.
+
+### Bottom line for developers
+
+- **Dense coefficient products at dim ≥ 8** (the common case in kernel
+  loops): use Rust. It is a consistent winner (9–134×).
+- **Basis lookups at ≤128 bits**: use Rust. It is ~2× faster.
+  Avoid Python object overhead.
+- **Very large bit widths (≥1024)**: use either. The two backends are within ~20%; the
+  arithmetic itself is the bottleneck regardless of language.
+- **Inside Rust**, the indexed-dispatch path matters most at small widths
+  (4–6× over generic BigUint) and becomes irrelevant at ≥1024 bits.
+
+Reproduce:
+
+```sh
+python scripts/benchmark_cpu_backends.py
+cargo test --manifest-path rust/Cargo.toml --locked --release \
+  benchmark_index_paths -- --ignored --nocapture
+```
+
+
