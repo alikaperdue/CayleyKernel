@@ -17,7 +17,14 @@ a full dense product therefore requires $O(dim^2)$ work.
   [`cuda/amd_kernel.cu`](cuda/amd_kernel.cu) (AMD HIP/ROCm port).
 * Python package: [`CayleyKernel`](CayleyKernel/__init__.py) — the CuPy/ctypes GPU wrapper
   and CPU basis operations.
-* The O(1) basis-sign method is based on the paper by [`Maher Ben Abdessalem`](https://figshare.com/articles/preprint/A_Proven_Sign_Law_for_Cayley-Dickson_Algebras_Ordinary_and_Split_Constructions/33705022)
+* The O(1) basis-sign method is grounded in the mathematical framework of
+  **G. Ren and X. Zhao**, *The Twisted Group Algebra Structure of the
+  Cayley–Dickson Algebra*, [arXiv:2205.07986v2](https://arxiv.org/abs/2205.07986),
+  13 March 2023. The theorem and equation numbers referenced throughout this
+  project's code refer to that version.
+* The pseudocode and code logic adapted into the Python implementation and
+  refined for this repository are based on the paper by
+  [`Maher Ben Abdessalem`](https://figshare.com/articles/preprint/A_Proven_Sign_Law_for_Cayley-Dickson_Algebras_Ordinary_and_Split_Constructions/33705022).
 
 **Contributing:** see [`CONTRIBUTING.md`](CONTRIBUTING.md) for branch naming,
 lint/format entry points, testing, and a step-by-step guide to adding a
