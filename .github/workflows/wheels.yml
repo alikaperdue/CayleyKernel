@@ -8,11 +8,22 @@ on:
       - 'setup.py'
       - 'CayleyKernel/**'
       - 'tests/integration/test_wheel_build.py'
+      - 'tests/integration/wheel_smoke.py'
       - 'rust/**'
       - 'cuda/**'
       - 'scripts/build_wheel.sh'
       - 'Makefile'
   workflow_dispatch:
+    inputs:
+      gpu_variant:
+        description: 'Wheel to execute on the configured NVIDIA runner'
+        type: choice
+        default: none
+        options:
+          - none
+          - cu118
+          - cu120
+          - cu121
   release:
     types: [published]
 
@@ -31,6 +42,15 @@ jobs:
       - run: python -m build
       - run: python -m twine check dist/*
       - run: python -m tests.integration.test_wheel_build -v
+      - name: Install and exercise the portable wheel outside the checkout
+        working-directory: ${{ runner.temp }}
+        env:
+          CAYLEY_KERNEL_CPU_BACKEND: auto
+        run: |
+          python -m venv python-smoke
+          python-smoke/bin/python -m pip install --only-binary=:all: "$GITHUB_WORKSPACE"/dist/*-py3-none-any.whl
+          python-smoke/bin/python -m pip check
+          python-smoke/bin/python -I "$GITHUB_WORKSPACE/tests/integration/wheel_smoke.py" python
       - uses: actions/upload-artifact@v4
         with:
           name: python-wheel
@@ -53,8 +73,14 @@ jobs:
       - uses: PyO3/maturin-action@v1
         with:
           command: build
-          args: --release --locked --manifest-path rust/Cargo.toml --interpreter ${{ matrix.python }} --out rust-wheelhouse
+          args: >-
+            --release --locked --manifest-path rust/Cargo.toml
+            --interpreter ${{ runner.os == 'Linux' && format('python{0}', matrix.python) || 'python' }}
+            --out rust-wheelhouse
           manylinux: auto
+      - run: python -m pip install twine
+      - run: python -m twine check rust-wheelhouse/*.whl
+        shell: bash
       - uses: actions/download-artifact@v4
         with:
           name: python-wheel
@@ -62,13 +88,14 @@ jobs:
       - name: Install wheels with normal dependency resolution
         shell: bash
         run: |
-          wheel=$(find python-wheelhouse -name '*.whl' -print -quit)
-          python -m pip install --only-binary=:all: --find-links=rust-wheelhouse "${wheel}[rust]"
+          wheels=(python-wheelhouse/*-py3-none-any.whl)
+          python -m pip install --only-binary=:all: "${wheels[0]}[rust]" rust-wheelhouse/*.whl
+          python -m pip check
       - name: Verify installed native backend outside the checkout
         working-directory: ${{ runner.temp }}
         env:
-          CAYLEY_KERNEL_CPU_BACKEND: rust
-        run: python -c "from CayleyKernel import cpu_backend, basis, twist; assert cpu_backend() == 'rust'; assert basis(2, 2) == -1; assert twist(1, 1) == -1"
+          CAYLEY_KERNEL_CPU_BACKEND: auto
+        run: python -I "${{ github.workspace }}/tests/integration/wheel_smoke.py" rust
       - uses: actions/upload-artifact@v4
         with:
           name: rust-${{ matrix.os }}-py${{ matrix.python }}
@@ -95,10 +122,6 @@ jobs:
       - name: Install build tooling
         run: |
           apt-get update
-          # removed for next 4 lines...
-          #apt-get install -y python3 python3-pip make patchelf
-          #python3 -m pip install build auditwheel wheel twine
-          
           apt-get install -y python3 python3-pip python3-venv make
           # Ubuntu 22.04 ships patchelf 0.14.3; auditwheel needs >=0.14.5.
           # wheel >=0.41 supports tags with alphanumeric build identifiers.
@@ -112,19 +135,71 @@ jobs:
       - name: Give each CUDA variant a unique release filename
         run: python3 -m wheel tags --build=1${{ matrix.variant }} --remove wheelhouse/*.whl
       - run: python3 -m twine check wheelhouse/*.whl
-      - name: Verify installed kernel can be loaded without a GPU
-        run: |
-          python3 -m pip install wheelhouse/*.whl
-          cd /tmp
-          python3 -c 'import CayleyKernel as ck; assert ck.loaded(); assert ck.abi_version() >= 1'
       - uses: actions/upload-artifact@v4
         with:
           name: cuda-${{ matrix.variant }}-linux-x86_64
           path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  cuda-install:
+    needs: cuda-wheels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cuda-*-linux-x86_64
+          path: cuda-wheelhouse
+          merge-multiple: true
+      - name: Install each variant and verify its native ABI on the host runner
+        working-directory: ${{ runner.temp }}
+        run: |
+          for wheel in "$GITHUB_WORKSPACE"/cuda-wheelhouse/*.whl; do
+            env_dir=$(mktemp -d)
+            python -m venv "$env_dir"
+            "$env_dir/bin/python" -m pip install --only-binary=:all: "$wheel"
+            "$env_dir/bin/python" -m pip check
+            "$env_dir/bin/python" -I "$GITHUB_WORKSPACE/tests/integration/wheel_smoke.py" cuda-load
+
+            extra=cuda12
+            if [[ "$wheel" == *-1cu118-* ]]; then
+              extra=cuda11
+            fi
+            "$env_dir/bin/python" -m pip install --only-binary=:all: "${wheel}[${extra}]"
+            "$env_dir/bin/python" -m pip check
+          done
+
+  cuda-execution:
+    if: github.event_name == 'workflow_dispatch' && inputs.gpu_variant != 'none' && vars.CI_GPU_LABEL != ''
+    needs: cuda-install
+    runs-on: ${{ vars.CI_GPU_LABEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: cuda-${{ inputs.gpu_variant }}-linux-x86_64
+          path: cuda-wheelhouse
+      - name: Install the selected wheel with CuPy and run a GPU product
+        working-directory: ${{ runner.temp }}
+        env:
+          CUDA_EXTRA: ${{ inputs.gpu_variant == 'cu118' && 'cuda11' || 'cuda12' }}
+        run: |
+          env_dir=$(mktemp -d)
+          python -m venv "$env_dir"
+          wheels=("$GITHUB_WORKSPACE"/cuda-wheelhouse/*.whl)
+          "$env_dir/bin/python" -m pip install --only-binary=:all: "${wheels[0]}[${CUDA_EXTRA}]"
+          "$env_dir/bin/python" -m pip check
+          "$env_dir/bin/python" -I "$GITHUB_WORKSPACE/tests/integration/wheel_smoke.py" cuda-execute
 
   publish:
     if: github.event_name == 'release'
-    needs: [python-wheel, rust-wheels, cuda-wheels]
+    needs: [python-wheel, rust-wheels, cuda-install]
     runs-on: ubuntu-latest
     permissions:
       contents: write
