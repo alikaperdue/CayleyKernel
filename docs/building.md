@@ -2,7 +2,8 @@
 
 [Back to the README](../README.md)
 
-Run these commands from the repository root, with the CUDA toolkit available.
+Run these commands from the repository root. Building a CUDA wheel requires
+the CUDA toolkit.
 
 Build a redistributable wheel (compiles the kernel, bundles it, and runs
 `auditwheel repair` when available):
@@ -48,13 +49,14 @@ It produces:
 * A portable Python wheel and source distribution for the main package.
 * Rust companion wheels for Python 3.10–3.14 on Linux x86_64, macOS arm64
   (`macos-latest`), and Windows x86_64. Linux wheels use Maturin's manylinux
-  build environment. These accelerate CPU basis operations; dense multiplication
-  still requires the CUDA kernel.
+  build environment. These accelerate CPU basis operations and dense real
+  multiplication through `cpu_multiply`.
 * Linux x86_64 CUDA wheels built with 11.8, 12.0, and 12.1 toolkits, with
   build tags `1cu118`, `1cu120`, and `1cu121`. These target SM 75, 80, 86,
   89, and 90. Select a source build with a newer toolkit for newer GPUs.
 
-The CPU wheel installs without CuPy. For Rust acceleration, download the main
+The portable wheel installs NumPy, which is sufficient for `cpu_multiply`
+with the Python backend. For Rust acceleration, download the main
 portable wheel and the Rust wheel matching your OS and Python version from
 [GitHub Releases](https://github.com/alikaperdue/CayleyKernel/releases) into an
 otherwise empty `wheelhouse` directory, then run:
@@ -85,6 +87,14 @@ CuPy is optional and must be selected explicitly for GPU use. The `cuda11` extra
 uses CuPy 13 (CUDA 11 support was removed in CuPy 14); `cuda12` uses the CUDA 12
 binary distribution. Install only one CuPy distribution in an environment.
 See the [CuPy installation guide](https://docs.cupy.dev/en/stable/install.html).
+
+Both host and device inputs to `multiply` require a compatible GPU, driver,
+CuPy build, and compiled kernel. For experimental AMD support, build with
+`make kernel-amd` using `hipcc` and use a ROCm-compatible CuPy environment.
+The HIP build writes the same `CayleyKernel/cuda_kernel.so` used by CUDA,
+replacing any existing build at that path. Restart Python after switching
+builds. HIP supports batched dense products and omits BF16 and CUDA block-size
+tuning.
 
 `setup.py` is intentionally a thin shim: `pyproject.toml` owns all metadata and
 dependencies, while the shim supplies the native ctypes wheel/platform tags.

@@ -13,6 +13,14 @@ BLOCK_SIZES = (32, 64, 128, 256, 512, 1024)
 
 
 @pytest.mark.cpu
+def test_raw_stream_handle_is_wrapped_without_owning_it():
+    cp = pytest.importorskip("cupy")
+    stream = ck._resolve_stream(123)
+    assert stream.ptr == 123
+    assert isinstance(stream, cp.cuda.ExternalStream)
+
+
+@pytest.mark.cpu
 @pytest.mark.parametrize("value", ["", "0", "16", "33", "2048", "-32", "256.0", " 256"])
 def test_invalid_block_size_rejected_before_launch(monkeypatch, value):
     monkeypatch.setenv("CAYLEY_KERNEL_BLOCK_SIZE", value)
