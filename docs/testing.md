@@ -13,7 +13,6 @@ CayleyKernel, and the optional dependencies use the same Python interpreter.
 | `tests/integration/` | CUDA launch ABI, JAX and PyTorch adapters, multi-GPU correctness, wheel builds, and pytest configuration |
 | `tests/performance/` | Opt-in GPU measurements and CPU tests of the timing and baseline tooling |
 | `tests/research/` | Relation graphs, clique growth, associativity, and structural scaling |
-| `tests/papers/` | Paper-specific checks and report runners, grouped by identifier |
 | `tests/support/` | Shared reference products, comparison policies, test inputs, and GPU prerequisite probes |
 
 Shared pytest fixtures and options live in `tests/conftest.py`. Keep
@@ -73,12 +72,8 @@ The CPU sparse zero-divisor workflow uses its own `--run-sparse-zd` flag.
 The default suite includes the dimension-16 basis table and dimension-1024
 sparse-input dense product. The larger sparse-input products at dimensions
 `2^14`, `2^16`, and `2^20`, the `2^20` unity check, and other expensive
-products are slow. The quasilinear paper's million-component CPU check is
-also slow, as are selected exhaustive paper audits and the Physics Letters B
-level-20 dense GPU replay. Run just the slow host reproductions with
-`python -m pytest -q -m "cpu and slow" tests/papers/`. Standalone
-`unittest` and paper report runners keep their own selection and include
-the expensive cases unless their own options limit the workload.
+products are slow. See the [CayleyValidation paper index](https://github.com/alikaperdue/CayleyValidation/blob/main/docs/papers/README.md)
+for paper reproductions, including slow host and GPU cases.
 
 GPU tests check CuPy and device availability before seeding the GPU RNG.
 Most GPU tests also need the compiled CayleyKernel library. Tests marked

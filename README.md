@@ -580,7 +580,7 @@ GPU tests.
 
 Details and commands for [GPU performance baselines, huge-index showcases,
 and sparse zero-divisor validation](docs/testing.md) are documented separately.
-For research-specific checks, see the [paper verification index](docs/papers/README.md).
+For research-specific checks, see the [CayleyValidation paper index](https://github.com/alikaperdue/CayleyValidation/blob/main/docs/papers/README.md).
 
 ## Naming
 

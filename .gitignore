@@ -36,11 +36,7 @@ __pycache__/
 /scripts/results/*
 /benchmark-results/
 
-# Public documentation. Everything under docs/ stays local by default;
-# only the explicit !/ lines below ship to the public repository. The
-# split is intentional: durable prose, methodology, and hash-stable paper
-# evidence are public; machine-specific benchmark results, raw PDFs, and
-# transient extraction products stay local.
+# Public documentation is listed explicitly below.
 /docs/
 !/docs/
 /docs/*
@@ -51,29 +47,3 @@ __pycache__/
 !/docs/comparison.md
 !/docs/rust-cpu-benchmarks.md
 !/docs/multi-gpu.md
-!/docs/multi-gpu.md
-!/docs/papers/
-/docs/papers/**
-!/docs/papers/**/
-!/docs/papers/**/*.md
-!/docs/papers/cayley-sign/paper.tex
-!/docs/papers/cayley-sign/basis_sign.c
-!/docs/papers/cayley-sign/check_widths.py
-!/docs/papers/desktop-review/manifest.json
-!/docs/papers/desktop-review/summary.json
-!/docs/papers/**/results/*.json
-!/docs/papers/**/results/*.csv
-!/docs/papers/**/results/*.svg
-
-# Raw papers and temporary extraction/rendering products are not source.
-/docs/papers/**/*.pdf
-/docs/papers/**/extracted.txt
-/docs/papers/**/page-*.txt
-/docs/papers/**/page-*.png
-/docs/papers/**/results/test-output.txt
-
-# Bulk paper-search vectors and transient archives stay local.
-/docs/papers/**/*.npz
-/docs/papers/**/*.npy
-/docs/papers/**/*.jsonl
-/docs/papers/**/*.json.tmp

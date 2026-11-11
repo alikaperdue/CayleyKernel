@@ -23,5 +23,5 @@ See the [relation-graph experiment](../../../scripts/RELATION_GRAPHS.md).
 
 The root-level `relation_graphs_witnesses.jsonl` is a generated checkpoint.
 Paper evidence has its own canonical location under
-[`docs/papers/`](../../../docs/papers/README.md). Eigen workflow regressions
+[CayleyValidation](https://github.com/alikaperdue/CayleyValidation/blob/main/docs/papers/README.md). Eigen workflow regressions
 generate small synthetic archives in temporary directories.

@@ -133,8 +133,8 @@ Style notes for new code:
 
 Put library checks in `tests/core/`, adapter and build checks in
 `tests/integration/`, timings in `tests/performance/`, and structural
-script regressions in `tests/research/`. Keep paper identifiers and
-section-level test names in `tests/papers/`. Reuse the oracles and
+script regressions in `tests/research/`. Submit paper-specific reproductions
+to [CayleyValidation](https://github.com/alikaperdue/CayleyValidation). Reuse the oracles and
 comparison policies in `tests/support/`. Pytest validates markers against
 `pyproject.toml`.
 
@@ -323,9 +323,8 @@ GPU pair) without breaking the helper:
 - Precompiled `*.so`, `*.whl`, `*.pyd` binaries (built by `make kernel` /
   `make wheel`; see [`docs/building.md`](docs/building.md)).
 - Machine-specific benchmark JSON (`benchmark-results/`).
-- Raw paper PDFs, extracted text, page images, and bulk search vectors under
-  `docs/papers/` (only the hash-stable CSV evidence is public; see
-  [`docs/benchmark-methodology.md`](docs/benchmark-methodology.md)).
+- Paper companions and their published evidence live in
+  [CayleyValidation](https://github.com/alikaperdue/CayleyValidation/blob/main/docs/papers/README.md).
 
 See `.gitignore` for the full list and the rationale.
 

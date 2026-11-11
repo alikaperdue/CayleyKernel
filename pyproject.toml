@@ -108,7 +108,6 @@ CayleyKernel = ["*.so"]
 line-length = 100
 target-version = "py310"
 extend-exclude = [
-    "tests/papers",  # per-paper research scratch: skip lint AND format
     "scripts",       # user-invoked research tooling: skip lint AND format
 ]
 
