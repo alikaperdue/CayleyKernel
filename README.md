@@ -57,17 +57,34 @@ octonions onward. The GPU evaluates the product in a single kernel launch:
 
 ## Installation
 
-The release workflow builds CPU/Rust wheels for Linux, macOS, and Windows, plus
-Linux CUDA wheels for cu118/cu120/cu121. See [release wheel installation](docs/building.md#release-wheels-and-cpu-installations)
-for downloads, platform coverage, and the `rust`, `cuda11`, and `cuda12` extras.
+Download the wheel for your environment from
+[GitHub Releases](https://github.com/alikaperdue/CayleyKernel/releases). The
+portable `py3-none-any` wheel runs CPU products with NumPy. Optional Rust
+wheels cover CPython 3.10–3.14 on Linux x86_64, macOS arm64, and Windows x86_64.
+The `cu118`, `cu120`, and `cu121` wheels bundle the native kernel for
+Linux x86_64 and require a compatible NVIDIA GPU, driver, CUDA runtime, and CuPy
+for GPU products.
+
+For the portable wheel, install the downloaded file in your Python environment:
+
+```bash
+python -m pip install ./cayley_kernel-0.3.0-py3-none-any.whl
+```
+
+The release workflow uploads GitHub Release assets. See the
+[build guide](docs/building.md#release-wheels-and-cpu-installations) for
+installing a Rust companion or selecting a CUDA wheel and its CuPy extra, and
+[package-index distribution](docs/building.md#package-index-distribution) for
+the prerequisites for a future PyPI release.
 
 ### Build from source
 
-For CPU multiplication, install with `python3 -m pip install -e .`. The
-package installs NumPy. Rust acceleration is optional.
+From the checkout, install with `python3 -m pip install -e .` for CPU
+multiplication. The package installs NumPy. Rust acceleration is optional.
 
-Dense CUDA multiplication requires an NVIDIA GPU, the CUDA toolkit (`nvcc`
-on PATH), and a Python environment with NumPy and a compatible CuPy build.
+Building the CUDA kernel from source requires the CUDA toolkit (`nvcc` on PATH).
+Running dense CUDA products also requires a compatible NVIDIA GPU and driver
+and a Python environment with NumPy and a compatible CuPy build.
 The package requires Python ≥ 3.10; dependency versions must also
 support the selected interpreter. See the [testing guide](docs/testing.md#dependencies)
 for optional research and framework dependencies.
@@ -443,7 +460,9 @@ o = torch.empty_like(a)
 ck.torch.multiply_into(a, b, o)  # -> o, identity preserved
 ```
 
-Install with: ``pip install 'cayley-kernel[torch,cuda12]'``.
+From a source checkout, install with `python -m pip install -e '.[torch,cuda12]'`
+and build the CUDA kernel as shown above. For a downloaded CUDA 12 wheel, append
+`[torch,cuda12]` to its filename in the install command.
 
 Supported dtypes: ``float16``, ``bfloat16``, ``float32``, ``float64``,
 ``complex64``, ``complex128``.
@@ -480,8 +499,10 @@ required. See ``CayleyKernel/_jax.py`` docstring for the derivation and
 ``scripts/ASSOCIATIVITY.md`` for the cyclic-law counter-examples that a
 triple-product derivation would run into at dim ≥ 8.
 
-Install with: ``pip install 'cayley-kernel[jax,cuda12]'``. For CUDA
-JAX: ``pip install 'jax[cuda]' jaxlib[cuda]``.
+From a source checkout, install with `python -m pip install -e '.[jax,cuda12]'`
+and build the CUDA kernel as shown above. For a downloaded CUDA 12 wheel, append
+`[jax,cuda12]` to its filename in the install command. To use JAX's own CUDA 12
+backend, also install `jax[cuda12]`.
 
 ### Optional Rust CPU acceleration
 
@@ -567,7 +588,8 @@ For research-specific checks, see the [paper verification index](docs/papers/REA
 | --- | --- |
 | GitHub repository / branding | `CayleyKernel` |
 | Python package / import | `CayleyKernel` |
-| Wheel / PyPI project name | `cayley_kernel` |
+| Main distribution (normalized project name) | `cayley-kernel` |
+| Optional Rust distribution / import | `cayley-kernel-rust` / `cayley_kernel_rust` |
 | Compiled kernel binary | `cuda_kernel.so` |
 | C ABI symbols | `mult_<type>`, `mult_<type>_nd`, `fma_mult_<type>` (stable) |
 
