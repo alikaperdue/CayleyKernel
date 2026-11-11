@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Exact CPU operations with an optional Rust implementation.
+"""CPU basis and dense multiplication with an optional Rust implementation.
 
 The backend is selected once at import through CAYLEY_KERNEL_CPU_BACKEND.
-Python remains usable without Rust, NumPy, CuPy, or a compiled GPU library.
+Basis operations can run without NumPy. Dense multiplication requires NumPy.
 """
 
 import importlib
@@ -163,18 +163,24 @@ def basis_many(pairs):
 
 
 def cpu_multiply(a, b):
-    """Multiply equal power-of-two real vectors, returning a float64 NumPy array.
+    """Multiply two one-dimensional real array-likes of equal power-of-two length.
 
-    Uses the selected CPU backend; py_multiply remains the Python reference.
+    Both inputs are converted to float64 before multiplication. The result is
+    a float64 NumPy array. Requires NumPy and uses the selected CPU backend
+    without a GPU runtime or kernel.
     """
     import numpy as np
 
     a, b = np.asarray(a), np.asarray(b)
-    if np.iscomplexobj(a) or np.iscomplexobj(b):
-        raise TypeError("Inputs must be real coefficient vectors")
-    a, b = a.astype(np.float64, copy=False), b.astype(np.float64, copy=False)
     if a.ndim != 1 or b.ndim != 1:
         raise ValueError("Inputs must be one-dimensional real coefficient vectors")
+    for vector in (a, b):
+        if np.iscomplexobj(vector) or (
+            vector.dtype.kind == "O"
+            and any(isinstance(value, (complex, np.complexfloating)) for value in vector)
+        ):
+            raise TypeError("Inputs must be real coefficient vectors")
+    a, b = a.astype(np.float64, copy=False), b.astype(np.float64, copy=False)
     if _native is None or not hasattr(_native, "multiply"):
         return _python_multiply(a, b)
     return np.asarray(_native.multiply(a.tolist(), b.tolist()), dtype=np.float64)

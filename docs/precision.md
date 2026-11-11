@@ -10,8 +10,11 @@ from CayleyKernel import multiply
 ```
 
 Supported dtypes: `float16`, `float32`, `float64`, `int8/16/32/64`, `uint8/16/32/64`,
-`bool`, `complex64`, `complex128`, and CUDA `bfloat16`. Inputs may be CuPy arrays, NumPy arrays,
-or plain Python lists; the output container type matches the inputs.
+`bool`, `complex64`, `complex128`, and CUDA `bfloat16`. Inputs may be CuPy
+arrays, NumPy arrays, lists, or tuples. A CuPy input yields a CuPy array,
+otherwise a NumPy input yields a NumPy array, and two lists or tuples yield a list.
+The separate `cpu_multiply` API converts real coefficient vectors to float64
+and returns a float64 NumPy array.
 
 `float16` (FP16 / `__half`) uses 2-byte input/output coefficients with **float32
 multiplication and accumulation**, then rounds to float16 on output. This avoids
@@ -72,8 +75,8 @@ FP8 and packed INT4/FP4 are not supported. This scalar kernel does not use
 Tensor Core MMA instructions, so registering these storage types would not
 provide Tensor Core throughput. Packed formats also need a separate logical
 shape, packing, scaling, and rounding contract; `uint8` continues to mean one
-ordinary integer coefficient per byte. The optional Rust CPU basis backend
-does not transport coefficient buffers and needs no BF16 bridge.
+ordinary integer coefficient per byte. The optional Rust dense CPU backend
+receives coefficients already converted to float64 by the Python wrapper.
 
 Complex dtypes supply **complex coefficients** for the existing Cayley–Dickson
 basis (for example, complexified quaternions at `dim=4`). They do not pack a

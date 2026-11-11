@@ -16,7 +16,7 @@ a full dense product therefore requires $O(dim^2)$ work.
 * Kernel source: [`cuda/cuda_kernel.cu`](cuda/cuda_kernel.cu) (NVIDIA CUDA) and
   [`cuda/amd_kernel.cu`](cuda/amd_kernel.cu) (AMD HIP/ROCm port).
 * Python package: [`CayleyKernel`](CayleyKernel/__init__.py) — the CuPy/ctypes GPU wrapper
-  and CPU basis operations.
+  and CPU dense multiplication and basis operations.
 * The O(1) basis-sign method is grounded in the mathematical framework of
   **G. Ren and X. Zhao**, *The Twisted Group Algebra Structure of the
   Cayley–Dickson Algebra*, [arXiv:2205.07986v2](https://arxiv.org/abs/2205.07986),
@@ -63,6 +63,9 @@ for downloads, platform coverage, and the `rust`, `cuda11`, and `cuda12` extras.
 
 ### Build from source
 
+For CPU multiplication, install with `python3 -m pip install -e .`. The
+package installs NumPy. Rust acceleration is optional.
+
 Dense CUDA multiplication requires an NVIDIA GPU, the CUDA toolkit (`nvcc`
 on PATH), and a Python environment with NumPy and a compatible CuPy build.
 The package requires Python ≥ 3.10; dependency versions must also
@@ -101,7 +104,8 @@ CAYLEY_KERNEL_BLOCK_SIZE=512 python3 your_script.py
 ```
 
 The optional override accepts `32`, `64`, `128`, `256`, `512`, or `1024`
-threads and is read on every multiplication. Invalid values raise `ValueError`
+threads. The Python wrapper checks it before launching a nonempty `multiply`
+call. Invalid values raise `ValueError`
 in Python; direct C callers fall back to the default. With the variable unset,
 the heuristic uses 128 threads for dimensions up to 16 and 256 otherwise,
 reducing to as few as 32 threads for small workloads. These are starting
@@ -137,6 +141,8 @@ selection, optional `auditwheel` repair, and wheel-build regression tests.
 
 ## Quick start
 
+### Dense GPU multiplication
+
 ```python
 from CayleyKernel import multiply
 import cupy as cp
@@ -157,10 +163,12 @@ C = multiply(A, cp.random.rand(16, dtype=cp.float32))
 
 Supported dtypes: `float16`, `float32`, `float64`, `int8/16/32/64`,
 `uint8/16/32/64`, `bool`, `complex64`, `complex128`, and CUDA `bfloat16`.
-Inputs may be CuPy arrays, NumPy arrays, or Python lists. If either input is a
-CuPy array, the output is CuPy; otherwise a NumPy input produces a NumPy
-output, and two lists produce a list. Dense multiplication requires a GPU
-regardless of input container.
+Inputs may be CuPy arrays, NumPy arrays, lists, or tuples. Both inputs must
+have the same nonzero power-of-two length along the last axis. The leading
+axes broadcast using standard right-aligned NumPy rules. By default, a CuPy
+input yields a CuPy array, a NumPy input with no CuPy input yields a NumPy
+array, and two lists or tuples yield a list. Every input container uses the
+GPU through CuPy and the compiled kernel.
 
 FP16 and BF16 use float32 products and accumulation before rounding to the
 output type. BF16 requires CuPy 14+, NumPy 2.1.2+, `ml_dtypes`, and a CUDA
@@ -175,14 +183,29 @@ For positioning relative to `scipy.spatial.transform.Rotation`, the `quaternion`
 PyPI package, and the in-repo recursive reference, see
 [positioning and related libraries](docs/comparison.md).
 
+### Dense CPU multiplication
+
+```python
+from CayleyKernel import cpu_multiply
+
+result = cpu_multiply([3, 4], [1, 2])  # array([-5., 10.], dtype=float64)
+```
+
+Pass two one-dimensional array-likes of equal, nonzero power-of-two length.
+Real coefficients, including booleans and integers, are converted to NumPy
+`float64` before multiplication. The result is a one-dimensional NumPy
+array of that dtype. The CPU path handles one product per call and requires
+NumPy. It runs without a GPU, CuPy, or a compiled GPU kernel.
+
 ### API
 
 | Function | Description |
 | --- | --- |
-| `multiply(a, b, out=None, stream=None)` | Cayley-Dickson product; last axis = algebra dimension `2^n`, leading axes batched + broadcast. `out` reuses a caller-allocated buffer; `stream` selects the CUDA stream |
+| `multiply(a, b, out=None, stream=None)` | GPU product with equal power-of-two last axes and broadcastable leading axes. `out` supplies a CuPy destination of the result shape and dtype. `stream` specifies a CuPy stream to synchronize before the native launch. |
+| `cpu_multiply(a, b)` | CPU product of two one-dimensional real vectors of equal power-of-two length. Returns a NumPy `float64` array. |
 | `multiply_add(a, b, c, out=None, stream=None)` | Fused `a*b + c` in a single kernel launch |
 | `multiply_subtract(a, b, c, out=None, stream=None)` | Fused `a*b − c` in a single kernel launch |
-| `multiply_into(a, b, out)` | Explicit alias for `multiply(a, b, out=out)`; unambiguous in-place intent |
+| `multiply_into(a, b, out)` | GPU product written to the supplied CuPy destination, equivalent to `multiply(a, b, out=out)`. |
 | `conjugate(a)` | Standard basis conjugation `(a0, −a1, …, −a_{n−1})` |
 | `norm_sq(a)` | Sum of coefficient squares over the last axis |
 | `inverse(a)` | `conjugate(a) / norm_sq(a)`; raises on zero norm, warns at dimensions ≥ 16 |
@@ -194,8 +217,8 @@ PyPI package, and the in-repo recursive reference, see
 | `real(a)` | Extract `e0`, removing the algebra axis |
 | `imag(a)` | Copy with `e0` set to zero, preserving the algebra axis |
 | `library_path()` | Path of the loaded `cuda_kernel.so` |
-| `loaded()` | `True` once the kernel library has been found |
-| `abi_version()` | Kernel ABI version (`0` = no kernel library, `1` = legacy, `2` = batched, `3` = +conjugate/norm_sq, `4` = +fused multiply-add) |
+| `loaded()` | `True` when the kernel library has been loaded. |
+| `abi_version()` | Kernel ABI version (`0` = no library, `1` = legacy, `2` = batched, `3` = conjugate/norm symbols, `4` = fused multiply-add symbols, `5` = sparse symbols with executable sparse kernels on CUDA). |
 | `twist(r, c)` | Exact CPU basis sign; nonnegative, zero-based integer indices |
 | `basis(r, c)` | Exact CPU basis product; nonzero, signed one-based integer labels |
 | `twist_many(pairs)`, `basis_many(pairs)` | Ordered CPU batch operations for iterables of pairs |
@@ -239,9 +262,9 @@ c = cp.empty(8, dtype=cp.float32)
 for i in range(1000):
     multiply_into(a, b, c)  # equivalent to multiply(a, b, out=c)
 
-# Custom CUDA stream
-with cp.cuda.stream(cp.cuda.Stream(non_blocking=True)):
-    multiply(a, b)  # or pass stream=...
+# Synchronize CuPy work on a custom stream before the native kernel runs
+with cp.cuda.Stream(non_blocking=True):
+    multiply(a, b)
 ```
 
 ### Sparse CSR path (experimental / research)
@@ -273,7 +296,7 @@ result = multiply_subtract(a, b, c)  # a*b - c
 
 Broadcast rules, dtype promotion, `out=` buffer validation, and `stream=` semantics are identical to `multiply`.
 
-**C entry points (ABI 4):**
+**C entry points (introduced in ABI 4)**
 
 ```
 extern "C" void fma_mult_<suffix>(const void* a, const void* b,
@@ -285,11 +308,11 @@ extern "C" void fma_mult_<suffix>(const void* a, const void* b,
 
 One `fma_mult_<suffix>` symbol is emitted for every supported dtype
 (`float`, `double`, `int32`, `int64`, `uint32`, `uint64`, `int16`, `uint16`,
-`int8`, `uint8`, `bool`, `half`, `bfloat16`, `complex64`, `complex128`),
-in both `cuda/cuda_kernel.cu` and `cuda/amd_kernel.cu`.
+`int8`, `uint8`, `bool`, `half`, `complex64`, `complex128`) in both
+`cuda/cuda_kernel.cu` and `cuda/amd_kernel.cu`. CUDA also exports
+`fma_mult_bfloat16`.
 
-`cayley_abi_version()` returns **4** on ABI-4 builds. The `abi_version()`
-Python helper reports the same value.
+The current CUDA and HIP builds report ABI **5** through `abi_version()`.
 
 **Performance (RTX 5070 Ti, dim=32, batch=65536, float32):**
 
@@ -350,7 +373,7 @@ import CayleyKernel as ck
 ck.loaded()  # -> bool; True once cuda_kernel.so is found and loaded
 ck.library_path()  # -> str | None; absolute path of the loaded shared object
 ck.abi_version()  # -> int; 0 = no library, 1 = legacy, 2 = batched,
-#         3 = +conjugate/norm_sq entry points, 4 = +fused multiply-add
+#         3 = conjugate/norm_sq symbols, 4 = fused symbols, 5 = sparse symbols
 ```
 
 A typical debugging snippet when a kernel call raises an unexpected error:
@@ -462,10 +485,9 @@ JAX: ``pip install 'jax[cuda]' jaxlib[cuda]``.
 
 ### Optional Rust CPU acceleration
 
-The sparse CPU operations used by the research scripts can use a Rust extension
-while retaining arbitrary-size integer indices. Dense CUDA/HIP products keep
-their existing implementation. With a Rust toolchain installed, run from a
-source checkout:
+CPU basis operations can use the Rust extension while retaining arbitrary-size
+integer indices. The extension also accelerates `cpu_multiply`. With a Rust
+toolchain installed, run from a source checkout:
 
 ```bash
 python3 -m pip install ./rust
@@ -473,13 +495,12 @@ python3 -m pip install -e '.[rust]'
 python3 -c "from CayleyKernel import cpu_backend; print(cpu_backend())"
 ```
 
-Rust is selected automatically when installed; Python remains the fallback.
-Set `CAYLEY_KERNEL_CPU_BACKEND=python` or `rust` before starting Python to select
-explicitly. The separate extension is optional and does not change the main
-package's build requirements. Release installations can use the `rust` extra
-to resolve a prebuilt companion wheel; see [release wheel installation](docs/building.md).
-Dense real CPU products are available as `CayleyKernel.cpu_multiply(a, b)` using
-NumPy `float64` output and the selected optional Rust backend. See the
+The default `CAYLEY_KERNEL_CPU_BACKEND=auto` uses Rust when importable and
+falls back to Python. Set the variable to `python` before import to force Python
+or to `rust` to require the extension. An older Rust extension without a dense
+product entry point uses Python for `cpu_multiply`. Release installations can use
+the `rust` extra to resolve a prebuilt companion wheel.
+See [release wheel installation](docs/building.md) and the
 [Rust backend guide](rust/README.md) for fixed-width acceleration, `no_std`/WASM
 builds, wheel commands, and benchmarks.
 

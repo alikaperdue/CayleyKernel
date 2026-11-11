@@ -11,6 +11,8 @@ from types import SimpleNamespace
 
 import pytest
 
+from tests.support.oracles import recursive_product
+
 pytestmark = pytest.mark.cpu
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -199,6 +201,15 @@ def test_cpu_multiply(cpu, dim):
         np.testing.assert_array_equal(actual, expected)
 
 
+def test_cpu_multiply_converts_real_inputs_to_float64(cpu):
+    np = pytest.importorskip("numpy")
+    a = np.array([120, -120, 120, -120], dtype=np.int8)
+    b = np.array([0.25, 1.5, -2.0, 3.5], dtype=object)
+    actual = cpu.cpu_multiply(a, b)
+    assert actual.dtype == np.float64
+    np.testing.assert_array_equal(actual, recursive_product(a, b, xp=np, calc_dtype=np.float64))
+
+
 @pytest.mark.parametrize(
     "a,b", [([], []), ([1, 2], [1]), ([1] * 3, [1] * 3), ([[1, 2]], [[3, 4]]), (1, 2)]
 )
@@ -208,10 +219,15 @@ def test_cpu_multiply_invalid_shapes(cpu, a, b):
         cpu.cpu_multiply(a, b)
 
 
-def test_cpu_multiply_rejects_complex(cpu):
-    pytest.importorskip("numpy")
-    with pytest.raises(TypeError, match="real"):
-        cpu.cpu_multiply([1j], [1])
+@pytest.mark.parametrize("object_array", [False, True])
+def test_cpu_multiply_rejects_complex(cpu, object_array):
+    np = pytest.importorskip("numpy")
+    a = [1j]
+    if object_array:
+        a = np.array([np.complex64(1j)], dtype=object)
+    for left, right in ((a, [1]), ([1], a)):
+        with pytest.raises(TypeError, match="real"):
+            cpu.cpu_multiply(left, right)
 
 
 def test_native_multiply():

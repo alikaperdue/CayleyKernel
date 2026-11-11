@@ -14,7 +14,7 @@ Run with:
 import numpy as np
 import pytest
 
-from CayleyKernel import _select_kernel, cp, multiply, twist
+from CayleyKernel import _select_kernel, cp, multiply, multiply_add, multiply_into, twist
 from tests.support.comparisons import assert_product_close
 from tests.support.inputs import random_sparse
 from tests.support.oracles import doubling_sign, recursive_product, sparse_product
@@ -234,15 +234,34 @@ def test_broadcast_3d_stack_against_vector():
 # ---------------------------------------------------------------------------
 # Batch size larger than the legacy CUDA grid.y cap (65535)
 # ---------------------------------------------------------------------------
-def test_batch_exceeds_max_grid_y():
+def test_broadcast_batch_exceeds_max_grid_y():
     dim = 4
-    batch = 70000  # Regression for batches above the old y-axis grid limit.
-    A = cp.random.randn(batch, dim).astype(cp.float32)
-    B = cp.random.randn(batch, dim).astype(cp.float32)
-    got = multiply(A, B)
-    assert got.shape == (batch, dim)
-    for i in (0, 1, 65534, 65535, 65536, batch - 1):
-        assert_product_close(got[i], multiply(A[i], B[i]), np.float32, contract="dense", xp=cp)
+    rows, cols = 257, 273  # 70161 products, above the legacy grid.y cap.
+    rng = np.random.default_rng(2026)
+    a = rng.integers(-4, 5, size=(rows, 1, dim)).astype(np.float32)
+    b = rng.integers(-4, 5, size=(cols, dim)).astype(np.float32)
+    got = multiply(a, b)
+    assert got.shape == (rows, cols, dim)
+    np.testing.assert_array_equal(got, recursive_product(a, b, xp=np, calc_dtype=None))
+
+
+@pytest.mark.parametrize("fused", [False, True], ids=["multiply_into", "multiply_add"])
+def test_strided_output(fused):
+    a = cp.array([1, 2, 3, 4], dtype=cp.float64)
+    b = cp.array([[2, -1, 3, -4], [0, 3, 2, 1]], dtype=cp.float64)
+    storage = cp.full((2, 8), -100, dtype=cp.float64)
+    out = storage[:, ::2]
+
+    expected = recursive_product(a, b, xp=cp, calc_dtype=None)
+    if fused:
+        c = cp.full((4,), 2, dtype=cp.float64)
+        result = multiply_add(a, b, c, out=out)
+        expected += c
+    else:
+        result = multiply_into(a, b, out)
+    assert result is out
+    cp.testing.assert_array_equal(out, expected)
+    cp.testing.assert_array_equal(storage[:, 1::2], cp.full_like(out, -100))
 
 
 # ---------------------------------------------------------------------------

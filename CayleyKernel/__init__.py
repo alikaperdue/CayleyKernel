@@ -1,26 +1,28 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2026 Yotta Space Corp
-"""CayleyKernel -- O(1)-order GPU Cayley-Dickson doubling products.
+"""Cayley-Dickson doubling products with O(1) GPU basis-sign determination.
 
 The Python package for the CayleyKernel project.  ``multiply`` computes
 the Cayley-Dickson doubling product of any 2^n-dimensional algebra (complex,
 quaternions, octonions, sedenions, ...) on NVIDIA GPUs through a compiled
-CUDA kernel.
+CUDA kernel or an experimental HIP build on AMD GPUs. Use ``cpu_multiply``
+for CPU-only multiplication of real vectors.
 
-The heavy lifting is performed by ``cuda_kernel.so`` (built from
-``cuda/cuda_kernel.cu`` via ``make kernel``), loaded with ctypes.  The wrapper:
+The GPU library ``cuda_kernel.so`` is loaded with ctypes and built with
+``make kernel`` for CUDA or ``make kernel-amd`` for HIP. The wrapper:
 
   * validates that the algebra dimension is a power of two,
   * supports arbitrary batch shapes ``(B, ..., dim)`` and broadcasting,
   * handles float16/bfloat16/float32/float64/complex64/complex128/integer/boolean dtypes,
-  * falls back gracefully when the shared object is missing or stale
-    (no ``_nd`` symbols / no diagnostics), with an informative error.
+  * requires a loadable GPU library and supports older libraries without
+    batched entry points by launching once per vector.
 
 Public API:
     multiply(a, b, out=None, stream=None)
-                            -- Cayley-Dickson product, O(1) per element on GPU.
-                               ``out`` reuses a caller-allocated buffer; ``stream``
-                               selects the CUDA stream used for the launch.
+                            -- GPU product over broadcastable leading axes.
+                               ``out`` supplies the destination buffer.
+    cpu_multiply(a, b)   -- CPU product of two real vectors, returning a
+                          float64 NumPy array.
     multiply_add(a, b, c, out=None, stream=None)
                             -- Fused ``a*b + c``: the ``+ c`` term is folded into
                                the product kernel (single launch, no extra add).
@@ -31,7 +33,7 @@ Public API:
     norm_sq(a), inverse(a), right_div(a, b), left_div(a, b)
     power(a, n), exp(a), inner(a, b), real(a), imag(a)
     library_path()       -- resolved path of the loaded shared object
-    loaded()             -- True once the kernel library has been found
+    loaded()             -- True when the kernel library has been loaded
     abi_version()        -- kernel ABI version (1 for legacy builds), or 0
 """
 
@@ -143,7 +145,7 @@ def library_path():
 
 
 def loaded():
-    """``True`` when the CUDA kernel library has been located and loaded."""
+    """``True`` when the GPU kernel library has been located and loaded."""
     return _KERNEL_LOADED
 
 
@@ -162,8 +164,7 @@ def abi_version():
     * ``5`` -- adds the CSR-style sparse product entry points
       ``sparse_mult_<type>(xs, xsg, xv, ys, ysg, yv, out, K_a, K_b, dim,
       batch)`` for float, double, half, bfloat16, complex64, complex128
-      (experimental / research; see :mod:`._sparse` and
-      ``docs/sparse-csr-design.md``).
+      (experimental on CUDA, with stub symbols on HIP).
     """
     return _ABI_VERSION
 
@@ -172,8 +173,9 @@ def _require_kernel():
     if not _KERNEL_LOADED:
         raise RuntimeError(
             "CayleyKernel: kernel shared library 'cuda_kernel.so' "
-            "not found.  Build it with:\n"
-            '    make kernel            # or: make kernel ARCHS="sm_80"\n'
+            "could not be loaded. Build it with:\n"
+            "    make kernel            # NVIDIA CUDA\n"
+            "    make kernel-amd        # experimental AMD HIP\n"
             "then restart Python.  (Check for prebuilt wheels on "
             "GitHub Releases if you prefer not to compile.)"
         )
@@ -275,8 +277,9 @@ if _KERNEL_LOADED:
 def _require_gpu_runtime():
     if cp is None:
         raise ImportError(
-            "CayleyKernel requires CuPy with CUDA support.  "
-            "Install it with, e.g.:  pip install cupy-cuda12x"
+            "CayleyKernel GPU multiplication requires a compatible CuPy build "
+            "(e.g. cupy-cuda12x for CUDA 12, or a ROCm-compatible build for HIP). "
+            "For a CPU product, use CayleyKernel.cpu_multiply."
         )
     if np is None:
         raise ImportError("CayleyKernel requires NumPy.")
@@ -380,25 +383,25 @@ def _resolve_stream(stream):
 
     Accepted forms:
 
-      * ``None``       -- default stream, no change (legacy behaviour).
-      * ``cp.cuda.Stream`` -- used as-is via a ``cp.cuda.stream`` context.
-      * ``int``        -- raw CUDA stream handle; wrapped in ``cp.cuda.Stream``.
+      * ``None`` -- keep the current CuPy stream.
+      * ``cp.cuda.Stream`` -- use the supplied CuPy stream.
+      * ``int`` -- wrap a caller-owned stream handle.
 
-    Returns a callable no-op when ``stream`` is ``None`` so the caller can
-    wrap the launch unconditionally.
+    The native kernel launches on its default stream. Callers synchronize the
+    original CuPy stream before switching contexts so input preparation is visible.
     """
     if stream is None:
         return contextlib.nullcontext()
     if cp is None:
         raise TypeError("stream support requires CuPy; install cupy-cuda12x")
-    if isinstance(stream, cp.cuda.Stream):
-        return stream  # cp.cuda.Stream is already a context manager
     if isinstance(stream, int):
-        return cp.cuda.Stream(stream)  # also a context manager
-    raise TypeError(
-        "stream must be None, a cupy.cuda.Stream, or an integer handle "
-        "(got %s)." % type(stream).__name__
-    )
+        stream = cp.cuda.ExternalStream(stream)
+    elif not isinstance(stream, cp.cuda.Stream):
+        raise TypeError(
+            "stream must be None, a cupy.cuda.Stream, or an integer handle "
+            "(got %s)." % type(stream).__name__
+        )
+    return stream
 
 
 def _launch(kernel_pair, a, b, o, dim, batch):
@@ -525,7 +528,8 @@ def _launch_norm_sq(dtype, a, o, dim, batch):
 def multiply(a, b, out=None, stream=None):
     """Cayley-Dickson doubling product, executed on the GPU.
 
-    The LAST axis is the algebra dimension and must be a power of two (2^n).
+    The LAST axis is the algebra dimension and must have the same nonzero
+    power-of-two length (2^n) in both inputs.
     All leading axes are treated as a batch, so *any* number of dimensions is
     supported:
 
@@ -540,30 +544,29 @@ def multiply(a, b, out=None, stream=None):
 
         multiply(cp.random.rand(1024, 8), cp.random.rand(8))
 
-    The output has the broadcast shape and the promoted dtype, matching the
-    input container type (list -> list, NumPy -> NumPy, CuPy -> CuPy).
+    Accepts CuPy arrays, NumPy arrays, lists and tuples. By default the result
+    uses the promoted dtype and broadcast shape. A CuPy input yields a CuPy
+    array, a NumPy input with no CuPy input yields a NumPy array, and two
+    lists or tuples yield a list. All containers require NumPy, a compatible
+    CuPy GPU runtime, and a compiled GPU library.
 
     ``out`` (optional, default ``None``) lets the caller reuse a pre-allocated
     buffer in tight loops.  The buffer must already be a CuPy array whose
     shape matches the broadcast result shape and whose dtype is compatible
     with the operands' promoted dtype (the kernel is homogeneous, so it must
     equal the promoted dtype exactly).  When ``out`` is given the result is
-    written in-place and the same CuPy array is returned, so no per-iteration
-    allocation occurs::
+    written in-place and the same CuPy array is returned. A C-contiguous
+    buffer can be used directly as the kernel destination::
 
         c = cp.empty((1024, 8), dtype=cp.float32)
         for i in range(steps):
             ck.multiply(a, b_i, out=c)
 
-    ``stream`` (optional, default ``None``) selects the CUDA stream the
-    kernel is launched on.  Accepts a ``cupy.cuda.Stream`` object or a raw
-    integer stream handle.  With ``None`` (the default) the legacy behaviour
-    is preserved exactly.  The kernel itself is still synchronised at the end
-    of the call via ``cudaDeviceSynchronize``, so the call is safe to chain
-    with other CuPy operations but does not expose true async semantics.
+    ``stream`` accepts a ``cupy.cuda.Stream`` or raw integer stream handle
+    to synchronize before launch. The default, ``None``, synchronizes the
+    current CuPy stream. The native kernel launches on the backend's
+    default stream and synchronizes before returning.
 
-    The output has the broadcast shape and the promoted dtype, matching the
-    input container type (list -> list, NumPy -> NumPy, CuPy -> CuPy).
     Complex dtypes represent complex coefficients in the same basis; the
     product is complex-bilinear and does not conjugate scalar coefficients.
     Float16 and bfloat16 inputs use float32 products and accumulation, then
@@ -649,19 +652,22 @@ def multiply(a, b, out=None, stream=None):
                 "out.shape %s does not match the broadcast result shape %s. "
                 % (tuple(out.shape), out_shape)
             )
-        o = cp.ascontiguousarray(out)
+        o = out if out.flags.c_contiguous else cp.empty(out_shape, dtype=out_dtype)
     else:
         o = cp.zeros(out_shape, dtype=out_dtype)
 
     if batch > 0:
+        if stream is not None and cp.cuda.get_current_stream().ptr != stream_ctx.ptr:
+            cp.cuda.get_current_stream().synchronize()
         with stream_ctx:
             _launch(kernel_pair, a, b, o, int(dim), int(batch))
+            if out is not None and o is not out:
+                cp.copyto(out, o)
+                cp.cuda.get_current_stream().synchronize()
 
     # ---- 6. Return in the caller's container type ----
     if out is not None:
-        # Caller supplied a buffer: return the same (possibly-reshaped)
-        # array so identity is preserved and no extra copy happens.
-        return o
+        return out
     if return_type == "list":
         return cp.asnumpy(o).tolist()
     if return_type == "numpy":
@@ -774,16 +780,21 @@ def _launch_fused_multiply(a, b, c, out, stream, sign):
                 "out.shape %s does not match the broadcast result shape %s. "
                 % (tuple(out.shape), out_shape)
             )
-        o = cp.ascontiguousarray(out)
+        o = out if out.flags.c_contiguous else cp.empty(out_shape, dtype=out_dtype)
     else:
         o = cp.zeros(out_shape, dtype=out_dtype)
 
     if batch > 0:
+        if stream is not None and cp.cuda.get_current_stream().ptr != stream_ctx.ptr:
+            cp.cuda.get_current_stream().synchronize()
         with stream_ctx:
             _launch_fma(out_dtype, a, b, c, o, int(dim), int(batch), int(sign))
+            if out is not None and o is not out:
+                cp.copyto(out, o)
+                cp.cuda.get_current_stream().synchronize()
 
     if out is not None:
-        return o
+        return out
     if return_type == "list":
         return cp.asnumpy(o).tolist()
     if return_type == "numpy":

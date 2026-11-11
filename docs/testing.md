@@ -28,6 +28,7 @@ reproduction commands, and the canonical published evidence.
 | Scope | Install from the checkout | Additional prerequisites |
 | --- | --- | --- |
 | Base CPU tests | `python -m pip install -e '.[test]'` | NumPy and pytest are sufficient for the core host checks and most graph regressions. |
+| Rust CPU tests | `make rust-install` | A Rust toolchain to build the extension, plus the base CPU test dependencies. |
 | CPU and research as in CI | `python -m pip install -e '.[test,research-test]'` | SciPy for frontier solvers, SymPy for symbolic paper checks, Matplotlib for plot/replot, and tzdata for time-zone handling on hosts without IANA data. |
 | CUDA correctness and timing | `python -m pip install -e '.[test,cuda12]'` | Use `cuda11` for CUDA 11.8. Use a matching NVIDIA driver and build the kernel with `make kernel`. |
 | BF16 | `python -m pip install -e '.[test,bfloat16]'` | This extra already includes the CUDA 12 CuPy build, NumPy ≥ 2.1.2 and `ml_dtypes`. GPU cases also need BF16-capable hardware and a kernel with BF16 exports. |
@@ -36,10 +37,11 @@ reproduction commands, and the canonical published evidence.
 
 Use a single CuPy distribution in an environment. If `nvcc` cannot build
 all the Makefile's default architectures, set `ARCHS` to your GPU's
-architecture. For native CPU checks, install the optional Rust extension
-with `make rust-install` and set `CAYLEY_KERNEL_CPU_BACKEND=rust`.
-`CAYLEY_TEST_REQUIRE_RUST=1` makes the backend regression fail if the
-extension is missing. For CPU-only BF16 promotion and algebra checks,
+architecture. The CPU backend regression tests exercise both Python and Rust
+when the optional extension is installed. Use `CAYLEY_TEST_REQUIRE_RUST=1`
+to require the extension and its native multiplication entry point in those
+tests. Set `CAYLEY_KERNEL_CPU_BACKEND=rust` before import to select Rust for
+other tests that call the public CPU API. For CPU-only BF16 promotion and algebra checks,
 install `ml_dtypes>=0.5` alongside `.[test]`. The wheel metadata regression
 needs `build`, `setuptools>=77.0.3`, and `wheel`. The build-script regressions
 use stubs and require Linux, Bash, and Make.
@@ -82,6 +84,13 @@ GPU tests check CuPy and device availability before seeding the GPU RNG.
 Most GPU tests also need the compiled CayleyKernel library. Tests marked
 `gpu_device` can run with CuPy and a device alone, including CSR conversion
 and checks that can use the sparse product's host fallback.
+
+For focused dense multiplication checks, run
+`python -m pytest -q tests/core/test_cpu_backend.py tests/core/test_correctness.py tests/integration/test_cuda_launch.py`.
+The large broadcast and launch indexing tests use batches of small products
+in the default suite. Block-size overrides and BF16 GPU coverage target
+CUDA. On an experimental HIP build, run the basic dense correctness file
+with ROCm-compatible CuPy and `make kernel-amd`.
 
 Use `python3 -m pytest -q --require-gpu tests/` on a dedicated GPU runner.
 Missing CuPy, a usable device, or a required kernel produces setup failures
