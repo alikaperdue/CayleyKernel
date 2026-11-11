@@ -600,6 +600,15 @@ level. Dense multiplication uses this sign function for every term and
 requires `O(batch * dim^2)` total work. Python's arbitrary-size integer
 operations additionally depend on the indices' bit lengths.
 
+## Contact & Support
+
+If you have questions, feedback, or integration inquiries regarding CayleyKernel, feel free to reach out. 
+
+* **Questions or Suggestions:** Open a thread on the [GitHub Issues](https://github.com/alikaperdue/CayleyKernel/issues) tracker.
+* **Direct Inquiries:** Email the maintainers directly at alikaperdue@gmail.com.
+
+© 2026 Yotta Space Corp
+
 ## License
 
 Apache License 2.0 — see [LICENSE](LICENSE).
